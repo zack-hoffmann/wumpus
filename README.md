@@ -1,0 +1,1 @@
+This is a practice project wherein I will be incrementally improving on a Hunt the Wumpus game.
