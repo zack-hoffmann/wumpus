@@ -17,7 +17,7 @@ public class Entity {
     /**
      * Unique identifier for this entity.
      */
-    private final Long id;
+    private final long id;
 
     /**
      * Components associated with this entity.
@@ -32,7 +32,7 @@ public class Entity {
      * @param cs
      *               Components ascribed to this entity
      */
-    public Entity(final Long i, final Component... cs) {
+    public Entity(final long i, final Component... cs) {
         this.id = i;
         this.components = Stream.of(cs).collect(
                 Collectors.toMap(c -> c.getClass(), Function.identity()));
@@ -43,7 +43,7 @@ public class Entity {
      *
      * @return entity ID
      */
-    public final Long getId() {
+    public final long getId() {
         return id;
     }
 

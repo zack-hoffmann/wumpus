@@ -55,7 +55,7 @@ public class EntityTest {
     public final void hasId() {
         final long id = 1L;
         final Entity e = new Entity(id);
-        Assert.assertEquals(id, (long) e.getId());
+        Assert.assertEquals(id, e.getId());
     }
 
     /**
