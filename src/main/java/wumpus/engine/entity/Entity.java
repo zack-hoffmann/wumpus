@@ -1,7 +1,9 @@
 package wumpus.engine.entity;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,6 +61,15 @@ public class Entity {
     }
 
     /**
+     * Obtain all components for this entity.
+     *
+     * @return actual components for this entity.
+     */
+    public final Set<Component> getComponents() {
+        return new HashSet<>(components.values());
+    }
+
+    /**
      * Query the entity for component data.
      *
      * @param   <C>
@@ -90,6 +101,16 @@ public class Entity {
      */
     public final void deregisterComponent(final Class<? extends Component> c) {
         components.remove(c);
+    }
+
+    @Override
+    public final boolean equals(final Object o) {
+        return o instanceof Entity && ((Entity) o).id == id;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Long.valueOf(id).hashCode();
     }
 
 }

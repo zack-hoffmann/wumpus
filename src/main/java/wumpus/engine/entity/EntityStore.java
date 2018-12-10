@@ -31,8 +31,8 @@ public interface EntityStore {
     /**
      * Attempts to store the passed entity.
      *
-     * If the entity has no ID, one will be assigned. If the entity has an ID
-     * then the existing entity will be atomically replaced with this one.
+     * The existing entity with the same ID will be atomically replaced with
+     * this one.
      *
      * @param e
      *              the entity to store
@@ -40,4 +40,11 @@ public interface EntityStore {
      *         stored, absent if the entity was not stored.
      */
     Optional<Entity> commit(final Entity e);
+
+    /**
+     * Generates a new entity.
+     *
+     * @return a new entity with a newly generated ID.
+     */
+    Entity create();
 }
