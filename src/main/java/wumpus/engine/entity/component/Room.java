@@ -1,6 +1,7 @@
 package wumpus.engine.entity.component;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A travelable room in the game world.
@@ -19,7 +20,8 @@ public final class Room implements Component {
      *              the linked rooms for this room.
      */
     public Room(final Map<String, Long> l) {
-        this.linkedRooms = l;
+        this.linkedRooms = l.entrySet().stream().collect(Collectors
+                .toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
     }
 
     /**
