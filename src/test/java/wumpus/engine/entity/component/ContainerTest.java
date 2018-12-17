@@ -1,6 +1,6 @@
 package wumpus.engine.entity.component;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -25,6 +25,17 @@ public final class ContainerTest {
     @Test
     public void hasContents() {
         final Container c = new Container(0L);
-        assertFalse(c.getContents().isEmpty());
+        assertEquals(1, c.getContents().size());
+    }
+
+    /**
+     * Test that a container with multiple entities has those entities.
+     */
+    @Test
+    public void hasMultipleContents() {
+        final Container c = new Container(0L, 1L);
+        assertTrue(c.getContents().contains(0L));
+        assertTrue(c.getContents().contains(1L));
+        assertEquals(2, c.getContents().size());
     }
 }

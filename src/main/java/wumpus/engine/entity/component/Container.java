@@ -1,6 +1,8 @@
 package wumpus.engine.entity.component;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,7 +17,14 @@ public final class Container implements Component {
     private final Set<Long> contents;
 
     /**
-     * Build a container with the specified entities.
+     * Build a container with no entities.
+     */
+    public Container() {
+        contents = Collections.unmodifiableSet(new HashSet<>());
+    }
+
+    /**
+     * Build a container with a variable number of entities.
      *
      * @param cs
      *               the entities to add to the container
