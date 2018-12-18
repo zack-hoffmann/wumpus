@@ -15,7 +15,8 @@ public class App implements Runnable {
     /**
      * Runs a new wumpus App instance using standard output.
      *
-     * @param args Command line arguments. None specified at this time.
+     * @param args
+     *                 Command line arguments. None specified at this time.
      */
     public static void main(final String... args) {
         new App(System.out).run();
@@ -24,7 +25,8 @@ public class App implements Runnable {
     /**
      * Set up a new instance of the wumpus App with an output stream.
      *
-     * @param o A print stream for use by App output.
+     * @param o
+     *              A print stream for use by App output.
      */
     public App(final PrintStream o) {
         this.out = o;
