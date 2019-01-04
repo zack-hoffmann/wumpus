@@ -31,16 +31,6 @@ public final class LairService {
     private static final int INIT_SPACE_DIVISOR = 3;
 
     /**
-     * The amount of horizontal space used by the lair generation grid.
-     */
-    private static final int HORIZ_GRID_SPACE = 20;
-
-    /**
-     * The amount of vertical space used by the lair generation grid.
-     */
-    private static final int VERT_GRID_SPACE = 20;
-
-    /**
      * Total number of links headings available.
      */
     private static final int HEADINGS = 4;
@@ -109,15 +99,17 @@ public final class LairService {
      * @return the array of IDs for the generated rooms
      */
     private long[] generateRooms(final int size) {
-        final Entity[][] grid = new Entity[HORIZ_GRID_SPACE][VERT_GRID_SPACE];
-        int x = HORIZ_GRID_SPACE / INIT_SPACE_DIVISOR;
-        int y = HORIZ_GRID_SPACE / INIT_SPACE_DIVISOR;
+        final int h = size * 2;
+        final int v = size * 2;
+        final Entity[][] grid = new Entity[h][v];
+        int x = h / INIT_SPACE_DIVISOR;
+        int y = v / INIT_SPACE_DIVISOR;
         int c = 0;
         int d = 0;
         int g = gapChance;
-        do {
-            x = Math.max(Math.min(x, HORIZ_GRID_SPACE - 1), 0);
-            y = Math.max(Math.min(y, HORIZ_GRID_SPACE - 1), 0);
+        while (c < size) {
+            x = Math.max(Math.min(x, h - 1), 0);
+            y = Math.max(Math.min(y, v - 1), 0);
             if (grid[x][y] == null) {
                 int r = random.get();
                 if (r > g) {
@@ -148,20 +140,19 @@ public final class LairService {
                 d *= -1;
                 break;
             }
+        }
 
-        } while (c < size);
-
-        for (int i = 0; i < HORIZ_GRID_SPACE; i++) {
-            for (int j = 0; j < VERT_GRID_SPACE; j++) {
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < v; j++) {
                 if (grid[i][j] != null) {
                     final Map<String, Long> l = new HashMap<>();
                     if (j > 0 && grid[i][j - 1] != null) {
                         l.put("North", grid[i][j - 1].getId());
                     }
-                    if (i < HORIZ_GRID_SPACE - 1 && grid[i + 1][j] != null) {
+                    if (i < h - 1 && grid[i + 1][j] != null) {
                         l.put("East", grid[i + 1][j].getId());
                     }
-                    if (j < VERT_GRID_SPACE - 1 && grid[i][j + 1] != null) {
+                    if (j < v - 1 && grid[i][j + 1] != null) {
                         l.put("South", grid[i][j + 1].getId());
                     }
                     if (i > 0 && grid[i - 1][j] != null) {
