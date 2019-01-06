@@ -1,12 +1,12 @@
 package wumpus.engine.service;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import wumpus.Testing;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
@@ -17,13 +17,6 @@ import wumpus.engine.entity.component.Room;
  * Testing the lair service to ensure the wumpus lair construction is reliable.
  */
 public final class LairServiceTest {
-
-    /**
-     * Supplier for shortcutting entity retrieval to a relatively useless
-     * entity.
-     */
-    private static final Supplier<Entity> BOGUS_ENTITY_SUPPLIER = //
-            () -> new Entity(-1L);
 
     /**
      * Entity store used for testing.
@@ -57,7 +50,7 @@ public final class LairServiceTest {
         final int size = 10;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        Assert.assertTrue(e.orElseGet(BOGUS_ENTITY_SUPPLIER)
+        Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Container.class));
     }
 
@@ -93,7 +86,7 @@ public final class LairServiceTest {
         final int size = 20;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        final int roomCount = (int) e.orElseGet(BOGUS_ENTITY_SUPPLIER)
+        final int roomCount = (int) e.orElseGet(Testing.badEntitySupplier())
                 .getComponent(Container.class).getContents().stream()
                 .map(i -> store.get(i)).filter(o -> o.isPresent())
                 .map(o -> o.get()).filter(n -> n.hasComponent(Room.class))
