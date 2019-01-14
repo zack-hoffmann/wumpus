@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Room;
 
 /**
@@ -177,7 +178,14 @@ public final class LairService {
      */
     public long createLair(final int size) {
         final Entity lair = store.create();
-        lair.registerComponent(new Container(generateRooms(size)));
+        final long[] rooms = generateRooms(size);
+        lair.registerComponent(new Container(rooms));
+        if (size > 0) {
+            final long entrance = rooms[random.get() % rooms.length];
+            lair.registerComponent(new Lair(entrance));
+        } else {
+            lair.registerComponent(new Lair());
+        }
         store.commit(lair);
         return lair.getId();
     }

@@ -1,8 +1,10 @@
 package wumpus.engine.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +13,7 @@ import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Room;
 
 /**
@@ -39,7 +42,40 @@ public final class LairServiceTest {
         final int size = 10;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        Assert.assertTrue(e.isPresent());
+        assertTrue(e.isPresent());
+    }
+
+    /**
+     * Verify that generated entity has the lair component.
+     */
+    public void isLair() {
+        final int size = 10;
+        final LairService s = new LairService(store);
+        final Optional<Entity> e = store.get(s.createLair(size));
+        assertTrue(e.orElse(Testing.badEntitySupplier().get())
+                .hasComponent(Lair.class));
+    }
+
+    /**
+     * Verify that empty lair does not have legal entrace entity.
+     */
+    public void emptyLairHasNoEntrance() {
+        final int size = 0;
+        final LairService s = new LairService(store);
+        final Optional<Entity> e = store.get(s.createLair(size));
+        assertTrue(e.orElse(Testing.badEntitySupplier().get())
+                .getComponent(Lair.class).getEntrace() < 0);
+    }
+
+    /**
+     * Verify that non-empty lair has an entrance entity.
+     */
+    public void lairHasEntrance() {
+        final int size = 10;
+        final LairService s = new LairService(store);
+        final Optional<Entity> e = store.get(s.createLair(size));
+        assertTrue(e.orElse(Testing.badEntitySupplier().get())
+                .getComponent(Lair.class).getEntrace() >= 0);
     }
 
     /**
@@ -50,7 +86,7 @@ public final class LairServiceTest {
         final int size = 10;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
+        assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Container.class));
     }
 
@@ -62,8 +98,8 @@ public final class LairServiceTest {
         final int size = 0;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        Assert.assertEquals(size,
-                e.get().getComponent(Container.class).getContents().size());
+        assertEquals(size, e.get().getComponent(Container.class).getContents()
+                .size());
     }
 
     /**
@@ -74,8 +110,8 @@ public final class LairServiceTest {
         final int size = 1000;
         final LairService s = new LairService(store);
         final Optional<Entity> e = store.get(s.createLair(size));
-        Assert.assertEquals(size,
-                e.get().getComponent(Container.class).getContents().size());
+        assertEquals(size, e.get().getComponent(Container.class).getContents()
+                .size());
     }
 
     /**
@@ -91,6 +127,6 @@ public final class LairServiceTest {
                 .map(i -> store.get(i)).filter(o -> o.isPresent())
                 .map(o -> o.get()).filter(n -> n.hasComponent(Room.class))
                 .count();
-        Assert.assertEquals(size, roomCount);
+        assertEquals(size, roomCount);
     }
 }
