@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Component for holding other entities.
@@ -32,6 +34,29 @@ public final class Container implements Component {
     public Container(final long... cs) {
         contents = Arrays.stream(cs).boxed()
                 .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Build a container from another container.
+     *
+     * @param c the original container to build from
+     * @param cs additional entities to add to the container
+     */
+    public Container(final Container c, final long... cs) {
+        contents = Stream.concat(c.getContents().stream(),
+                    Arrays.stream(cs).boxed())
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Build a container from a subset of another container.
+     *
+     * @param c the original container to build from
+     * @param rem the condition of entities to keep
+     */
+    public Container(final Container c, final Predicate<Long> rem) {
+        contents = c.getContents().stream().filter(rem)
+            .collect(Collectors.toUnmodifiableSet());
     }
 
     /**

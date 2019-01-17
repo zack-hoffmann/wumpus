@@ -1,6 +1,7 @@
 package wumpus.engine.entity.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -37,5 +38,29 @@ public final class ContainerTest {
         assertTrue(c.getContents().contains(0L));
         assertTrue(c.getContents().contains(1L));
         assertEquals(2, c.getContents().size());
+    }
+
+    /**
+     * Test that a container can be copied with additional entities.
+     */
+    @Test
+    public void copyContents() {
+        final Container c1 = new Container(0L);
+        final Container c2 = new Container(c1, 1L);
+        assertTrue(c2.getContents().contains(0L));
+        assertTrue(c2.getContents().contains(1L));
+        assertEquals(2, c2.getContents().size());
+    }
+
+    /**
+     * Test that a container can be copied with fewer entities.
+     */
+    @Test
+    public void copySubsetContents() {
+        final Container c1 = new Container(0L, 1L);
+        final Container c2 = new Container(c1, (l -> l != 0L));
+        assertFalse(c2.getContents().contains(0L));
+        assertTrue(c2.getContents().contains(1L));
+        assertEquals(1, c2.getContents().size());
     }
 }

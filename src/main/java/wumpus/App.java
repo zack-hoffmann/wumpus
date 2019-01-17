@@ -1,11 +1,17 @@
 package wumpus;
 
 import java.io.PrintStream;
+import java.util.Optional;
+import java.util.function.Predicate;
 
+import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
+import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
+import wumpus.engine.entity.component.Transit;
 import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
 
@@ -48,12 +54,38 @@ public class App implements Runnable {
         final PlayerService players = new PlayerService(store);
         lairs.createLair(1);
         players.createPlayer();
+        final long lairEntrance = store.getAll()
+            .filter(e -> e.hasComponent(Lair.class))
+            .map(e -> e.getComponent(Lair.class))
+            .findFirst().orElseThrow().getEntrace();
         store.getAll()
             .filter(e -> e.hasComponent(Player.class))
             .filter(e -> e.hasComponent(Physical.class))
             .filter(p -> p.getComponent(Physical.class).getLocation()
                 .isEmpty())
-            .forEach(e -> System.out.println("Entity " + e.getId()
-                + " is a player entity without a location!"));
+            .forEach(p -> p.registerComponent(new Transit(lairEntrance)));
+        store.getAll()
+            .filter(e -> e.hasComponent(Transit.class))
+            .filter(e -> e.hasComponent(Physical.class))
+            .forEach(e -> {
+                final Transit tr = e.getComponent(Transit.class);
+                final Entity toE = store.get(tr.getTo()).orElseThrow();
+                final Optional<Long> fromEId = tr.getFrom();
+                e.registerComponent(new Physical(toE.getId()));
+                if (toE.hasComponent(Container.class)) {
+                    final Container toC = toE.getComponent(Container.class);
+                    toE.registerComponent(new Container(toC, e.getId()));
+                }
+                if (fromEId.isPresent()) {
+                    final Entity fromE = store.get(fromEId.get())
+                        .orElseThrow();
+                    if (fromE.hasComponent(Container.class)) {
+                        final Container fromC =
+                            fromE.getComponent(Container.class);
+                        final Predicate<Long> rem =  (l -> l != e.getId());
+                        fromE.registerComponent(new Container(fromC, rem));
+                    }
+                }
+            });
     }
 }
