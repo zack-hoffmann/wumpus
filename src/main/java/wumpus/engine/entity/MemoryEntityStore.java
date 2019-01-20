@@ -3,7 +3,6 @@ package wumpus.engine.entity;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * HashSet-based in-memory entity storage.
@@ -33,13 +32,13 @@ public final class MemoryEntityStore implements EntityStore {
     }
 
     @Override
-    public Stream<Entity> getAll() {
-        return entities.stream();
+    public EntityStream stream() {
+        return new EntityStream(entities.stream());
     }
 
     @Override
     public Optional<Entity> get(final long id) {
-        return getAll().filter(e -> id == e.getId()).findFirst();
+        return stream().filter(e -> id == e.getId()).findFirst();
     }
 
     @Override
