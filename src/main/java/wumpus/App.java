@@ -56,7 +56,7 @@ public class App implements Runnable {
         store.stream().filter(e -> e.hasComponent(Player.class)).filter(e -> e.hasComponent(Physical.class))
                 .filter(p -> p.getComponent(Physical.class).getLocation().isEmpty())
                 .forEach(p -> p.registerComponent(new Transit(lairEntrance)));
-        store.getAll().filter(e -> e.hasComponent(Transit.class)).filter(e -> e.hasComponent(Physical.class))
+        store.stream().filter(e -> e.hasComponent(Transit.class)).filter(e -> e.hasComponent(Physical.class))
                 .forEach(e -> {
                     final Transit tr = e.getComponent(Transit.class);
                     final Entity toE = store.get(tr.getTo()).orElseThrow();
