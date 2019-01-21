@@ -1,20 +1,75 @@
 package wumpus.engine.entity;
 
+import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import wumpus.engine.entity.component.AbstractEntityComponent;
 import wumpus.engine.entity.component.Component;
 
 /**
  * A shallow representation of any game object. This implements a loose ECS
  * architecture and holds no data of its own, instead delegating to components.
  */
-public class Entity {
+public final class Entity {
+
+    /**
+     * Defines helped methods for retrieving components from a conventional map.
+     */
+    public static final class ComponentMap
+            extends AbstractMap<Class<? extends Component>, Component> {
+
+        /**
+         * Wrapped inner map.
+         */
+        private final Map<Class<? extends Component>, Component> delegate;
+
+        /**
+         * Create component map with delegate inner map.
+         *
+         * @param cs
+         *               the map to wrap
+         */
+        public ComponentMap(
+                final Map<Class<? extends Component>, Component> cs) {
+            delegate = cs;
+        }
+
+        /**
+         * Get a component from the map in a typesafe manner.
+         *
+         * @param c
+         *              the type of the component to get
+         * @param   <C>
+         *              the component type
+         * @return the matching component
+         */
+        public <C extends Component> C getByComponent(final Class<C> c) {
+            final Component cand = delegate.get(c);
+            if (c.equals(cand.getClass())) {
+                return c.cast(cand);
+            } else {
+                throw new NoSuchElementException(c.getName());
+            }
+        }
+
+        @Override
+        public Set<Entry<Class<? extends Component>, Component>> entrySet() {
+            return delegate.entrySet();
+        }
+
+        @Override
+        public Component put(final Class<? extends Component> key,
+                final Component value) {
+            return delegate.put(key, value);
+        }
+
+    }
 
     /**
      * Unique identifier for this entity.
@@ -24,7 +79,7 @@ public class Entity {
     /**
      * Components associated with this entity.
      */
-    private final Map<Class<? extends Component>, Component> components;
+    private final ComponentMap components;
 
     /**
      * Initialize a new entity with its components.
@@ -36,8 +91,35 @@ public class Entity {
      */
     public Entity(final long i, final Component... cs) {
         this.id = i;
-        this.components = Stream.of(cs).collect(
-                Collectors.toMap(c -> c.getClass(), Function.identity()));
+        this.components = new ComponentMap(Stream.of(cs).collect(
+                Collectors.toMap(c -> c.getClass(), Function.identity())));
+        this.components.values().stream().forEach(c -> this.backRegister(c));
+    }
+
+    /**
+     * Register this entity with the component if possible.
+     *
+     * @param c
+     *              the component to register
+     */
+    private void backRegister(final Component c) {
+        if (c instanceof AbstractEntityComponent) {
+            ((AbstractEntityComponent) c).setEntity(this);
+        }
+    }
+
+    /**
+     * Deregister this entity with the component if possible.
+     *
+     * @param c
+     *              the component to deregister
+     */
+    private void backDeregister(final Component c) {
+        if (c != null && c instanceof AbstractEntityComponent
+                && c.getEntity().isPresent()
+                && this.equals(c.getEntity().get())) {
+            ((AbstractEntityComponent) c).setEntity(null);
+        }
     }
 
     /**
@@ -45,7 +127,7 @@ public class Entity {
      *
      * @return entity ID
      */
-    public final long getId() {
+    public long getId() {
         return id;
     }
 
@@ -56,7 +138,7 @@ public class Entity {
      *              the type of component to find
      * @return true if the entity has the component
      */
-    public final boolean hasComponent(final Class<? extends Component> c) {
+    public boolean hasComponent(final Class<? extends Component> c) {
         return components.keySet().contains(c);
     }
 
@@ -65,7 +147,7 @@ public class Entity {
      *
      * @return actual components for this entity.
      */
-    public final Set<Component> getComponents() {
+    public Set<Component> getComponents() {
         return new HashSet<>(components.values());
     }
 
@@ -78,19 +160,22 @@ public class Entity {
      *              The type of component to retrieve.
      * @return The selected component if present.
      */
-    public final <C extends Component> C getComponent(final Class<C> c) {
-        return Optional.ofNullable(components.get(c)).map(o -> c.cast(o))
-                .orElseThrow();
+    public <C extends Component> C getComponent(final Class<C> c) {
+        return components.getByComponent(c);
     }
 
     /**
      * Register a new component with this entity.
      *
+     * This will also attempt to register the entity with the component if
+     * possible.
+     *
      * @param component
      *                      the component to register
      */
-    public final void registerComponent(final Component component) {
+    public void registerComponent(final Component component) {
         components.put(component.getClass(), component);
+        this.backRegister(component);
     }
 
     /**
@@ -99,17 +184,18 @@ public class Entity {
      * @param c
      *              the component type to de-register
      */
-    public final void deregisterComponent(final Class<? extends Component> c) {
+    public void deregisterComponent(final Class<? extends Component> c) {
+        this.backDeregister(components.get(c));
         components.remove(c);
     }
 
     @Override
-    public final boolean equals(final Object o) {
+    public boolean equals(final Object o) {
         return o instanceof Entity && ((Entity) o).id == id;
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return Long.valueOf(id).hashCode();
     }
 

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 /**
  * A travelable room in the game world.
  */
-public final class Room implements Component {
+public final class Room extends AbstractEntityComponent {
 
     /**
      * Rooms linked to this one, by label relative to this room.

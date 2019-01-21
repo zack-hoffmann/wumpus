@@ -5,7 +5,7 @@ import java.util.Optional;
 /**
  * Used to describe an entity that is changing locations.
  */
-public final class Transit implements Component {
+public final class Transit extends AbstractEntityComponent {
 
     /**
      * Entity which this entity is leaving from.

@@ -3,7 +3,7 @@ package wumpus.engine.entity.component;
 /**
  * Representing an entity which is a wumpus lair.
  */
-public final class Lair implements Component {
+public final class Lair extends AbstractEntityComponent {
 
     /**
      * Entity ID of the entrace room to the lair.

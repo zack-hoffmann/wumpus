@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 /**
  * Component for holding other entities.
  */
-public final class Container implements Component {
+public final class Container extends AbstractEntityComponent {
 
     /**
      * The contents of this entity.

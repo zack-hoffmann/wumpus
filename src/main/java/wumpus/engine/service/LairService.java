@@ -160,6 +160,7 @@ public final class LairService {
                         l.put("West", grid[i - 1][j].getId());
                     }
                     grid[i][j].registerComponent(new Room(l));
+                    grid[i][j].registerComponent(new Container());
                     store.commit(grid[i][j]);
                 }
             }

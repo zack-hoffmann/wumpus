@@ -5,7 +5,7 @@ import java.util.OptionalLong;
 /**
  * Marks an entity which exists in the world space.
  */
-public final class Physical implements Component {
+public final class Physical extends AbstractEntityComponent {
 
     /**
      * The location in which this entity exists in the world space.

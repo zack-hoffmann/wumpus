@@ -2,7 +2,6 @@ package wumpus.engine.entity;
 
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -69,15 +68,15 @@ public final class EntityStream implements Stream<Entity> {
      *                    The components to match
      * @return A stream of maps of those components, mapped by component type
      */
-    public Stream<Map<Class<? extends Component>, Component>> components(
+    public Stream<Entity.ComponentMap> components(
             final Set<Class<? extends Component>> clazzes) {
         return delegate
                 .filter(e -> clazzes.stream().map(z -> e.hasComponent(z))
                         .reduce(true, (i, d) -> i && d))
-                .map(e -> e.getComponents().stream()
+                .map(e -> new Entity.ComponentMap(e.getComponents().stream()
                         .filter(com -> clazzes.contains(com.getClass()))
                         .collect(Collectors.toMap(com -> com.getClass(),
-                                Function.identity())));
+                                Function.identity()))));
     }
 
     @Override

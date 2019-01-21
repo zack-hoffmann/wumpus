@@ -1,7 +1,7 @@
 package wumpus;
 
 import java.io.PrintStream;
-import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import wumpus.engine.entity.Entity;
@@ -56,31 +56,36 @@ public class App implements Runnable {
         players.createPlayer();
         final long lairEntrance = store.stream().component(Lair.class)
                 .findFirst().orElseThrow().getEntrace();
-        store.stream().filter(e -> e.hasComponent(Player.class))
-                .filter(e -> e.hasComponent(Physical.class))
-                .filter(p -> p.getComponent(Physical.class).getLocation()
-                        .isEmpty())
-                .forEach(p -> p.registerComponent(new Transit(lairEntrance)));
-        store.stream().filter(e -> e.hasComponent(Transit.class))
-                .filter(e -> e.hasComponent(Physical.class)).forEach(e -> {
-                    final Transit tr = e.getComponent(Transit.class);
-                    final Entity toE = store.get(tr.getTo()).orElseThrow();
-                    final Optional<Long> fromEId = tr.getFrom();
-                    e.registerComponent(new Physical(toE.getId()));
-                    if (toE.hasComponent(Container.class)) {
-                        final Container toC = toE.getComponent(Container.class);
-                        toE.registerComponent(new Container(toC, e.getId()));
-                    }
-                    if (fromEId.isPresent()) {
-                        final Entity fromE = store.get(fromEId.get())
-                                .orElseThrow();
-                        if (fromE.hasComponent(Container.class)) {
-                            final Container fromC = fromE
-                                    .getComponent(Container.class);
-                            final Predicate<Long> rem = (l -> l != e.getId());
-                            fromE.registerComponent(new Container(fromC, rem));
-                        }
-                    }
+
+        store.stream().components(Set.of(Player.class, Physical.class))
+                .map(m -> m.getByComponent(Physical.class))
+                .filter(p -> p.getLocation().isEmpty())
+                .map(p -> p.getEntity().get())
+                .forEach(e -> e.registerComponent(new Transit(lairEntrance)));
+
+        store.stream().components(Set.of(Transit.class, Physical.class))
+                .forEach(m -> {
+                    final Entity e = m.getByComponent(Physical.class)
+                            .getEntity().get();
+                    final long eid = e.getId();
+                    final Transit t = m.getByComponent(Transit.class);
+                    final Entity toE = store.get(t.getTo()).get();
+
+                    t.getFrom().ifPresent(from -> {
+                        final Entity fromE = store.get(from).get();
+                        final Container fromC = fromE
+                                .getComponent(Container.class);
+                        final Predicate<Long> rem = (l -> l != eid);
+                        fromE.registerComponent(new Container(fromC, rem));
+                        store.commit(fromE);
+                    });
+
+                    e.registerComponent(new Physical(t.getTo()));
+                    store.commit(e);
+
+                    final Container toC = toE.getComponent(Container.class);
+                    toE.registerComponent(new Container(toC, eid));
+                    store.commit(toE);
                 });
     }
 }
