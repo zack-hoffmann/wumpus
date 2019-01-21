@@ -28,7 +28,8 @@ public class App implements Runnable {
     /**
      * Runs a new wumpus App instance using standard output.
      *
-     * @param args Command line arguments. None specified at this time.
+     * @param args
+     *                 Command line arguments. None specified at this time.
      */
     public static void main(final String... args) {
         new App(System.out).run();
@@ -37,7 +38,8 @@ public class App implements Runnable {
     /**
      * Set up a new instance of the wumpus App with an output stream.
      *
-     * @param o A print stream for use by App output.
+     * @param o
+     *              A print stream for use by App output.
      */
     public App(final PrintStream o) {
         this.out = o;
@@ -52,12 +54,15 @@ public class App implements Runnable {
         final PlayerService players = new PlayerService(store);
         lairs.createLair(1);
         players.createPlayer();
-        final long lairEntrance = store.stream().component(Lair.class).findFirst().orElseThrow().getEntrace();
-        store.stream().filter(e -> e.hasComponent(Player.class)).filter(e -> e.hasComponent(Physical.class))
-                .filter(p -> p.getComponent(Physical.class).getLocation().isEmpty())
+        final long lairEntrance = store.stream().component(Lair.class)
+                .findFirst().orElseThrow().getEntrace();
+        store.stream().filter(e -> e.hasComponent(Player.class))
+                .filter(e -> e.hasComponent(Physical.class))
+                .filter(p -> p.getComponent(Physical.class).getLocation()
+                        .isEmpty())
                 .forEach(p -> p.registerComponent(new Transit(lairEntrance)));
-        store.stream().filter(e -> e.hasComponent(Transit.class)).filter(e -> e.hasComponent(Physical.class))
-                .forEach(e -> {
+        store.stream().filter(e -> e.hasComponent(Transit.class))
+                .filter(e -> e.hasComponent(Physical.class)).forEach(e -> {
                     final Transit tr = e.getComponent(Transit.class);
                     final Entity toE = store.get(tr.getTo()).orElseThrow();
                     final Optional<Long> fromEId = tr.getFrom();
@@ -67,9 +72,11 @@ public class App implements Runnable {
                         toE.registerComponent(new Container(toC, e.getId()));
                     }
                     if (fromEId.isPresent()) {
-                        final Entity fromE = store.get(fromEId.get()).orElseThrow();
+                        final Entity fromE = store.get(fromEId.get())
+                                .orElseThrow();
                         if (fromE.hasComponent(Container.class)) {
-                            final Container fromC = fromE.getComponent(Container.class);
+                            final Container fromC = fromE
+                                    .getComponent(Container.class);
                             final Predicate<Long> rem = (l -> l != e.getId());
                             fromE.registerComponent(new Container(fromC, rem));
                         }

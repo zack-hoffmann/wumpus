@@ -20,7 +20,7 @@ public final class MemoryEntityStoreTest {
     @Test
     public void hasNoEntities() {
         final EntityStore es = new MemoryEntityStore();
-        assertEquals(0, es.getAll().count());
+        assertEquals(0, es.stream().count());
     }
 
     /**
@@ -49,7 +49,7 @@ public final class MemoryEntityStoreTest {
     public void hasCreatedEntityInStream() {
         final EntityStore es = new MemoryEntityStore();
         final Entity e = es.create();
-        assertTrue(es.getAll().anyMatch(n -> n.equals(e)));
+        assertTrue(es.stream().anyMatch(n -> n.equals(e)));
     }
 
     /**
