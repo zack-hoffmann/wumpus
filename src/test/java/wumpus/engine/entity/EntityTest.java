@@ -3,6 +3,7 @@ package wumpus.engine.entity;
 import org.junit.Assert;
 import org.junit.Test;
 
+import wumpus.Testing;
 import wumpus.engine.entity.component.Component;
 
 /**
@@ -10,44 +11,6 @@ import wumpus.engine.entity.component.Component;
  * associations.
  */
 public final class EntityTest {
-
-    /**
-     * Mock component type.
-     */
-    private static final class MockComponent implements Component {
-
-        /**
-         * Arbitrary value for identifying the component.
-         */
-        private Object value;
-
-        /**
-         * No-op.
-         */
-        private MockComponent() {
-        }
-
-        /**
-         * Mock component with arbitrary identifying value.
-         *
-         * @param a
-         *              an arbitrary identifying value
-         */
-        private MockComponent(final Object a) {
-            this.value = a;
-        }
-
-        @Override
-        public boolean equals(final Object x) {
-            return x instanceof MockComponent && //
-                    value.equals(((MockComponent) x).value);
-        }
-
-        @Override
-        public int hashCode() {
-            return MockComponent.class.getName().hashCode() + value.hashCode();
-        }
-    }
 
     /**
      * Entity retains assigned ID.
@@ -64,8 +27,8 @@ public final class EntityTest {
      */
     @Test
     public void hasComponent() {
-        final Entity e = new Entity(0L, new MockComponent());
-        Assert.assertTrue(e.hasComponent(MockComponent.class));
+        final Entity e = new Entity(0L, Testing.getMockComponent());
+        Assert.assertTrue(e.hasComponent(Testing.MockComponent.class));
     }
 
     /**
@@ -74,7 +37,7 @@ public final class EntityTest {
     @Test
     public void doesNotHaveComponent() {
         final Entity e = new Entity(0L);
-        Assert.assertFalse(e.hasComponent(MockComponent.class));
+        Assert.assertFalse(e.hasComponent(Testing.MockComponent.class));
     }
 
     /**
@@ -82,9 +45,9 @@ public final class EntityTest {
      */
     @Test
     public void getSameComponent() {
-        final Component c = new MockComponent("x");
+        final Component c = Testing.getMockComponent("x");
         final Entity e = new Entity(0L, c);
-        Assert.assertEquals(c, e.getComponent(MockComponent.class));
+        Assert.assertEquals(c, e.getComponent(Testing.MockComponent.class));
     }
 
     /**
@@ -92,7 +55,7 @@ public final class EntityTest {
      */
     @Test
     public void getSameComponentFromSet() {
-        final Component c = new MockComponent("x");
+        final Component c = Testing.getMockComponent("x");
         final Entity e = new Entity(0L, c);
         Assert.assertTrue(e.getComponents().contains(c));
     }
@@ -103,8 +66,8 @@ public final class EntityTest {
     @Test
     public void hasRegisteredComponent() {
         final Entity e = new Entity(0L);
-        e.registerComponent(new MockComponent());
-        Assert.assertTrue(e.hasComponent(MockComponent.class));
+        e.registerComponent(Testing.getMockComponent());
+        Assert.assertTrue(e.hasComponent(Testing.MockComponent.class));
     }
 
     /**
@@ -112,8 +75,8 @@ public final class EntityTest {
      */
     @Test
     public void doesNotHaveDeregisteredComponent() {
-        final Entity e = new Entity(0L, new MockComponent());
-        e.deregisterComponent(MockComponent.class);
-        Assert.assertFalse(e.hasComponent(MockComponent.class));
+        final Entity e = new Entity(0L, Testing.getMockComponent());
+        e.deregisterComponent(Testing.MockComponent.class);
+        Assert.assertFalse(e.hasComponent(Testing.MockComponent.class));
     }
 }
