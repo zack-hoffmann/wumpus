@@ -8,7 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -19,8 +24,7 @@ public final class InputRunnerTest {
     /**
      * Generate an input stream from a string.
      *
-     * @param s
-     *              the string that the input stream should wrap
+     * @param s the string that the input stream should wrap
      * @return the wrapping input stream
      */
     private static InputStream streamFromString(final String s) {
@@ -28,53 +32,67 @@ public final class InputRunnerTest {
     }
 
     /**
-     * Time to wait for thread to stop.
+     * Queue for testing.
      */
-    private static final int WAIT = 1000;
+    private Queue<String> tempQueue;
+
+    /**
+     * Executor service to run input runners.
+     */
+    private ExecutorService serv;
+
+    /**
+     * Reset the temp queue and executor service.
+     */
+    @Before
+    public void initialize() {
+        tempQueue = new LinkedList<>();
+        serv = Executors.newSingleThreadExecutor();
+    }
+
+    /**
+     * Kill hanging threads.
+     */
+    @After
+    public void killThreads() {
+        serv.shutdownNow();
+    }
 
     /**
      * Validate that a runner with no input can be stopped.
      *
-     * @throws IOException
-     *                                  if there is a problem reading from the
-     *                                  stream
-     * @throws InterruptedException
-     *                                  if there is a problem joining the thread
+     * @throws IOException          if there is a problem reading the stream
+     * @throws InterruptedException if there is a problem joining the thread
      */
     @Test
     public void runsWithNoInput() throws IOException, InterruptedException {
-        final Queue<String> q = new LinkedList<>();
-        final InputRunner ir = new InputRunner(streamFromString(""), q);
-        final Thread t = new Thread(ir);
+        final InputRunner ir = new InputRunner(streamFromString(""), tempQueue);
+        serv.execute(ir);
         synchronized (ir) {
-            t.start();
             ir.wait();
         }
         ir.stop();
-        t.join(WAIT);
-        assertFalse(t.isAlive());
+        serv.awaitTermination(1, TimeUnit.SECONDS);
+        serv.shutdown();
+        assertFalse(ir.isRunning());
+        assertTrue(serv.isShutdown());
     }
 
     /**
      * Validate that a runner with no input queues no input.
      *
-     * @throws IOException
-     *                                  if there is a problem reading from the
-     *                                  stream
-     * @throws InterruptedException
-     *                                  if there is a problem joining the thread
+     * @throws IOException          if there is a problem reading the stream
+     * @throws InterruptedException if there is a problem joining the thread
      */
     @Test
     public void queuesNoInput() throws IOException, InterruptedException {
-        final Queue<String> q = new LinkedList<>();
-        final InputRunner ir = new InputRunner(streamFromString(""), q);
-        final Thread t = new Thread(ir);
+        final InputRunner ir = new InputRunner(streamFromString(""), tempQueue);
+        serv.execute(ir);
         synchronized (ir) {
-            t.start();
             ir.wait();
         }
         ir.stop();
-        t.join(WAIT);
-        assertTrue(q.isEmpty());
+        serv.awaitTermination(1, TimeUnit.SECONDS);
+        assertTrue(tempQueue.isEmpty());
     }
 }
