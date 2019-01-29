@@ -50,14 +50,19 @@ public final class InputRunner implements Runnable {
         String line = null;
         try (final BufferedReader sc = new BufferedReader(
                 new InputStreamReader(in, Charset.defaultCharset()))) {
-            while (run) {
+            while (isRunning()) {
                 line = sc.readLine();
                 if (line != null) {
                     queue.add(line);
                 }
             }
         } catch (IOException ex) {
-            // TODO
+            throw new GameIOException("Could not obtain input.", ex);
+        } finally {
+            synchronized (this) {
+                run = false;
+                this.notifyAll();
+            }
         }
     }
 
@@ -66,9 +71,9 @@ public final class InputRunner implements Runnable {
      *
      * @throws IOException
      *                         when there was an issue with closing the input
-     *                         strem
+     *                         stream
      */
-    public void stop() throws IOException {
+    public synchronized void stop() throws IOException {
         run = false;
         in.close();
     }
@@ -78,7 +83,7 @@ public final class InputRunner implements Runnable {
      *
      * @return true if running
      */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return run;
     }
 

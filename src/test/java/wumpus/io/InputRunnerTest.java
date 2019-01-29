@@ -24,7 +24,8 @@ public final class InputRunnerTest {
     /**
      * Generate an input stream from a string.
      *
-     * @param s the string that the input stream should wrap
+     * @param s
+     *              the string that the input stream should wrap
      * @return the wrapping input stream
      */
     private static InputStream streamFromString(final String s) {
@@ -61,8 +62,10 @@ public final class InputRunnerTest {
     /**
      * Validate that a runner with no input can be stopped.
      *
-     * @throws IOException          if there is a problem reading the stream
-     * @throws InterruptedException if there is a problem joining the thread
+     * @throws IOException
+     *                                  if there is a problem reading the stream
+     * @throws InterruptedException
+     *                                  if there is a problem joining the thread
      */
     @Test
     public void runsWithNoInput() throws IOException, InterruptedException {
@@ -81,8 +84,10 @@ public final class InputRunnerTest {
     /**
      * Validate that a runner with no input queues no input.
      *
-     * @throws IOException          if there is a problem reading the stream
-     * @throws InterruptedException if there is a problem joining the thread
+     * @throws IOException
+     *                                  if there is a problem reading the stream
+     * @throws InterruptedException
+     *                                  if there is a problem joining the thread
      */
     @Test
     public void queuesNoInput() throws IOException, InterruptedException {
