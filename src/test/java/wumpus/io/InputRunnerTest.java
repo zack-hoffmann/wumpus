@@ -1,5 +1,6 @@
 package wumpus.io;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -99,5 +100,49 @@ public final class InputRunnerTest {
         ir.stop();
         serv.awaitTermination(1, TimeUnit.SECONDS);
         assertTrue(tempQueue.isEmpty());
+    }
+
+    /**
+     * Validates that a runner queues input.
+     *
+     * @throws IOException
+     *                                  if there is a problem reading the stream
+     * @throws InterruptedException
+     *                                  if there is a problem joining the thread
+     */
+    @Test
+    public void queuesInput() throws IOException, InterruptedException {
+        final InputRunner ir = new InputRunner(streamFromString("test"),
+                tempQueue);
+        serv.execute(ir);
+        synchronized (ir) {
+            ir.wait();
+        }
+        Thread.sleep(1);
+        ir.stop();
+        serv.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, tempQueue.size());
+    }
+
+    /**
+     * Validates that a runner queues multiple inputs.
+     *
+     * @throws IOException
+     *                                  if there is a problem reading the stream
+     * @throws InterruptedException
+     *                                  if there is a problem joining the thread
+     */
+    @Test
+    public void queuesMultipleInput() throws IOException, InterruptedException {
+        final InputRunner ir = new InputRunner(streamFromString("test\ntest"),
+                tempQueue);
+        serv.execute(ir);
+        synchronized (ir) {
+            ir.wait();
+        }
+        Thread.sleep(1);
+        ir.stop();
+        serv.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(2, tempQueue.size());
     }
 }
