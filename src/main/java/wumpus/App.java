@@ -1,7 +1,10 @@
 package wumpus;
 
 import java.io.PrintStream;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 import wumpus.engine.entity.Entity;
@@ -14,6 +17,7 @@ import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
+import wumpus.io.StandardIOAdapter;
 
 /**
  * Application instance for the wumpus game.
@@ -48,6 +52,23 @@ public class App implements Runnable {
     @Override
     public final void run() {
         out.println("Welcome to Hunt the Wumpus by Zack Hoffmann!");
+
+        final ExecutorService serv = Executors.newSingleThreadExecutor();
+        final StandardIOAdapter io = new StandardIOAdapter(serv);
+
+        boolean go = true;
+        out.println("Entering");
+        while (go) {
+            Optional<String> i = io.poll();
+            if (i.isPresent()) {
+                io.post("Echo: " + i.get());
+
+                if (i.get().equals("exit")) {
+                    go = false;
+                }
+            }
+        }
+        out.println("Exiting");
 
         final EntityStore store = new MemoryEntityStore();
         final LairService lairs = new LairService(store);
