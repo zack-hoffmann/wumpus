@@ -48,7 +48,7 @@ public final class OutputRunner implements Runnable {
             this.notifyAll();
         }
         String line;
-        try (final PrintStream ps = new PrintStream(out, true,
+        try (final PrintStream ps = new PrintStream(out, false,
                 Charset.defaultCharset())) {
             while (isRunning()) {
                 line = queue.poll();

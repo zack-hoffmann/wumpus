@@ -23,6 +23,11 @@ import org.junit.Test;
 public final class InputRunnerTest {
 
     /**
+     * Milliseconds to wait for queue processing.
+     */
+    private static final int WAIT = 100;
+
+    /**
      * Generate an input stream from a string.
      *
      * @param s
@@ -97,6 +102,7 @@ public final class InputRunnerTest {
         synchronized (ir) {
             ir.wait();
         }
+        Thread.sleep(WAIT);
         ir.stop();
         serv.awaitTermination(1, TimeUnit.SECONDS);
         assertTrue(tempQueue.isEmpty());
@@ -118,7 +124,7 @@ public final class InputRunnerTest {
         synchronized (ir) {
             ir.wait();
         }
-        Thread.sleep(1);
+        Thread.sleep(WAIT);
         ir.stop();
         serv.awaitTermination(1, TimeUnit.SECONDS);
         assertEquals(1, tempQueue.size());
@@ -140,7 +146,7 @@ public final class InputRunnerTest {
         synchronized (ir) {
             ir.wait();
         }
-        Thread.sleep(1);
+        Thread.sleep(WAIT);
         ir.stop();
         serv.awaitTermination(1, TimeUnit.SECONDS);
         assertEquals(2, tempQueue.size());
