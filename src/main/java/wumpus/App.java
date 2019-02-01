@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -23,6 +24,11 @@ import wumpus.io.StandardIOAdapter;
  * Application instance for the wumpus game.
  */
 public class App implements Runnable {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
      * Output stream used by this App instance.
@@ -51,7 +57,8 @@ public class App implements Runnable {
 
     @Override
     public final void run() {
-        out.println("Welcome to Hunt the Wumpus by Zack Hoffmann!");
+        LOG.info("Welcome to Hunt the Wumpus by Zack Hoffmann!");
+        LOG.fine("Fine logging is enabled.");
 
         final ExecutorService serv = Executors.newSingleThreadExecutor();
         final StandardIOAdapter io = new StandardIOAdapter(serv);

@@ -6,11 +6,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Runnable for pulling lines from an input stream and queuing them.
  */
 public final class InputRunner implements Runnable {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = Logger
+            .getLogger(InputRunner.class.getName());
 
     /**
      * The input stream to read from.
@@ -47,15 +55,21 @@ public final class InputRunner implements Runnable {
             run = true;
             this.notifyAll();
         }
+        LOG.fine("Now running.");
         String line = null;
         try (final BufferedReader sc = new BufferedReader(
                 new InputStreamReader(in, Charset.defaultCharset()))) {
+            LOG.fine("Reader open. Beginning input loop.");
             while (isRunning()) {
                 line = sc.readLine();
                 if (line != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Queuing input: " + line);
+                    }
                     queue.add(line);
                 }
             }
+            LOG.fine("Exiting input loop.");
         } catch (IOException ex) {
             throw new GameIOException("Could not obtain input.", ex);
         } finally {
@@ -64,6 +78,7 @@ public final class InputRunner implements Runnable {
                 this.notifyAll();
             }
         }
+        LOG.fine("Stopped.");
     }
 
     /**
