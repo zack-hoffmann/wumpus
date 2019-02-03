@@ -5,12 +5,20 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Runnable for pulling lines from a queue and printing them to an output
  * stream.
  */
 public final class OutputRunner implements Runnable {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = Logger
+            .getLogger(OutputRunner.class.getName());
 
     /**
      * The output stream to write to.
@@ -53,6 +61,9 @@ public final class OutputRunner implements Runnable {
             while (isRunning()) {
                 line = queue.poll();
                 if (line != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Output found: " + line);
+                    }
                     ps.println(line);
                 }
             }

@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wumpus.engine.entity.Entity;
@@ -60,7 +61,7 @@ public class App implements Runnable {
         LOG.info("Welcome to Hunt the Wumpus by Zack Hoffmann!");
         LOG.fine("Fine logging is enabled.");
 
-        final ExecutorService serv = Executors.newSingleThreadExecutor();
+        final ExecutorService serv = Executors.newCachedThreadPool();
         final StandardIOAdapter io = new StandardIOAdapter(serv);
 
         boolean go = true;
@@ -68,6 +69,9 @@ public class App implements Runnable {
         while (go) {
             Optional<String> i = io.poll();
             if (i.isPresent()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Input found: " + i.get());
+                }
                 io.post("Echo: " + i.get());
 
                 if (i.get().equals("exit")) {
