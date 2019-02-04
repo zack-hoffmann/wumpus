@@ -7,6 +7,8 @@ import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.Player;
+import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
 
 /**
@@ -64,7 +66,9 @@ public final class TransitService implements Service {
         from.registerComponent(new Container(fromC, rem));
         store.commit(from);
 
-        // TODO if player, describe
+        if (e.hasComponent(Player.class) && from.hasComponent(Room.class)) {
+            playerExit(e, from);
+        }
     }
 
     /**
@@ -82,7 +86,33 @@ public final class TransitService implements Service {
         store.commit(to);
         store.commit(e);
 
-        // TODO if player, describe
+        if (e.hasComponent(Player.class) && to.hasComponent(Room.class)) {
+            playerEnter(e, to);
+        }
+    }
+
+    /**
+     * Describe a player room exit to the player and cause exit triggers
+     *
+     * @param player
+     *                   entity of the player
+     * @param from
+     *                   the room the player is leaving
+     */
+    private void playerExit(final Entity player, final Entity from) {
+
+    }
+
+    /**
+     * Describe a player room entry to the player and cause entry triggers
+     *
+     * @param player
+     *                   entity of the player
+     * @param to
+     *                   the room the player is entering
+     */
+    private void playerEnter(final Entity player, final Entity to) {
+
     }
 
 }
