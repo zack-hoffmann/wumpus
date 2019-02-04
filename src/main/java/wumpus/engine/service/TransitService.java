@@ -35,27 +35,54 @@ public final class TransitService implements Service {
                 .forEach(m -> {
                     final Entity e = m.getByComponent(Physical.class)
                             .getEntity().get();
-                    final long eid = e.getId();
                     final Transit t = m.getByComponent(Transit.class);
-                    final Entity toE = store.get(t.getTo()).get();
 
                     t.getFrom().ifPresent(from -> {
-                        final Entity fromE = store.get(from).get();
-                        final Container fromC = fromE
-                                .getComponent(Container.class);
-                        final Predicate<Long> rem = (l -> l != eid);
-                        fromE.registerComponent(new Container(fromC, rem));
-                        store.commit(fromE);
+                        removeFromContainer(e, store.get(from).get());
                     });
 
-                    e.registerComponent(new Physical(t.getTo()));
+                    putInContainer(e, store.get(t.getTo()).get());
+
                     e.deregisterComponent(Transit.class);
                     store.commit(e);
 
-                    final Container toC = toE.getComponent(Container.class);
-                    toE.registerComponent(new Container(toC, eid));
-                    store.commit(toE);
                 });
+    }
+
+    /**
+     * Remove an entity from a container.
+     *
+     * @param e
+     *                 the entity to remove
+     * @param from
+     *                 the entity of the container to remove from
+     */
+    private void removeFromContainer(final Entity e, final Entity from) {
+        e.registerComponent(new Physical());
+        final Container fromC = from.getComponent(Container.class);
+        final Predicate<Long> rem = (l -> l != e.getId());
+        from.registerComponent(new Container(fromC, rem));
+        store.commit(from);
+
+        // TODO if player, describe
+    }
+
+    /**
+     * Put an entity in a container.
+     *
+     * @param e
+     *               the entity to put
+     * @param to
+     *               the entity of the container to put in to
+     */
+    private void putInContainer(final Entity e, final Entity to) {
+        e.registerComponent(new Physical(to.getId()));
+        final Container toC = to.getComponent(Container.class);
+        to.registerComponent(new Container(toC, e.getId()));
+        store.commit(to);
+        store.commit(e);
+
+        // TODO if player, describe
     }
 
 }
