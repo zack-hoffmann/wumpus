@@ -1,24 +1,22 @@
 package wumpus;
 
-import java.io.PrintStream;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
-import wumpus.engine.entity.component.Container;
-import wumpus.engine.entity.component.Lair;
-import wumpus.engine.entity.component.Physical;
-import wumpus.engine.entity.component.Player;
-import wumpus.engine.entity.component.Transit;
 import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
+import wumpus.engine.service.Service;
+import wumpus.engine.service.TransitService;
 import wumpus.io.StandardIOAdapter;
 
 /**
@@ -32,9 +30,9 @@ public class App implements Runnable {
     private static final Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
-     * Output stream used by this App instance.
+     * Duration of a tick in milliseconds.
      */
-    private final PrintStream out;
+    private static final int TICK_IN_MILLIS = 100;
 
     /**
      * Runs a new wumpus App instance using standard output.
@@ -43,29 +41,37 @@ public class App implements Runnable {
      *                 Command line arguments. None specified at this time.
      */
     public static void main(final String... args) {
-        new App(System.out).run();
-    }
-
-    /**
-     * Set up a new instance of the wumpus App with an output stream.
-     *
-     * @param o
-     *              A print stream for use by App output.
-     */
-    public App(final PrintStream o) {
-        this.out = o;
+        new App().run();
     }
 
     @Override
     public final void run() {
         LOG.info("Welcome to Hunt the Wumpus by Zack Hoffmann!");
+        LOG.info("The game engine is starting...");
         LOG.fine("Fine logging is enabled.");
 
-        final ExecutorService serv = Executors.newCachedThreadPool();
-        final StandardIOAdapter io = new StandardIOAdapter(serv);
+        final ExecutorService ioServ = Executors.newCachedThreadPool();
+        final StandardIOAdapter io = new StandardIOAdapter(ioServ);
+        final EntityStore store = new MemoryEntityStore();
 
+        final PlayerService players = new PlayerService(store);
+        players.createPlayer();
+        final Set<Service> services = new HashSet<>();
+        services.add(players);
+        services.add(new LairService(store));
+        services.add(new TransitService(store));
+
+        final ScheduledExecutorService tickService = Executors
+                .newScheduledThreadPool(1);
+        tickService.scheduleAtFixedRate(
+                () -> services.stream().forEach(Service::tick), 0,
+                TICK_IN_MILLIS, TimeUnit.MILLISECONDS);
+
+        LOG.info("The game engine has started.");
+
+        io.post("Welcome to Hunt the Wumpus by Zack Hoffmann!");
+        io.post("You are now in the game.");
         boolean go = true;
-        out.println("Entering");
         while (go) {
             Optional<String> i = io.poll();
             if (i.isPresent()) {
@@ -76,48 +82,35 @@ public class App implements Runnable {
 
                 if (i.get().equals("exit")) {
                     go = false;
+                    io.post("Thank you for playing!");
+                    io.post("<Press Enter to close>");
                 }
             }
         }
-        out.println("Exiting");
 
-        final EntityStore store = new MemoryEntityStore();
-        final LairService lairs = new LairService(store);
-        final PlayerService players = new PlayerService(store);
-        lairs.createLair(1);
-        players.createPlayer();
-        final long lairEntrance = store.stream().component(Lair.class)
-                .findFirst().orElseThrow().getEntrace();
+        LOG.info("Shutting down I/O.");
+        try {
+            io.shutdown();
+        } catch (IOException e) {
+            LOG.log(Level.WARNING,
+                    "Could not shut down I/O adapter completely.", e);
+        }
+        ioServ.shutdown();
+        try {
+            ioServ.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.log(Level.WARNING, "Interrupted while shutting down I/O.", e);
+        }
 
-        store.stream().components(Set.of(Player.class, Physical.class))
-                .map(m -> m.getByComponent(Physical.class))
-                .filter(p -> p.getLocation().isEmpty())
-                .map(p -> p.getEntity().get())
-                .forEach(e -> e.registerComponent(new Transit(lairEntrance)));
+        LOG.info("Shutting down game services.");
+        tickService.shutdown();
+        try {
+            tickService.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOG.log(Level.WARNING,
+                    "Interrupted while shutting down game services.", e);
+        }
 
-        store.stream().components(Set.of(Transit.class, Physical.class))
-                .forEach(m -> {
-                    final Entity e = m.getByComponent(Physical.class)
-                            .getEntity().get();
-                    final long eid = e.getId();
-                    final Transit t = m.getByComponent(Transit.class);
-                    final Entity toE = store.get(t.getTo()).get();
-
-                    t.getFrom().ifPresent(from -> {
-                        final Entity fromE = store.get(from).get();
-                        final Container fromC = fromE
-                                .getComponent(Container.class);
-                        final Predicate<Long> rem = (l -> l != eid);
-                        fromE.registerComponent(new Container(fromC, rem));
-                        store.commit(fromE);
-                    });
-
-                    e.registerComponent(new Physical(t.getTo()));
-                    store.commit(e);
-
-                    final Container toC = toE.getComponent(Container.class);
-                    toE.registerComponent(new Container(toC, eid));
-                    store.commit(toE);
-                });
+        LOG.info("The game is now shut down.");
     }
 }

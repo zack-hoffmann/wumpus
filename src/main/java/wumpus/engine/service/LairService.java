@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -19,7 +21,13 @@ import wumpus.engine.entity.component.Room;
  * A lair is a container entity holding all of the rooms which comprise the lair
  * space.
  */
-public final class LairService {
+public final class LairService implements Service {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = Logger
+            .getLogger(LairService.class.getName());
 
     /**
      * Maximum random number to generate.
@@ -60,6 +68,11 @@ public final class LairService {
      * Default chance to leave a gap in room generation.
      */
     private static final int DEFAULT_GAP_CHANCE = 15;
+
+    /**
+     * Default size of a lair.
+     */
+    private static final int DEFAULT_SIZE = 24;
 
     /**
      * The entity store used by this service.
@@ -189,5 +202,15 @@ public final class LairService {
         }
         store.commit(lair);
         return lair.getId();
+    }
+
+    @Override
+    public void tick() {
+        final Optional<Lair> defaultLair = store.stream().component(Lair.class)
+                .findAny();
+        if (defaultLair.isEmpty()) {
+            LOG.info("No lair found.  Creating a new default.");
+            createLair(DEFAULT_SIZE);
+        }
     }
 }

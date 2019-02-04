@@ -63,15 +63,9 @@ public final class StandardIOAdapter implements IOAdapter {
         outQueue.add(o);
     }
 
-    /**
-     * Stop the runners and executor service.
-     *
-     * @throws IOException
-     *                         if either of the runner cannot be stopped
-     */
+    @Override
     public void shutdown() throws IOException {
         inRunner.stop();
         outRunner.stop();
-        serv.shutdown();
     }
 }

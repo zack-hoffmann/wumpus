@@ -1,5 +1,6 @@
 package wumpus.io;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -21,5 +22,13 @@ public interface IOAdapter {
      *              the output to send
      */
     void post(final String o);
+
+    /**
+     * Stop the runners and other required services.
+     *
+     * @throws IOException
+     *                         if either of the runner cannot be stopped
+     */
+    void shutdown() throws IOException;
 
 }

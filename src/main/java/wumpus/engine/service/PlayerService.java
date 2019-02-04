@@ -1,14 +1,19 @@
 package wumpus.engine.service;
 
+import java.util.Optional;
+import java.util.Set;
+
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
+import wumpus.engine.entity.component.Transit;
 
 /**
  * Service for the managment of players.
  */
-public final class PlayerService {
+public final class PlayerService implements Service {
 
     /**
      * The entity store used by this service.
@@ -36,5 +41,22 @@ public final class PlayerService {
         e.registerComponent(new Physical());
         store.commit(e);
         return e.getId();
+    }
+
+    @Override
+    public void tick() {
+        final Optional<Lair> defaultLair = store.stream().component(Lair.class)
+                .findAny();
+
+        // If a default lair is available, move all players with no location to
+        // that lair entrance.
+        if (defaultLair.isPresent()) {
+            store.stream().components(Set.of(Player.class, Physical.class))
+                    .map(m -> m.getByComponent(Physical.class))
+                    .filter(p -> p.getLocation().isEmpty())
+                    .map(p -> p.getEntity().get())
+                    .forEach(e -> e.registerComponent(
+                            new Transit(defaultLair.get().getEntrace())));
+        }
     }
 }

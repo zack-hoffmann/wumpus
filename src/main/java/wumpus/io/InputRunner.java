@@ -71,7 +71,11 @@ public final class InputRunner implements Runnable {
             }
             LOG.fine("Exiting input loop.");
         } catch (IOException ex) {
-            throw new GameIOException("Could not obtain input.", ex);
+            if (!isRunning()) {
+                LOG.fine("Suppressing stream exception occuring after stop.");
+            } else {
+                throw new GameIOException("Could not obtain input.", ex);
+            }
         } finally {
             synchronized (this) {
                 run = false;
