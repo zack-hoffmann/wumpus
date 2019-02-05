@@ -6,9 +6,11 @@ import java.util.Set;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Lair;
+import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Transit;
+import wumpus.io.IOAdapter;
 
 /**
  * Service for the managment of players.
@@ -41,6 +43,36 @@ public final class PlayerService implements Service {
         e.registerComponent(new Physical());
         store.commit(e);
         return e.getId();
+    }
+
+    /**
+     * Associate a player with an I/O-based listener.
+     *
+     * @param playerId
+     *                     entity ID of the player
+     * @param io
+     *                     I/O adapter for the player
+     */
+    public void attachPlayer(final long playerId, final IOAdapter io) {
+        store.get(playerId).ifPresent(e -> {
+            e.registerComponent(new Listener(m -> {
+                io.post(m.toString());
+            }));
+            store.commit(e);
+        });
+    }
+
+    /**
+     * Disassociate a player from their listener.
+     *
+     * @param playerId
+     *                     entity ID of the player
+     */
+    public void detachPlayer(final long playerId) {
+        store.get(playerId).ifPresent(e -> {
+            e.deregisterComponent(Listener.class);
+            store.commit(e);
+        });
     }
 
     @Override

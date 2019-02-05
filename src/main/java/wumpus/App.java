@@ -32,7 +32,7 @@ public class App implements Runnable {
     /**
      * Duration of a tick in milliseconds.
      */
-    private static final int TICK_IN_MILLIS = 100;
+    private static final int TICK_IN_MILLIS = 10;
 
     /**
      * Runs a new wumpus App instance using standard output.
@@ -55,7 +55,8 @@ public class App implements Runnable {
         final EntityStore store = new MemoryEntityStore();
 
         final PlayerService players = new PlayerService(store);
-        players.createPlayer();
+        final long player = players.createPlayer();
+        players.attachPlayer(player, io);
         final Set<Service> services = new HashSet<>();
         services.add(players);
         services.add(new LairService(store));
@@ -87,6 +88,8 @@ public class App implements Runnable {
                 }
             }
         }
+
+        players.detachPlayer(player);
 
         LOG.info("Shutting down I/O.");
         try {

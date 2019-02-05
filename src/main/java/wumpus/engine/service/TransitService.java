@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
@@ -65,10 +66,6 @@ public final class TransitService implements Service {
         final Predicate<Long> rem = (l -> l != e.getId());
         from.registerComponent(new Container(fromC, rem));
         store.commit(from);
-
-        if (e.hasComponent(Player.class) && from.hasComponent(Room.class)) {
-            playerExit(e, from);
-        }
     }
 
     /**
@@ -92,19 +89,7 @@ public final class TransitService implements Service {
     }
 
     /**
-     * Describe a player room exit to the player and cause exit triggers
-     *
-     * @param player
-     *                   entity of the player
-     * @param from
-     *                   the room the player is leaving
-     */
-    private void playerExit(final Entity player, final Entity from) {
-
-    }
-
-    /**
-     * Describe a player room entry to the player and cause entry triggers
+     * Describe a player room entry to the player and cause entry triggers.
      *
      * @param player
      *                   entity of the player
@@ -112,7 +97,10 @@ public final class TransitService implements Service {
      *                   the room the player is entering
      */
     private void playerEnter(final Entity player, final Entity to) {
-
+        if (player.hasComponent(Listener.class)) {
+            player.getComponent(Listener.class)
+                    .tell("You have entered " + to.getId());
+        }
     }
 
 }
