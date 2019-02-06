@@ -1,6 +1,7 @@
 package wumpus.engine.entity;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -29,6 +30,56 @@ import wumpus.engine.entity.component.Component;
  * A {@link Stream} of Entities, with helper methods for accessing components.
  */
 public final class EntityStream implements Stream<Entity> {
+
+    /**
+     * Helper class for collecting a regular stream of entities to an
+     * EntityStream.
+     */
+    private static class EntityStreamCollector
+            implements Collector<Entity, Set<Entity>, EntityStream> {
+
+        @Override
+        public Supplier<Set<Entity>> supplier() {
+            return () -> new HashSet<Entity>();
+        }
+
+        @Override
+        public BiConsumer<Set<Entity>, Entity> accumulator() {
+            return (s, e) -> s.add(e);
+        }
+
+        @Override
+        public BinaryOperator<Set<Entity>> combiner() {
+            return (s1, s2) -> {
+                s1.addAll(s2);
+                return s1;
+            };
+        }
+
+        @Override
+        public Function<Set<Entity>, EntityStream> finisher() {
+            return s -> new EntityStream(s.stream());
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Set.of(Collector.Characteristics.UNORDERED);
+        }
+
+    }
+
+    /**
+     * Provides a static collector for pulling the elements of a stream in to an
+     * entity stream.
+     *
+     * Note that since collecting is a terminal operation, using this will load
+     * the entirety of the stream, so do not use on excessively large streams.
+     *
+     * @return a collector of an "stream of entities" to an "entity stream"
+     */
+    public static Collector<Entity, Set<Entity>, EntityStream> collector() {
+        return new EntityStreamCollector();
+    }
 
     /**
      * The underlying Java Stream this wraps.

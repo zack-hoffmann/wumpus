@@ -18,6 +18,13 @@ import wumpus.io.IOAdapter;
 public final class PlayerService implements Service {
 
     /**
+     * Prompt displayed to attached players.
+     *
+     * TODO relocate this.
+     */
+    private static final String PROMPT = "\n>>> ";
+
+    /**
      * The entity store used by this service.
      */
     private final EntityStore store;
@@ -56,7 +63,7 @@ public final class PlayerService implements Service {
     public void attachPlayer(final long playerId, final IOAdapter io) {
         store.get(playerId).ifPresent(e -> {
             e.registerComponent(new Listener(m -> {
-                io.post(m.toString());
+                io.post(m.toString() + PROMPT);
             }));
             store.commit(e);
         });
