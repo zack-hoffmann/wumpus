@@ -146,7 +146,7 @@ public final class OutputRunnerTest {
     public void printsMultipleOutput()
             throws InterruptedException, IOException {
         final OutputRunner or = new OutputRunner(out,
-                queueFromStrings("test", "test2"));
+                queueFromStrings("test\n", "test2"));
         serv.execute(or);
         synchronized (or) {
             or.wait();

@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Room;
 
@@ -173,6 +174,8 @@ public final class LairService implements Service {
                         l.put("West", grid[i - 1][j].getId());
                     }
                     grid[i][j].registerComponent(new Room(l));
+                    grid[i][j].registerComponent(
+                            new Descriptive("a dark cavern"));
                     grid[i][j].registerComponent(new Container());
                     store.commit(grid[i][j]);
                 }

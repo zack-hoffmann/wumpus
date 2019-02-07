@@ -5,12 +5,15 @@ import java.util.function.Predicate;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
+import wumpus.io.TextTools;
 
 /**
  * Service for moving all entities with a transit component.
@@ -98,8 +101,17 @@ public final class TransitService implements Service {
      */
     private void playerEnter(final Entity player, final Entity to) {
         if (player.hasComponent(Listener.class)) {
-            player.getComponent(Listener.class)
-                    .tell("You have entered " + to.getId());
+            final Listener playerListener = player.getComponent(Listener.class);
+            playerListener.tell("You have entered "
+                    + to.getComponent(Descriptive.class).getShortDescription()
+                    + ".\n");
+            to.getComponent(Container.class).getContents().stream()
+                    .map(id -> store.get(id).get())
+                    .collect(EntityStream.collector())
+                    .component(Descriptive.class)
+                    .map(d -> d.getShortDescription())
+                    .map(d -> TextTools.capitalize(d))
+                    .forEach(d -> playerListener.tell(d + " is here.\n"));
         }
     }
 

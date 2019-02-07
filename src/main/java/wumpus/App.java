@@ -70,8 +70,8 @@ public class App implements Runnable {
 
         LOG.info("The game engine has started.");
 
-        io.post("Welcome to Hunt the Wumpus by Zack Hoffmann!");
-        io.post("You are now in the game.");
+        io.post("Welcome to Hunt the Wumpus by Zack Hoffmann!\n");
+        io.post("You are now in the game.\n");
         boolean go = true;
         while (go) {
             Optional<String> i = io.poll();
@@ -79,12 +79,13 @@ public class App implements Runnable {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Input found: " + i.get());
                 }
+                // TODO replace with command handler
                 io.post("Echo: " + i.get());
 
                 if (i.get().equals("exit")) {
                     go = false;
-                    io.post("Thank you for playing!");
-                    io.post("<Press Enter to close>");
+                    io.post("Thank you for playing!\n");
+                    io.post("<Press Enter to close>\n");
                 }
             }
         }

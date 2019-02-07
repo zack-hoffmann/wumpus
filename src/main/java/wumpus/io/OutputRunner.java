@@ -64,7 +64,8 @@ public final class OutputRunner implements Runnable {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("Output found: " + line);
                     }
-                    ps.println(line);
+                    ps.print(line);
+                    ps.flush();
                 }
             }
         } finally {
