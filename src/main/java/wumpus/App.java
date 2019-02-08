@@ -84,7 +84,7 @@ public class App implements Runnable {
 
                 if (i.get().equals("exit")) {
                     go = false;
-                    io.post("Thank you for playing!\n");
+                    io.post("\nThank you for playing!\n");
                     io.post("<Press Enter to close>\n");
                 }
             }
