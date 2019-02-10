@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import wumpus.engine.entity.EntityStore;
+
 /**
  * Master for all game commands, for easy execution.
  */
@@ -18,7 +20,8 @@ public final class CommandLibrary {
     private static final class InvalidCommand implements Command {
 
         @Override
-        public String exec(final String... args) {
+        public String exec(final long source, final EntityStore store,
+                final String... args) {
             return "Invalid command.";
         }
 
@@ -40,38 +43,49 @@ public final class CommandLibrary {
     private static final Command INVALID = new InvalidCommand();
 
     /**
-     * Master array of commands.
-     */
-    private static final Command[] COMMANDS = {};
-
-    /**
      * Map of command names to commands.
      */
-    private static final Map<String, Command> NAME_MAP = Arrays.stream(COMMANDS)
-            .collect(Collectors.toMap(c -> c.getName(), Function.identity()));
+    private final Map<String, Command> nameMap;
 
     /**
      * Map of command aliases to commands.
      */
-    private static final Map<String, Command> ALIAS_MAP = Arrays
-            .stream(COMMANDS)
-            .map(c -> c.getAliases().stream()
-                    .collect(Collectors.toMap(Function.identity(), s -> c)))
-            .map(m -> m.entrySet()).flatMap(s -> s.stream())
-            .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    private final Map<String, Command> aliasMap;
+
+    /**
+     * Initialize the command library with a list of commands.
+     *
+     * @param commands
+     *                     commands to initialize the library with
+     */
+    public CommandLibrary(final Command... commands) {
+        this.nameMap = Arrays.stream(commands).collect(
+                Collectors.toMap(c -> c.getName(), Function.identity()));
+        this.aliasMap = Arrays.stream(commands)
+                .map(c -> c.getAliases().stream()
+                        .collect(Collectors.toMap(Function.identity(), s -> c)))
+                .map(m -> m.entrySet()).flatMap(s -> s.stream())
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+    }
 
     /**
      * Execute a command by name or alias.
      *
      * @param command
      *                    the name or alias of the command
+     * @param source
+     *                    the ID of the player entity submitting the command
+     * @param store
+     *                    the entity store
      * @param args
      *                    arguments for the command
      * @return the command response
      */
-    public String execute(final String command, final String... args) {
-        return NAME_MAP
-                .getOrDefault(command, ALIAS_MAP.getOrDefault(command, INVALID))
-                .exec(args);
+    public String execute(final String command, final long source,
+            final EntityStore store, final String... args) {
+        return nameMap
+                .getOrDefault(command.toLowerCase(),
+                        aliasMap.getOrDefault(command.toLowerCase(), INVALID))
+                .exec(source, store, args);
     }
 }

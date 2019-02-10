@@ -12,6 +12,11 @@ import java.util.concurrent.ExecutorService;
 public final class StandardIOAdapter implements IOAdapter {
 
     /**
+     * Prompt displayed to attached players.
+     */
+    private static final String PROMPT = "\n>>> ";
+
+    /**
      * The executor service for the runner threads.
      */
     private final ExecutorService serv;
@@ -60,7 +65,7 @@ public final class StandardIOAdapter implements IOAdapter {
 
     @Override
     public void post(final String o) {
-        outQueue.add(o);
+        outQueue.add(o + PROMPT);
     }
 
     @Override
