@@ -91,8 +91,8 @@ public final class Entity {
      */
     public Entity(final long i, final Component... cs) {
         this.id = i;
-        this.components = new ComponentMap(Stream.of(cs).collect(
-                Collectors.toMap(c -> c.getClass(), Function.identity())));
+        this.components = new ComponentMap(Stream.of(cs).collect(Collectors
+                .toConcurrentMap(c -> c.getClass(), Function.identity())));
         this.components.values().stream().forEach(c -> this.backRegister(c));
     }
 

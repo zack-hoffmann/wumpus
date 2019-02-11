@@ -20,8 +20,8 @@ public final class Room extends AbstractEntityComponent {
      *              the linked rooms for this room.
      */
     public Room(final Map<String, Long> l) {
-        this.linkedRooms = l.entrySet().stream().collect(Collectors
-                .toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
+        this.linkedRooms = l.entrySet().stream().collect(
+                Collectors.toConcurrentMap(e -> e.getKey(), e -> e.getValue()));
     }
 
     /**

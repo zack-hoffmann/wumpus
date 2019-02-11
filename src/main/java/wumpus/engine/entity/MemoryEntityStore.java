@@ -1,8 +1,8 @@
 package wumpus.engine.entity;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HashSet-based in-memory entity storage.
@@ -28,7 +28,7 @@ public final class MemoryEntityStore implements EntityStore {
      * Construct the store. Uses a simple empty HashSet.
      */
     public MemoryEntityStore() {
-        entities = new HashSet<>();
+        entities = ConcurrentHashMap.newKeySet();
     }
 
     @Override
