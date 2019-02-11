@@ -1,7 +1,9 @@
 package wumpus.engine.service;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -101,17 +103,35 @@ public final class TransitService implements Service {
      */
     private void playerEnter(final Entity player, final Entity to) {
         if (player.hasComponent(Listener.class)) {
-            final Listener playerListener = player.getComponent(Listener.class);
-            playerListener.tell("You have entered "
+            final StringBuilder exs = new StringBuilder();
+
+            exs.append("\n" + "You have entered "
                     + to.getComponent(Descriptive.class).getShortDescription()
                     + ".\n");
+
+            final Map<String, Long> exits = to.getComponent(Room.class)
+                    .getLinkedRooms();
+            if (!exits.isEmpty()) {
+
+                exs.append("You see the following exits:\n");
+                exs.append(exits.entrySet().stream()
+                        .map(e -> TextTools.capitalize(e.getKey()) + " - "
+                                + store.get(e.getValue()).get()
+                                        .getComponent(Descriptive.class)
+                                        .getShortDescription())
+                        .collect(Collectors.joining("\n")));
+                exs.append("\n");
+            }
+
             to.getComponent(Container.class).getContents().stream()
                     .map(id -> store.get(id).get())
                     .collect(EntityStream.collector())
                     .component(Descriptive.class)
                     .map(d -> d.getShortDescription())
                     .map(d -> TextTools.capitalize(d))
-                    .forEach(d -> playerListener.tell(d + " is here.\n"));
+                    .forEach(d -> exs.append(d + " is here.\n"));
+
+            player.getComponent(Listener.class).tell(exs.toString());
         }
     }
 

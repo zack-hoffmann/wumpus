@@ -13,7 +13,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wumpus.engine.command.CommandLibrary;
+import wumpus.engine.command.East;
+import wumpus.engine.command.Move;
+import wumpus.engine.command.North;
 import wumpus.engine.command.Quit;
+import wumpus.engine.command.South;
+import wumpus.engine.command.West;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Listener;
@@ -57,7 +62,8 @@ public class App implements Runnable {
         final ExecutorService ioServ = Executors.newCachedThreadPool();
         final StandardIOAdapter io = new StandardIOAdapter(ioServ);
         final EntityStore store = new MemoryEntityStore();
-        final CommandLibrary lib = new CommandLibrary(new Quit());
+        final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
+                new North(), new East(), new South(), new West());
 
         final PlayerService players = new PlayerService(store);
         final long player = players.createPlayer();
@@ -76,21 +82,19 @@ public class App implements Runnable {
         LOG.info("The game engine has started.");
 
         io.post("\nWelcome to Hunt the Wumpus by Zack Hoffmann!");
-        boolean go = true;
-        while (go) {
+
+        while (store.get(player).get().hasComponent(Listener.class)) {
             Optional<String> i = io.poll();
             if (i.isPresent()) {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Input found: " + i.get());
                 }
-                final String[] tokens = i.get().split(" ");
-
+                final String[] tokens = i.get().split("\\s+");
                 if (tokens.length > 0 && tokens[0].trim().length() > 0) {
-                    final String response = lib.execute(i.get(), player, store,
+                    final String response = lib.execute(tokens[0], player,
+                            store,
                             Arrays.copyOfRange(tokens, 1, tokens.length));
                     io.post(response);
-
-                    go = store.get(player).get().hasComponent(Listener.class);
                 }
             }
         }

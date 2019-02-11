@@ -162,16 +162,16 @@ public final class LairService implements Service {
                 if (grid[i][j] != null) {
                     final Map<String, Long> l = new HashMap<>();
                     if (j > 0 && grid[i][j - 1] != null) {
-                        l.put("North", grid[i][j - 1].getId());
+                        l.put("north", grid[i][j - 1].getId());
                     }
                     if (i < h - 1 && grid[i + 1][j] != null) {
-                        l.put("East", grid[i + 1][j].getId());
+                        l.put("east", grid[i + 1][j].getId());
                     }
                     if (j < v - 1 && grid[i][j + 1] != null) {
-                        l.put("South", grid[i][j + 1].getId());
+                        l.put("south", grid[i][j + 1].getId());
                     }
                     if (i > 0 && grid[i - 1][j] != null) {
-                        l.put("West", grid[i - 1][j].getId());
+                        l.put("west", grid[i - 1][j].getId());
                     }
                     grid[i][j].registerComponent(new Room(l));
                     grid[i][j].registerComponent(
