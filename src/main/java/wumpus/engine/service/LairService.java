@@ -200,6 +200,12 @@ public final class LairService implements Service {
         if (size > 0) {
             final long entrance = rooms[random.get() % rooms.length];
             lair.registerComponent(new Lair(entrance));
+            if (size > 1) {
+                long wumpusRoom;
+                do {
+                    wumpusRoom = rooms[random.get() % rooms.length];
+                } while (wumpusRoom == entrance);
+            }
         } else {
             lair.registerComponent(new Lair());
         }
