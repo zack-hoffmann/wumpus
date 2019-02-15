@@ -3,7 +3,9 @@ package wumpus.engine.command;
 import java.util.OptionalLong;
 import java.util.Set;
 
+import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
@@ -22,9 +24,12 @@ public final class Move implements Command {
     @Override
     public String exec(final long source, final EntityStore store,
             final String... args) {
-        final OptionalLong location = store.get(source).get()
-                .getComponent(Physical.class).getLocation();
-        if (location.isEmpty()) {
+        final Entity se = store.get(source).get();
+        final OptionalLong location = se.getComponent(Physical.class)
+                .getLocation();
+        if (se.hasComponent(Dead.class)) {
+            return "You cannot move, for you are dead.";
+        } else if (location.isEmpty()) {
             return "You cannot move from where you are...";
         } else if (args.length < 1) {
             return "You must provide a direction.";

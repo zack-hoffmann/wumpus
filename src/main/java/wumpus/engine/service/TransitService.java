@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -15,6 +16,7 @@ import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
+import wumpus.engine.entity.component.Wumpus;
 import wumpus.io.TextTools;
 
 /**
@@ -130,6 +132,18 @@ public final class TransitService implements Service {
                     .map(d -> d.getShortDescription())
                     .map(d -> TextTools.capitalize(d))
                     .forEach(d -> exs.append(d + " is here.\n"));
+
+            if (!exits.isEmpty()) {
+                final Stream<Entity> contents = exits.entrySet().stream()
+                        .flatMap(e -> store.get(e.getValue()).get()
+                                .getComponent(Container.class).getContents()
+                                .stream())
+                        .map(l -> store.get(l).get());
+                if (contents.filter(e -> e.hasComponent(Wumpus.class)).findAny()
+                        .isPresent()) {
+                    exs.append("You smell a wumpus nearby!\n");
+                }
+            }
 
             player.getComponent(Listener.class).tell(exs.toString());
         }

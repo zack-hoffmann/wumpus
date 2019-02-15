@@ -11,19 +11,21 @@ public final class Lair extends AbstractEntityComponent {
     private final long entrance;
 
     /**
-     * Create the lair with a given entrance.
-     *
-     * @param e the entity ID of the entrace room
+     * The wumpus that lives in this lair.
      */
-    public Lair(final long e) {
-        this.entrance = e;
-    }
+    private final long wumpus;
 
     /**
-     * Create the lair with an illegal entrance.
+     * Create the lair with a given entrance and wumpus.
+     *
+     * @param e
+     *              the entity ID of the entrace room
+     * @param w
+     *              the entity ID of the wumpus
      */
-    public Lair() {
-        this(-1L);
+    public Lair(final long e, final long w) {
+        this.entrance = e;
+        this.wumpus = w;
     }
 
     /**
@@ -33,6 +35,15 @@ public final class Lair extends AbstractEntityComponent {
      */
     public long getEntrace() {
         return entrance;
+    }
+
+    /**
+     * Get the entity ID of the wumpus.
+     *
+     * @return the entity ID of the wumpus
+     */
+    public long getWumpus() {
+        return wumpus;
     }
 
 }

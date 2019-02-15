@@ -73,7 +73,7 @@ public final class LairService implements Service {
     /**
      * Default size of a lair.
      */
-    private static final int DEFAULT_SIZE = 24;
+    private static final int DEFAULT_SIZE = 5;
 
     /**
      * The entity store used by this service.
@@ -197,18 +197,19 @@ public final class LairService implements Service {
         final Entity lair = store.create();
         final long[] rooms = generateRooms(size);
         lair.registerComponent(new Container(rooms));
+        long entrance = -1L;
+        long wumpus = -1L;
         if (size > 0) {
-            final long entrance = rooms[random.get() % rooms.length];
-            lair.registerComponent(new Lair(entrance));
+            entrance = rooms[random.get() % rooms.length];
             if (size > 1) {
                 long wumpusRoom;
                 do {
                     wumpusRoom = rooms[random.get() % rooms.length];
                 } while (wumpusRoom == entrance);
+                wumpus = new WumpusService(store).createWumpus(wumpusRoom);
             }
-        } else {
-            lair.registerComponent(new Lair());
         }
+        lair.registerComponent(new Lair(entrance, wumpus));
         store.commit(lair);
         return lair.getId();
     }
