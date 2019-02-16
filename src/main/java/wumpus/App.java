@@ -17,6 +17,7 @@ import wumpus.engine.command.East;
 import wumpus.engine.command.Move;
 import wumpus.engine.command.North;
 import wumpus.engine.command.Quit;
+import wumpus.engine.command.Shoot;
 import wumpus.engine.command.South;
 import wumpus.engine.command.West;
 import wumpus.engine.entity.EntityStore;
@@ -64,7 +65,7 @@ public class App implements Runnable {
         final StandardIOAdapter io = new StandardIOAdapter(ioServ);
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
-                new North(), new East(), new South(), new West());
+                new North(), new East(), new South(), new West(), new Shoot());
 
         final PlayerService players = new PlayerService(store);
         final long player = players.createPlayer();

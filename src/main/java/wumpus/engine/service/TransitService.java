@@ -10,6 +10,7 @@ import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
@@ -128,9 +129,13 @@ public final class TransitService implements Service {
             to.getComponent(Container.class).getContents().stream()
                     .map(id -> store.get(id).get())
                     .collect(EntityStream.collector())
-                    .component(Descriptive.class)
-                    .map(d -> d.getShortDescription())
-                    .map(d -> TextTools.capitalize(d))
+                    .component(Descriptive.class).map(d -> {
+                        if (d.getEntity().get().hasComponent(Dead.class)) {
+                            return "The corpse of " + d.getShortDescription();
+                        } else {
+                            return d.getShortDescription();
+                        }
+                    }).map(d -> TextTools.capitalize(d))
                     .forEach(d -> exs.append(d + " is here.\n"));
 
             if (!exits.isEmpty()) {

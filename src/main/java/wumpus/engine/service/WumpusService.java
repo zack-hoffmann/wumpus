@@ -60,6 +60,8 @@ public final class WumpusService implements Service {
     @Override
     public void tick() {
         store.stream().components(Set.of(Wumpus.class, Physical.class))
+                .filter(cm -> !cm.getByComponent(Wumpus.class).getEntity().get()
+                        .hasComponent(Dead.class))
                 .map(cm -> cm.getByComponent(Physical.class).getLocation())
                 .filter(l -> l.isPresent())
                 .map(l -> store.get(l.getAsLong()).get()
