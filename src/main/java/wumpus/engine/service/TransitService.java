@@ -31,6 +31,17 @@ public final class TransitService implements Service {
     private final EntityStore store;
 
     /**
+     * The sound of a wumpus moving.
+     */
+    private static final String WUMPUS_MOVE = "You hear the thunderous sound "
+            + "of trampling hooves as" + " a wumpus changes its location.";
+
+    /**
+     * The smell of a wumpus in the adjacent room.
+     */
+    private static final String WUMPUS_SMELL = "You smell a wumpus nearby!\n";
+
+    /**
      * Creates a new transit service with the given entity store.
      *
      * @param s
@@ -52,6 +63,10 @@ public final class TransitService implements Service {
                     });
 
                     putInContainer(e, store.get(t.getTo()).get());
+
+                    if (e.hasComponent(Wumpus.class)) {
+                        wumpusMove(t.getTo());
+                    }
 
                     e.deregisterComponent(Transit.class);
                     store.commit(e);
@@ -145,12 +160,35 @@ public final class TransitService implements Service {
                         .map(l -> store.get(l).get());
                 if (contents.filter(e -> e.hasComponent(Wumpus.class)).findAny()
                         .isPresent()) {
-                    exs.append("You smell a wumpus nearby!\n");
+                    exs.append(WUMPUS_SMELL);
                 }
             }
 
             player.getComponent(Listener.class).tell(exs.toString());
         }
+    }
+
+    /**
+     * Process special actions for wumpus movement.
+     *
+     * @param to
+     *               the location the wumpus is moving to
+     */
+    private void wumpusMove(final long to) {
+        store.stream().components(Set.of(Player.class, Listener.class))
+                .map(cm -> cm.getByComponent(Listener.class))
+                .forEach(l -> l.tell(WUMPUS_MOVE));
+
+        store.get(to).get().getComponent(Room.class).getLinkedRooms().values()
+                .stream().map(id -> store.get(id).get())
+                .flatMap(e -> e.getComponent(Container.class).getContents()
+                        .stream())
+                .map(id -> store.get(id).get())
+                .collect(EntityStream.collector())
+                .components(Set.of(Player.class, Listener.class))
+                .map(cm -> cm.getByComponent(Listener.class))
+                .forEach(l -> l.tell(WUMPUS_SMELL));
+
     }
 
 }

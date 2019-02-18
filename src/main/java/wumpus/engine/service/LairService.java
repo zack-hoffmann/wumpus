@@ -86,6 +86,13 @@ public final class LairService implements Service {
     private static final int DEFAULT_SIZE = 20;
 
     /**
+     * Description of an arrow that has missed.
+     */
+    private static final String ARROW_MISS = "You hear the disappointing "
+            + "sound of a 'clank' as " + "an arrow misses its mark and falls "
+            + "to the floor.\n";
+
+    /**
      * The entity store used by this service.
      */
     private final EntityStore store;
@@ -236,10 +243,7 @@ public final class LairService implements Service {
         final StringBuilder exs = new StringBuilder();
         store.stream().components(Set.of(Room.class, ArrowHit.class))
                 .forEach(cm -> {
-                    exs.append(
-                            "You hear the disappointing sound of a 'clank' as "
-                                    + "an arrow misses its mark and falls "
-                                    + "to the floor.\n");
+                    exs.append(ARROW_MISS);
                     store.stream().component(Wumpus.class)
                             .filter(w -> !w.hasComponent(Dead.class))
                             .forEach(w -> {
@@ -252,9 +256,6 @@ public final class LairService implements Service {
                                 final long wDest = ds
                                         .get(random.get() % ds.size());
                                 w.registerComponent(new Transit(wLoc, wDest));
-                                exs.append("You hear the thunderous sound of  "
-                                        + "trampling hooves as"
-                                        + " a wumpus changes its location.");
                             });
                     final Entity e = cm.getEntity();
                     e.deregisterComponent(ArrowHit.class);

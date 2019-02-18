@@ -72,7 +72,7 @@ public final class WumpusService implements Service {
                     exs.append("You hear a satisfying 'thunk' as an arrow "
                             + "makes contact with flesh, followed by a "
                             + "beastial "
-                            + "groan and a thud as your prey collapses!");
+                            + "groan and a thud as a wumpus collapses!");
                 });
 
         store.stream().components(Set.of(Wumpus.class, Physical.class))
