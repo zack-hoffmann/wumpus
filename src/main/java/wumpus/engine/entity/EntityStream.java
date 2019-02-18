@@ -124,10 +124,11 @@ public final class EntityStream implements Stream<Entity> {
         return delegate
                 .filter(e -> clazzes.stream().map(z -> e.hasComponent(z))
                         .reduce(true, (i, d) -> i && d))
-                .map(e -> new Entity.ComponentMap(e.getComponents().stream()
-                        .filter(com -> clazzes.contains(com.getClass()))
-                        .collect(Collectors.toMap(com -> com.getClass(),
-                                Function.identity()))));
+                .map(e -> new Entity.ComponentMap(e,
+                        e.getComponents().stream()
+                                .filter(com -> clazzes.contains(com.getClass()))
+                                .collect(Collectors.toMap(com -> com.getClass(),
+                                        Function.identity()))));
     }
 
     @Override

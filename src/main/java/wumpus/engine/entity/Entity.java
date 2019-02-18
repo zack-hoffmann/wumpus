@@ -16,7 +16,7 @@ import wumpus.engine.entity.component.Component;
  * A shallow representation of any game object. This implements a loose ECS
  * architecture and holds no data of its own, instead delegating to components.
  */
-public final class Entity {
+public final class Entity implements ComponentRegistry {
 
     /**
      * Defines helped methods for retrieving components from a conventional map.
@@ -30,13 +30,21 @@ public final class Entity {
         private final Map<Class<? extends Component>, Component> delegate;
 
         /**
+         * Entity reference.
+         */
+        private final Entity entity;
+
+        /**
          * Create component map with delegate inner map.
          *
+         * @param e
+         *               the entity associated with this map
          * @param cs
          *               the map to wrap
          */
-        public ComponentMap(
+        public ComponentMap(final Entity e,
                 final Map<Class<? extends Component>, Component> cs) {
+            entity = e;
             delegate = cs;
         }
 
@@ -56,6 +64,15 @@ public final class Entity {
             } else {
                 throw new NoSuchElementException(c.getName());
             }
+        }
+
+        /**
+         * Retrieve the entry this map is associated with.
+         *
+         * @return the entity associated with this map
+         */
+        public Entity getEntity() {
+            return entity;
         }
 
         @Override
@@ -91,8 +108,9 @@ public final class Entity {
      */
     public Entity(final long i, final Component... cs) {
         this.id = i;
-        this.components = new ComponentMap(Stream.of(cs).collect(Collectors
-                .toConcurrentMap(c -> c.getClass(), Function.identity())));
+        this.components = new ComponentMap(this,
+                Stream.of(cs).collect(Collectors.toConcurrentMap(
+                        c -> c.getClass(), Function.identity())));
         this.components.values().stream().forEach(c -> this.backRegister(c));
     }
 
@@ -131,59 +149,28 @@ public final class Entity {
         return id;
     }
 
-    /**
-     * Determine if this entity has a component.
-     *
-     * @param c
-     *              the type of component to find
-     * @return true if the entity has the component
-     */
+    @Override
     public boolean hasComponent(final Class<? extends Component> c) {
         return components.keySet().contains(c);
     }
 
-    /**
-     * Obtain all components for this entity.
-     *
-     * @return actual components for this entity.
-     */
+    @Override
     public Set<Component> getComponents() {
         return new HashSet<>(components.values());
     }
 
-    /**
-     * Query the entity for component data.
-     *
-     * @param   <C>
-     *              The type of component to retrieve.
-     * @param c
-     *              The type of component to retrieve.
-     * @return The selected component if present.
-     */
+    @Override
     public <C extends Component> C getComponent(final Class<C> c) {
         return components.getByComponent(c);
     }
 
-    /**
-     * Register a new component with this entity.
-     *
-     * This will also attempt to register the entity with the component if
-     * possible.
-     *
-     * @param component
-     *                      the component to register
-     */
+    @Override
     public void registerComponent(final Component component) {
         components.put(component.getClass(), component);
         this.backRegister(component);
     }
 
-    /**
-     * Remove the association of a component from this entity.
-     *
-     * @param c
-     *              the component type to de-register
-     */
+    @Override
     public void deregisterComponent(final Class<? extends Component> c) {
         this.backDeregister(components.get(c));
         components.remove(c);

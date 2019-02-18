@@ -2,19 +2,29 @@ package wumpus.engine.service;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Lair;
+import wumpus.engine.entity.component.Listener;
+import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
+import wumpus.engine.entity.component.Transit;
+import wumpus.engine.entity.component.Wumpus;
 
 /**
  * Manages "Lairs", the in-game spaces where the player hunts the wumpus.
@@ -73,7 +83,7 @@ public final class LairService implements Service {
     /**
      * Default size of a lair.
      */
-    private static final int DEFAULT_SIZE = 5;
+    private static final int DEFAULT_SIZE = 20;
 
     /**
      * The entity store used by this service.
@@ -221,6 +231,40 @@ public final class LairService implements Service {
         if (defaultLair.isEmpty()) {
             LOG.info("No lair found.  Creating a new default.");
             createLair(DEFAULT_SIZE);
+        }
+
+        final StringBuilder exs = new StringBuilder();
+        store.stream().components(Set.of(Room.class, ArrowHit.class))
+                .forEach(cm -> {
+                    exs.append(
+                            "You hear the disappointing sound of a 'clank' as "
+                                    + "an arrow misses its mark and falls "
+                                    + "to the floor.\n");
+                    store.stream().component(Wumpus.class)
+                            .filter(w -> !w.hasComponent(Dead.class))
+                            .forEach(w -> {
+                                final long wLoc = w.getComponent(Physical.class)
+                                        .getLocation().getAsLong();
+                                final List<Long> ds = store.get(wLoc).get()
+                                        .getComponent(Room.class)
+                                        .getLinkedRooms().values().stream()
+                                        .collect(Collectors.toList());
+                                final long wDest = ds
+                                        .get(random.get() % ds.size());
+                                w.registerComponent(new Transit(wLoc, wDest));
+                                exs.append("You hear the thunderous sound of  "
+                                        + "trampling hooves as"
+                                        + " a wumpus changes its location.");
+                            });
+                    final Entity e = cm.getEntity();
+                    e.deregisterComponent(ArrowHit.class);
+                    store.commit(e);
+                });
+
+        if (exs.length() > 0) {
+            store.stream().components(Set.of(Player.class, Listener.class))
+                    .map(cm -> cm.getByComponent(Listener.class))
+                    .forEach(l -> l.tell(exs.toString()));
         }
     }
 }

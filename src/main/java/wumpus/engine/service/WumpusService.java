@@ -4,6 +4,7 @@ import java.util.Set;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
@@ -59,10 +60,24 @@ public final class WumpusService implements Service {
 
     @Override
     public void tick() {
+        final StringBuilder exs = new StringBuilder();
+
+        store.stream().components(Set.of(Wumpus.class, ArrowHit.class))
+                .filter(m -> !m.getEntity().hasComponent(Dead.class))
+                .forEach(m -> {
+                    final Entity e = m.getEntity();
+                    e.deregisterComponent(ArrowHit.class);
+                    e.registerComponent(new Dead());
+                    store.commit(e);
+                    exs.append("You hear a satisfying 'thunk' as an arrow "
+                            + "makes contact with flesh, followed by a "
+                            + "beastial "
+                            + "groan and a thud as your prey collapses!");
+                });
+
         store.stream().components(Set.of(Wumpus.class, Physical.class))
-                .filter(cm -> !cm.getByComponent(Wumpus.class).getEntity().get()
-                        .hasComponent(Dead.class))
-                .map(cm -> cm.getByComponent(Physical.class).getLocation())
+                .filter(m -> !m.getEntity().hasComponent(Dead.class))
+                .map(m -> m.getByComponent(Physical.class).getLocation())
                 .filter(l -> l.isPresent())
                 .map(l -> store.get(l.getAsLong()).get()
                         .getComponent(Container.class))
@@ -76,6 +91,12 @@ public final class WumpusService implements Service {
                             store.commit(e);
                             e.getComponent(Listener.class).tell(DEATH);
                         }));
+
+        if (exs.length() > 0) {
+            store.stream().components(Set.of(Player.class, Listener.class))
+                    .map(cm -> cm.getByComponent(Listener.class))
+                    .forEach(l -> l.tell(exs.toString()));
+        }
     }
 
 }

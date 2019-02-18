@@ -44,8 +44,7 @@ public final class TransitService implements Service {
     public void tick() {
         store.stream().components(Set.of(Transit.class, Physical.class))
                 .forEach(m -> {
-                    final Entity e = m.getByComponent(Physical.class)
-                            .getEntity().get();
+                    final Entity e = m.getEntity();
                     final Transit t = m.getByComponent(Transit.class);
 
                     t.getFrom().ifPresent(from -> {

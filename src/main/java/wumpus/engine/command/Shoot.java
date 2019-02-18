@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Physical;
@@ -42,12 +43,13 @@ public final class Shoot implements Command {
         } else if (!DIRECTIONS.contains(direction)) {
             return "Not a valid direction.";
         } else {
-            final Long dest = store.get(location.getAsLong()).get()
-                    .getComponent(Room.class).getLinkedRooms().get(direction);
-            if (dest == null) {
-                return "You cannot move in that direction.";
+            final Optional<Entity> dest = store.get(store
+                    .get(location.getAsLong()).get().getComponent(Room.class)
+                    .getLinkedRooms().get(direction));
+            if (dest.isEmpty()) {
+                return "You cannot shoot in that direction.";
             } else {
-                final Stream<Entity> contents = store.get(dest).get()
+                final Stream<Entity> contents = dest.get()
                         .getComponent(Container.class).getContents().stream()
                         .map(l -> store.get(l).get());
                 final Optional<Entity> wumpus = contents
@@ -55,17 +57,13 @@ public final class Shoot implements Command {
                                 && !e.hasComponent(Dead.class))
                         .findAny();
                 if (wumpus.isPresent()) {
-                    wumpus.get().registerComponent(new Dead());
+                    wumpus.get().registerComponent(new ArrowHit());
                     store.commit(wumpus.get());
-                    return "You loose your crooked arrow " + direction
-                            + "ward and hear a satisfying 'thunk' as it "
-                            + "makes contact.  You then hear a beastial "
-                            + "groan and a thud as your prey collapses!";
                 } else {
-                    return "You loose your crooked arrow " + direction
-                            + "ward and hear a disappointing 'clank' as it "
-                            + "falls to the ground.";
+                    dest.get().registerComponent(new ArrowHit());
+                    store.commit(dest.get());
                 }
+                return "You loose your crooked arrow " + direction + "ward.";
             }
         }
     }
