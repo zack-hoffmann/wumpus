@@ -13,17 +13,12 @@ import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Wumpus;
+import wumpus.engine.type.Direction;
 
 /**
  * Command to shoot the crooked arrow.
  */
 public final class Shoot implements Command {
-
-    /**
-     * Set of valid movement directions.
-     */
-    public static final Set<String> DIRECTIONS = Set.of("north", "south",
-            "east", "west", "up", "down");
 
     @Override
     public String exec(final long source, final EntityStore store,
@@ -31,21 +26,19 @@ public final class Shoot implements Command {
         final Entity se = store.get(source).get();
         final OptionalLong location = se.getComponent(Physical.class)
                 .getLocation();
-        final String direction = DIRECTIONS.stream()
-                .filter(s -> args.length > 0 && s.startsWith(args[0])).findAny()
-                .orElseGet(() -> "inv");
+        final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot shoot, for you are dead.";
         } else if (location.isEmpty()) {
             return "You cannot shoot from where you are...";
         } else if (args.length < 1) {
             return "You must provide a direction to shoot.";
-        } else if (!DIRECTIONS.contains(direction)) {
+        } else if (direction.isEmpty()) {
             return "Not a valid direction.";
         } else {
             final Optional<Entity> dest = store.get(store
                     .get(location.getAsLong()).get().getComponent(Room.class)
-                    .getLinkedRooms().get(direction));
+                    .getLinkedRooms().get(direction.get()));
             if (dest.isEmpty()) {
                 return "You cannot shoot in that direction.";
             } else {
@@ -63,7 +56,8 @@ public final class Shoot implements Command {
                     dest.get().registerComponent(new ArrowHit());
                     store.commit(dest.get());
                 }
-                return "You shoot your crooked arrow " + direction + "ward.";
+                return "You shoot your crooked arrow " + direction.get().name()
+                        + "ward.";
             }
         }
     }

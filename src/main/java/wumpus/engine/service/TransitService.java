@@ -18,6 +18,7 @@ import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.entity.component.Wumpus;
+import wumpus.engine.type.Direction;
 import wumpus.io.TextTools;
 
 /**
@@ -126,13 +127,14 @@ public final class TransitService implements Service {
                     + to.getComponent(Descriptive.class).getShortDescription()
                     + ".\n");
 
-            final Map<String, Long> exits = to.getComponent(Room.class)
+            final Map<Direction, Long> exits = to.getComponent(Room.class)
                     .getLinkedRooms();
             if (!exits.isEmpty()) {
 
                 exs.append("You see the following exits:\n");
                 exs.append(exits.entrySet().stream()
-                        .map(e -> TextTools.capitalize(e.getKey()) + " - "
+                        .map(e -> TextTools.capitalize(e.getKey().name())
+                                + " - "
                                 + store.get(e.getValue()).get()
                                         .getComponent(Descriptive.class)
                                         .getShortDescription())
@@ -172,7 +174,7 @@ public final class TransitService implements Service {
      * Process special actions for wumpus movement.
      *
      * @param t
-     *               the location the wumpus is moving to
+     *              the location the wumpus is moving to
      */
     private void wumpusMove(final Transit t) {
         if (t.getFrom().isPresent()) {

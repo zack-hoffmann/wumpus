@@ -25,6 +25,7 @@ import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.entity.component.Wumpus;
+import wumpus.engine.type.Direction;
 
 /**
  * Manages "Lairs", the in-game spaces where the player hunts the wumpus.
@@ -177,18 +178,18 @@ public final class LairService implements Service {
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < v; j++) {
                 if (grid[i][j] != null) {
-                    final Map<String, Long> l = new HashMap<>();
+                    final Map<Direction, Long> l = new HashMap<>();
                     if (j > 0 && grid[i][j - 1] != null) {
-                        l.put("north", grid[i][j - 1].getId());
+                        l.put(Direction.north, grid[i][j - 1].getId());
                     }
                     if (i < h - 1 && grid[i + 1][j] != null) {
-                        l.put("east", grid[i + 1][j].getId());
+                        l.put(Direction.east, grid[i + 1][j].getId());
                     }
                     if (j < v - 1 && grid[i][j + 1] != null) {
-                        l.put("south", grid[i][j + 1].getId());
+                        l.put(Direction.south, grid[i][j + 1].getId());
                     }
                     if (i > 0 && grid[i - 1][j] != null) {
-                        l.put("west", grid[i - 1][j].getId());
+                        l.put(Direction.west, grid[i - 1][j].getId());
                     }
                     grid[i][j].registerComponent(new Room(l));
                     grid[i][j].registerComponent(

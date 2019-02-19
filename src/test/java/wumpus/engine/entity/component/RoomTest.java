@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import wumpus.engine.type.Direction;
+
 /**
  * Tests for the world room component.
  */
@@ -21,14 +23,14 @@ public final class RoomTest {
     /**
      * Test link description.
      */
-    private static final String TEST_LINK = "TEST";
+    private static final Direction TEST_LINK = Direction.up;
 
     /**
      * Test that room created with no links has no links.
      */
     @Test
     public void hasNoLinks() {
-        final Room r = new Room(new HashMap<String, Long>());
+        final Room r = new Room(new HashMap<Direction, Long>());
         assertTrue(r.getLinkedRooms().isEmpty());
     }
 
@@ -37,7 +39,7 @@ public final class RoomTest {
      */
     @Test
     public void hasLink() {
-        final Map<String, Long> links = new HashMap<String, Long>();
+        final Map<Direction, Long> links = new HashMap<Direction, Long>();
         links.put(TEST_LINK, TEST_ID);
         final Room r = new Room(links);
         assertEquals(TEST_ID, r.getLinkedRooms().get(TEST_LINK));
