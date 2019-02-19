@@ -88,9 +88,9 @@ public final class LairService implements Service {
     /**
      * Description of an arrow that has missed.
      */
-    private static final String ARROW_MISS = "You hear the disappointing "
-            + "sound of a 'clank' as " + "an arrow misses its mark and falls "
-            + "to the floor.\n";
+    private static final String ARROW_MISS = "You hear the disappointing sound"
+            + " of a 'clank' as an arrow misses its mark and falls to the "
+            + "floor.\n";
 
     /**
      * The entity store used by this service.

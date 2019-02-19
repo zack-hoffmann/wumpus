@@ -34,7 +34,7 @@ public final class TransitService implements Service {
      * The sound of a wumpus moving.
      */
     private static final String WUMPUS_MOVE = "You hear the thunderous sound "
-            + "of trampling hooves as" + " a wumpus changes its location.";
+            + "of trampling hooves as a wumpus changes its location.";
 
     /**
      * The smell of a wumpus in the adjacent room.
@@ -65,7 +65,7 @@ public final class TransitService implements Service {
                     putInContainer(e, store.get(t.getTo()).get());
 
                     if (e.hasComponent(Wumpus.class)) {
-                        wumpusMove(t.getTo());
+                        wumpusMove(t);
                     }
 
                     e.deregisterComponent(Transit.class);
@@ -171,16 +171,18 @@ public final class TransitService implements Service {
     /**
      * Process special actions for wumpus movement.
      *
-     * @param to
+     * @param t
      *               the location the wumpus is moving to
      */
-    private void wumpusMove(final long to) {
-        store.stream().components(Set.of(Player.class, Listener.class))
-                .map(cm -> cm.getByComponent(Listener.class))
-                .forEach(l -> l.tell(WUMPUS_MOVE));
+    private void wumpusMove(final Transit t) {
+        if (t.getFrom().isPresent()) {
+            store.stream().components(Set.of(Player.class, Listener.class))
+                    .map(cm -> cm.getByComponent(Listener.class))
+                    .forEach(l -> l.tell(WUMPUS_MOVE));
+        }
 
-        store.get(to).get().getComponent(Room.class).getLinkedRooms().values()
-                .stream().map(id -> store.get(id).get())
+        store.get(t.getTo()).get().getComponent(Room.class).getLinkedRooms()
+                .values().stream().map(id -> store.get(id).get())
                 .flatMap(e -> e.getComponent(Container.class).getContents()
                         .stream())
                 .map(id -> store.get(id).get())

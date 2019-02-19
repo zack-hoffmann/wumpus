@@ -63,7 +63,7 @@ public final class Shoot implements Command {
                     dest.get().registerComponent(new ArrowHit());
                     store.commit(dest.get());
                 }
-                return "You loose your crooked arrow " + direction + "ward.";
+                return "You shoot your crooked arrow " + direction + "ward.";
             }
         }
     }

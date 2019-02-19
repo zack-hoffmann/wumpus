@@ -26,6 +26,13 @@ public final class WumpusService implements Service {
             + "mighty jaws and quickly puts an end to your life!";
 
     /**
+     * Sound of a wumpus dying.
+     */
+    private static final String WUMPUS_DEATH = "You hear a satisfying 'thunk' "
+            + "as an arrow makes contact with flesh, followed by a beastial "
+            + "groan and a thud as a wumpus collapses!";
+
+    /**
      * The entity store for this service.
      */
     private final EntityStore store;
@@ -69,10 +76,7 @@ public final class WumpusService implements Service {
                     e.deregisterComponent(ArrowHit.class);
                     e.registerComponent(new Dead());
                     store.commit(e);
-                    exs.append("You hear a satisfying 'thunk' as an arrow "
-                            + "makes contact with flesh, followed by a "
-                            + "beastial "
-                            + "groan and a thud as a wumpus collapses!");
+                    exs.append(WUMPUS_DEATH);
                 });
 
         store.stream().components(Set.of(Wumpus.class, Physical.class))
