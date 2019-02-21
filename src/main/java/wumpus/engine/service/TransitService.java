@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -16,6 +15,7 @@ import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
+import wumpus.engine.entity.component.SuperBat;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.entity.component.Wumpus;
 import wumpus.engine.type.Direction;
@@ -36,6 +36,11 @@ public final class TransitService implements Service {
      */
     private static final String WUMPUS_MOVE = "You hear the thunderous sound "
             + "of trampling hooves as a wumpus changes its location.";
+
+    /**
+     * The sound of a super bat.
+     */
+    private static final String BAT_SOUND = "You hear screeching nearby.\n";
 
     /**
      * The smell of a wumpus in the adjacent room.
@@ -155,14 +160,20 @@ public final class TransitService implements Service {
                     .forEach(d -> exs.append(d + " is here.\n"));
 
             if (!exits.isEmpty()) {
-                final Stream<Entity> contents = exits.entrySet().stream()
+                final Set<Entity> contents = exits.entrySet().stream()
                         .flatMap(e -> store.get(e.getValue()).get()
                                 .getComponent(Container.class).getContents()
                                 .stream())
-                        .map(l -> store.get(l).get());
-                if (contents.filter(e -> e.hasComponent(Wumpus.class)).findAny()
-                        .isPresent()) {
+                        .map(l -> store.get(l).get())
+                        .collect(Collectors.toSet());
+                if (contents.stream().filter(e -> e.hasComponent(Wumpus.class))
+                        .findAny().isPresent()) {
                     exs.append(WUMPUS_SMELL);
+                }
+                if (contents.stream()
+                        .filter(e -> e.hasComponent(SuperBat.class)).findAny()
+                        .isPresent()) {
+                    exs.append(BAT_SOUND);
                 }
             }
 

@@ -87,6 +87,12 @@ public final class LairService implements Service {
     private static final int DEFAULT_SIZE = 20;
 
     /**
+     * The number of rooms required before an additional super bat is
+     * introduced.
+     */
+    private static final int BAT_FACTOR = 12;
+
+    /**
      * Description of an arrow that has missed.
      */
     private static final String ARROW_MISS = "You hear the disappointing sound"
@@ -225,6 +231,14 @@ public final class LairService implements Service {
                     wumpusRoom = rooms[random.get() % rooms.length];
                 } while (wumpusRoom == entrance);
                 wumpus = new WumpusService(store).createWumpus(wumpusRoom);
+            }
+            for (int i = 0; i <= size / BAT_FACTOR; i++) {
+                long batRoom;
+                do {
+                    batRoom = rooms[random.get() % rooms.length];
+
+                } while (batRoom == entrance);
+                new HazardService(store).createBat(batRoom);
             }
         }
         lair.registerComponent(new Lair(entrance, wumpus));
