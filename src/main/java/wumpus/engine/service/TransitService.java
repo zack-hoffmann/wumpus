@@ -11,8 +11,10 @@ import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
+import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.SuperBat;
@@ -36,6 +38,11 @@ public final class TransitService implements Service {
      */
     private static final String WUMPUS_MOVE = "You hear the thunderous sound "
             + "of trampling hooves as a wumpus changes its location.";
+
+    /**
+     * The feel of a drafty pit.
+     */
+    private static final String PIT_DRAFT = "You feel a cool draft.\n";
 
     /**
      * The sound of a super bat.
@@ -150,7 +157,8 @@ public final class TransitService implements Service {
             to.getComponent(Container.class).getContents().stream()
                     .map(id -> store.get(id).get())
                     .collect(EntityStream.collector())
-                    .component(Descriptive.class).map(d -> {
+                    .component(Descriptive.class)
+                    .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
                         if (d.getEntity().get().hasComponent(Dead.class)) {
                             return "The corpse of " + d.getShortDescription();
                         } else {
@@ -174,6 +182,10 @@ public final class TransitService implements Service {
                         .filter(e -> e.hasComponent(SuperBat.class)).findAny()
                         .isPresent()) {
                     exs.append(BAT_SOUND);
+                }
+                if (contents.stream().filter(e -> e.hasComponent(PitTrap.class))
+                        .findAny().isPresent()) {
+                    exs.append(PIT_DRAFT);
                 }
             }
 

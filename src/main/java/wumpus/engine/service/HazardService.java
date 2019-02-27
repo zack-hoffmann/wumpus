@@ -2,7 +2,6 @@ package wumpus.engine.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,11 +9,15 @@ import java.util.stream.Collectors;
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.EntityStream;
+import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
+import wumpus.engine.entity.component.Hazard;
+import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.SuperBat;
@@ -30,6 +33,24 @@ public final class HazardService implements Service {
      */
     private static final String BAT_MOVE = "A super bat swoops down and scoops "
             + "you up, carrying to another location.\n";
+
+    /**
+     * The sound of a super bat dying.
+     */
+    private static final String BAT_DEATH = "You hear the fatal shriek of a bat"
+            + " dying.\n";
+
+    /**
+     * The sound of a pit trap crumbling open.
+     */
+    private static final String PIT_OPEN = "You hear a clang, followed by the "
+            + "low rumble of stone crubmling and falling away.\n";
+
+    /**
+     * Description of a player falling in to a pit.
+     */
+    private static final String PIT_DEATH = "The ground gives way beneath you "
+            + "and you plummet several hundred feet to your death.\n";
 
     /**
      * The entity store used by this service.
@@ -56,6 +77,7 @@ public final class HazardService implements Service {
     public long createBat(final long location) {
         final Entity bat = store.create();
         bat.registerComponent(new SuperBat());
+        bat.registerComponent(new Hazard());
         bat.registerComponent(new Physical());
         bat.registerComponent(new Transit(location));
         bat.registerComponent(new Descriptive("a super bat",
@@ -64,45 +86,128 @@ public final class HazardService implements Service {
         return bat.getId();
     }
 
+    /**
+     * Add a pit trap at the given room entity.
+     *
+     * @param location
+     *                     entity ID of a room to put the pit in
+     * @return the entity ID of the new pit
+     */
+    public long createPitTrap(final long location) {
+        final Entity pit = store.create();
+        pit.registerComponent(new PitTrap());
+        pit.registerComponent(new Hazard());
+        pit.registerComponent(new Physical());
+        pit.registerComponent(new Hidden());
+        pit.registerComponent(new Transit(location));
+        pit.registerComponent(
+                new Descriptive("a pit trap", "a seemingly endless dark pit"));
+
+        store.commit(pit);
+        return pit.getId();
+    }
+
+    /**
+     * Action of a player encountering a super bat.
+     *
+     * @param player
+     *                     the player component
+     * @param bat
+     *                     the bat component
+     * @param location
+     *                     the id of the location where this encounter takes
+     *                     place
+     */
+    private void batMove(final Player player, final SuperBat bat,
+            final long location) {
+        if (!bat.hasComponent(Dead.class)) {
+            final List<Room> rooms = store.stream().component(Room.class)
+                    .collect(Collectors.toList());
+            final long playerRoom = rooms
+                    .get(new Random().nextInt(rooms.size())).getEntity().get()
+                    .getId();
+            final long batRoom = rooms.get(new Random().nextInt(rooms.size()))
+                    .getEntity().get().getId();
+            player.registerComponent(new Transit(location, playerRoom));
+            bat.registerComponent(new Transit(location, batRoom));
+            store.commit(player.getEntity().get());
+            store.commit(bat.getEntity().get());
+            if (player.hasComponent(Listener.class)) {
+                player.getComponent(Listener.class).tell(BAT_MOVE);
+            }
+        }
+    }
+
+    /**
+     * Action of a player encountering a pit trap.
+     *
+     * @param player
+     *                     the player component
+     * @param pit
+     *                     the pit component
+     * @param location
+     *                     the id of the location where this encounter takes
+     *                     place
+     */
+    private void pitTrigger(final Player player, final PitTrap pit,
+            final long location) {
+        if (pit.hasComponent(Hidden.class)) {
+            pit.deregisterComponent(Hidden.class);
+            player.registerComponent(new Dead());
+            player.registerComponent(new Transit(location, -1));
+            store.commit(pit.getEntity().get());
+            store.commit(pit.getEntity().get());
+            if (player.hasComponent(Listener.class)) {
+                player.getComponent(Listener.class).tell(PIT_DEATH);
+            }
+        }
+    }
+
     @Override
     public void tick() {
-        store.stream().components(Set.of(SuperBat.class, Physical.class))
-                .forEach(cm -> {
-                    final OptionalLong loc = cm.getByComponent(Physical.class)
-                            .getLocation();
-                    if (loc.isPresent()) {
-                        final Optional<Player> player = store
-                                .get(loc.getAsLong()).get()
-                                .getComponent(Container.class).getContents()
-                                .stream().map(i -> store.get(i).get())
-                                .collect(EntityStream.collector())
-                                .component(Player.class)
-                                .filter(p -> !p.hasComponent(Dead.class))
-                                .findFirst();
-                        if (player.isPresent()) {
-                            final List<Room> rooms = store.stream()
-                                    .component(Room.class)
-                                    .collect(Collectors.toList());
-                            final long playerRoom = rooms
-                                    .get(new Random().nextInt(rooms.size()))
-                                    .getEntity().get().getId();
-                            final long batRoom = rooms
-                                    .get(new Random().nextInt(rooms.size()))
-                                    .getEntity().get().getId();
-                            player.get().registerComponent(
-                                    new Transit(loc.getAsLong(), playerRoom));
-                            cm.getByComponent(SuperBat.class).registerComponent(
-                                    new Transit(loc.getAsLong(), batRoom));
-                            store.commit(player.get().getEntity().get());
-                            store.commit(cm.getByComponent(SuperBat.class)
-                                    .getEntity().get());
-                            if (player.get().hasComponent(Listener.class)) {
-                                player.get().getComponent(Listener.class)
-                                        .tell(BAT_MOVE);
-                            }
+        store.stream().components(Set.of(Hazard.class, Physical.class))
+                .filter(cm -> cm.getByComponent(Physical.class).getLocation()
+                        .isPresent())
+                .map(cm -> cm.getEntity()).forEach(e -> {
+                    final long loc = e.getComponent(Physical.class)
+                            .getLocation().getAsLong();
+                    final Optional<Player> player = store.get(loc).get()
+                            .getComponent(Container.class).getContents()
+                            .stream().map(i -> store.get(i).get())
+                            .collect(EntityStream.collector())
+                            .component(Player.class)
+                            .filter(p -> !p.hasComponent(Dead.class))
+                            .findFirst();
+                    if (player.isPresent()) {
+                        if (e.hasComponent(SuperBat.class)) {
+                            batMove(player.get(),
+                                    e.getComponent(SuperBat.class), loc);
+                        } else if (e.hasComponent(PitTrap.class)) {
+                            pitTrigger(player.get(),
+                                    e.getComponent(PitTrap.class), loc);
                         }
                     }
+
                 });
+        final StringBuilder exs = new StringBuilder();
+        store.stream().components(Set.of(Hazard.class, ArrowHit.class))
+                .map(cm -> cm.getEntity()).forEach(e -> {
+                    if (e.hasComponent(SuperBat.class)) {
+                        e.registerComponent(new Dead());
+                        exs.append(BAT_DEATH);
+                    } else if (e.hasComponent(PitTrap.class)
+                            && e.hasComponent(Hidden.class)) {
+                        e.deregisterComponent(Hidden.class);
+                        exs.append(PIT_OPEN);
+                    }
+                    e.deregisterComponent(ArrowHit.class);
+                    store.commit(e);
+                });
+        if (exs.length() > 0) {
+            store.stream().components(Set.of(Player.class, Listener.class))
+                    .map(cm -> cm.getByComponent(Listener.class))
+                    .forEach(l -> l.tell(exs.toString()));
+        }
     }
 
 }

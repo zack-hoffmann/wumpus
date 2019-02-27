@@ -8,6 +8,7 @@ import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
+import wumpus.engine.entity.component.Hazard;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
@@ -58,6 +59,7 @@ public final class WumpusService implements Service {
         final Entity wumpus = store.create();
         wumpus.registerComponent(new Wumpus());
         wumpus.registerComponent(new Physical());
+        wumpus.registerComponent(new Hazard());
         wumpus.registerComponent(new Transit(location));
         wumpus.registerComponent(new Descriptive("a wumpus",
                 "a huge, filthy, smelly, savage wumpus"));

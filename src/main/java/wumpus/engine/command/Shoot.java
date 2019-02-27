@@ -12,7 +12,6 @@ import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Room;
-import wumpus.engine.entity.component.Wumpus;
 import wumpus.engine.type.Direction;
 
 /**
@@ -45,13 +44,13 @@ public final class Shoot implements Command {
                 final Stream<Entity> contents = dest.get()
                         .getComponent(Container.class).getContents().stream()
                         .map(l -> store.get(l).get());
-                final Optional<Entity> wumpus = contents
-                        .filter(e -> e.hasComponent(Wumpus.class)
+                final Optional<Entity> target = contents
+                        .filter(e -> e.hasComponent(Physical.class)
                                 && !e.hasComponent(Dead.class))
                         .findAny();
-                if (wumpus.isPresent()) {
-                    wumpus.get().registerComponent(new ArrowHit());
-                    store.commit(wumpus.get());
+                if (target.isPresent()) {
+                    target.get().registerComponent(new ArrowHit());
+                    store.commit(target.get());
                 } else {
                     dest.get().registerComponent(new ArrowHit());
                     store.commit(dest.get());

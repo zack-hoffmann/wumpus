@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wumpus.engine.command.CommandLibrary;
+import wumpus.engine.command.Debug;
 import wumpus.engine.command.East;
 import wumpus.engine.command.Move;
 import wumpus.engine.command.North;
@@ -66,7 +67,8 @@ public class App implements Runnable {
         final StandardIOAdapter io = new StandardIOAdapter(ioServ);
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
-                new North(), new East(), new South(), new West(), new Shoot());
+                new North(), new East(), new South(), new West(), new Shoot(),
+                new Debug());
 
         final PlayerService players = new PlayerService(store);
         final long player = players.createPlayer();

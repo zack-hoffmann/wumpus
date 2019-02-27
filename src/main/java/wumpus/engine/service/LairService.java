@@ -90,7 +90,12 @@ public final class LairService implements Service {
      * The number of rooms required before an additional super bat is
      * introduced.
      */
-    private static final int BAT_FACTOR = 12;
+    private static final int BAT_FACTOR = 15;
+
+    /**
+     * The number of rooms required before an additional pit trap is introduced.
+     */
+    private static final int PIT_FACTOR = 22;
 
     /**
      * Description of an arrow that has missed.
@@ -239,6 +244,14 @@ public final class LairService implements Service {
 
                 } while (batRoom == entrance);
                 new HazardService(store).createBat(batRoom);
+            }
+            for (int i = 0; i <= size / PIT_FACTOR; i++) {
+                long pitRoom;
+                do {
+                    pitRoom = rooms[random.get() % rooms.length];
+
+                } while (pitRoom == entrance);
+                new HazardService(store).createPitTrap(pitRoom);
             }
         }
         lair.registerComponent(new Lair(entrance, wumpus));
