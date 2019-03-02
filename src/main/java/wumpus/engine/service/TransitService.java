@@ -179,8 +179,9 @@ public final class TransitService implements Service {
                     exs.append(WUMPUS_SMELL);
                 }
                 if (contents.stream()
-                        .filter(e -> e.hasComponent(SuperBat.class)).findAny()
-                        .isPresent()) {
+                        .filter(e -> e.hasComponent(SuperBat.class)
+                                && !e.hasComponent(Dead.class))
+                        .findAny().isPresent()) {
                     exs.append(BAT_SOUND);
                 }
                 if (contents.stream().filter(e -> e.hasComponent(PitTrap.class))

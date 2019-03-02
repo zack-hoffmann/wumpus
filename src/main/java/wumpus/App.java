@@ -29,7 +29,6 @@ import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
 import wumpus.engine.service.Service;
 import wumpus.engine.service.TransitService;
-import wumpus.engine.service.WumpusService;
 import wumpus.io.StandardIOAdapter;
 
 /**
@@ -77,7 +76,6 @@ public class App implements Runnable {
         services.add(players);
         services.add(new LairService(store));
         services.add(new TransitService(store));
-        services.add(new WumpusService(store));
         services.add(new HazardService(store));
 
         final ScheduledExecutorService tickService = Executors

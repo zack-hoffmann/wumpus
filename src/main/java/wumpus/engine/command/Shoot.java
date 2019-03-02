@@ -10,7 +10,9 @@ import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
+import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.type.Direction;
 
@@ -46,7 +48,9 @@ public final class Shoot implements Command {
                         .map(l -> store.get(l).get());
                 final Optional<Entity> target = contents
                         .filter(e -> e.hasComponent(Physical.class)
-                                && !e.hasComponent(Dead.class))
+                                && !e.hasComponent(Dead.class)
+                                && (e.hasComponent(Hidden.class)
+                                        || !e.hasComponent(PitTrap.class)))
                         .findAny();
                 if (target.isPresent()) {
                     target.get().registerComponent(new ArrowHit());

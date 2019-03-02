@@ -22,11 +22,25 @@ import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.SuperBat;
 import wumpus.engine.entity.component.Transit;
+import wumpus.engine.entity.component.Wumpus;
 
 /**
  * Service to manage all of the game world hazards.
  */
 public final class HazardService implements Service {
+
+    /**
+     * Message displayed to a player when a wumpus kills them.
+     */
+    private static final String DEATH = "The wumpus snaps you up in its "
+            + "mighty jaws and quickly puts an end to your life!";
+
+    /**
+     * Sound of a wumpus dying.
+     */
+    private static final String WUMPUS_DEATH = "You hear a satisfying 'thunk' "
+            + "as an arrow makes contact with flesh, followed by a beastial "
+            + "groan and a thud as a wumpus collapses!";
 
     /**
      * Description of a super bat moving a player.
@@ -65,6 +79,25 @@ public final class HazardService implements Service {
      */
     public HazardService(final EntityStore s) {
         this.store = s;
+    }
+
+    /**
+     * Create a new wumpus entity at a location.
+     *
+     * @param location
+     *                     the entity ID of the container to put the wumpus in
+     * @return the entity ID of the new wumpus
+     */
+    public long createWumpus(final long location) {
+        final Entity wumpus = store.create();
+        wumpus.registerComponent(new Wumpus());
+        wumpus.registerComponent(new Physical());
+        wumpus.registerComponent(new Hazard());
+        wumpus.registerComponent(new Transit(location));
+        wumpus.registerComponent(new Descriptive("a wumpus",
+                "a huge, filthy, smelly, savage wumpus"));
+        store.commit(wumpus);
+        return wumpus.getId();
     }
 
     /**
@@ -163,6 +196,22 @@ public final class HazardService implements Service {
         }
     }
 
+    /**
+     * Action of a player being killed by a wumpus.
+     *
+     * @param player
+     *                   the player being killed
+     * @param wumpus
+     *                   the wumpus killing the player
+     */
+    private void wumpusKill(final Player player, final Wumpus wumpus) {
+        if (!wumpus.hasComponent(Dead.class)) {
+            player.registerComponent(new Dead());
+            store.commit(player.getEntity().get());
+            player.getComponent(Listener.class).tell(DEATH);
+        }
+    }
+
     @Override
     public void tick() {
         store.stream().components(Set.of(Hazard.class, Physical.class))
@@ -185,6 +234,9 @@ public final class HazardService implements Service {
                         } else if (e.hasComponent(PitTrap.class)) {
                             pitTrigger(player.get(),
                                     e.getComponent(PitTrap.class), loc);
+                        } else if (e.hasComponent(Wumpus.class)) {
+                            wumpusKill(player.get(),
+                                    e.getComponent(Wumpus.class));
                         }
                     }
 
@@ -199,6 +251,9 @@ public final class HazardService implements Service {
                             && e.hasComponent(Hidden.class)) {
                         e.deregisterComponent(Hidden.class);
                         exs.append(PIT_OPEN);
+                    } else if (e.hasComponent(Wumpus.class)) {
+                        e.registerComponent(new Dead());
+                        exs.append(WUMPUS_DEATH);
                     }
                     e.deregisterComponent(ArrowHit.class);
                     store.commit(e);

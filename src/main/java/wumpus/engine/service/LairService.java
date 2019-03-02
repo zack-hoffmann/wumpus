@@ -223,6 +223,7 @@ public final class LairService implements Service {
      * @return the ID of the generated lair.
      */
     public long createLair(final int size) {
+        final HazardService hazards = new HazardService(store);
         final Entity lair = store.create();
         final long[] rooms = generateRooms(size);
         lair.registerComponent(new Container(rooms));
@@ -235,7 +236,7 @@ public final class LairService implements Service {
                 do {
                     wumpusRoom = rooms[random.get() % rooms.length];
                 } while (wumpusRoom == entrance);
-                wumpus = new WumpusService(store).createWumpus(wumpusRoom);
+                wumpus = hazards.createWumpus(wumpusRoom);
             }
             for (int i = 0; i <= size / BAT_FACTOR; i++) {
                 long batRoom;
@@ -243,7 +244,7 @@ public final class LairService implements Service {
                     batRoom = rooms[random.get() % rooms.length];
 
                 } while (batRoom == entrance);
-                new HazardService(store).createBat(batRoom);
+                hazards.createBat(batRoom);
             }
             for (int i = 0; i <= size / PIT_FACTOR; i++) {
                 long pitRoom;
@@ -251,7 +252,7 @@ public final class LairService implements Service {
                     pitRoom = rooms[random.get() % rooms.length];
 
                 } while (pitRoom == entrance);
-                new HazardService(store).createPitTrap(pitRoom);
+                hazards.createPitTrap(pitRoom);
             }
         }
         lair.registerComponent(new Lair(entrance, wumpus));
