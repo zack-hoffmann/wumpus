@@ -18,6 +18,11 @@ import wumpus.io.IOAdapter;
 public final class PlayerService implements Service {
 
     /**
+     * Execution priority of this service.
+     */
+    public static final int PRIORITY = 5;
+
+    /**
      * The entity store used by this service.
      */
     private final EntityStore store;
@@ -102,4 +107,10 @@ public final class PlayerService implements Service {
                             new Transit(defaultLair.get().getEntrace())));
         }
     }
+
+    @Override
+    public int priority() {
+        return PRIORITY;
+    }
+
 }

@@ -21,6 +21,11 @@ import wumpus.engine.entity.component.Wumpus;
 public final class TransitService implements Service {
 
     /**
+     * Execution priority of this service.
+     */
+    public static final int PRIORITY = 10;
+
+    /**
      * The entity store used by this service.
      */
     private final EntityStore store;
@@ -127,6 +132,11 @@ public final class TransitService implements Service {
                 .map(cm -> cm.getByComponent(Listener.class))
                 .forEach(l -> l.tell(WUMPUS_SMELL));
 
+    }
+
+    @Override
+    public int priority() {
+        return PRIORITY;
     }
 
 }

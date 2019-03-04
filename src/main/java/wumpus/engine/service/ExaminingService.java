@@ -29,6 +29,11 @@ import wumpus.io.TextTools;
 public final class ExaminingService implements Service {
 
     /**
+     * Execution priority of this service.
+     */
+    public static final int PRIORITY = 20;
+
+    /**
      * The feel of a drafty pit.
      */
     private static final String PIT_DRAFT = "You feel a cool draft.\n";
@@ -150,6 +155,11 @@ public final class ExaminingService implements Service {
                     p.deregisterComponent(Examining.class);
                     store.commit(p.getEntity().get());
                 });
+    }
+
+    @Override
+    public int priority() {
+        return PRIORITY;
     }
 
 }

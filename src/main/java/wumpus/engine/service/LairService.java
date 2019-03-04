@@ -36,6 +36,11 @@ import wumpus.engine.type.Direction;
 public final class LairService implements Service {
 
     /**
+     * Execution priority of this service.
+     */
+    public static final int PRIORITY = 80;
+
+    /**
      * Logger.
      */
     private static final Logger LOG = Logger
@@ -297,4 +302,10 @@ public final class LairService implements Service {
                     .forEach(l -> l.tell(exs.toString()));
         }
     }
+
+    @Override
+    public int priority() {
+        return PRIORITY;
+    }
+
 }

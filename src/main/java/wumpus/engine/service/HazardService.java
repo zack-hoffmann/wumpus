@@ -30,17 +30,22 @@ import wumpus.engine.entity.component.Wumpus;
 public final class HazardService implements Service {
 
     /**
+     * Execution priority of this service.
+     */
+    public static final int PRIORITY = 100;
+
+    /**
      * Message displayed to a player when a wumpus kills them.
      */
     private static final String DEATH = "The wumpus snaps you up in its "
-            + "mighty jaws and quickly puts an end to your life!";
+            + "mighty jaws and quickly puts an end to your life!\n";
 
     /**
      * Sound of a wumpus dying.
      */
     private static final String WUMPUS_DEATH = "You hear a satisfying 'thunk' "
             + "as an arrow makes contact with flesh, followed by a beastial "
-            + "groan and a thud as a wumpus collapses!";
+            + "groan and a thud as a wumpus collapses!\n";
 
     /**
      * Description of a super bat moving a player.
@@ -263,6 +268,11 @@ public final class HazardService implements Service {
                     .map(cm -> cm.getByComponent(Listener.class))
                     .forEach(l -> l.tell(exs.toString()));
         }
+    }
+
+    @Override
+    public int priority() {
+        return PRIORITY;
     }
 
 }

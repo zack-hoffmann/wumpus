@@ -2,6 +2,7 @@ package wumpus;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
 import wumpus.engine.command.CommandLibrary;
 import wumpus.engine.command.Debug;
 import wumpus.engine.command.East;
+import wumpus.engine.command.Look;
 import wumpus.engine.command.Move;
 import wumpus.engine.command.North;
 import wumpus.engine.command.Quit;
@@ -68,7 +70,7 @@ public class App implements Runnable {
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
                 new North(), new East(), new South(), new West(), new Shoot(),
-                new Debug());
+                new Debug(), new Look());
 
         final PlayerService players = new PlayerService(store);
         final long player = players.createPlayer();
@@ -83,8 +85,10 @@ public class App implements Runnable {
         final ScheduledExecutorService tickService = Executors
                 .newScheduledThreadPool(1);
         tickService.scheduleAtFixedRate(
-                () -> services.stream().forEach(Service::tick), 0,
-                TICK_IN_MILLIS, TimeUnit.MILLISECONDS);
+                () -> services.stream()
+                        .sorted(Comparator.comparing(Service::priority))
+                        .forEach(Service::tick),
+                0, TICK_IN_MILLIS, TimeUnit.MILLISECONDS);
 
         LOG.info("The game engine has started.");
 

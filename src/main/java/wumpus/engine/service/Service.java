@@ -10,4 +10,11 @@ public interface Service {
      */
     void tick();
 
+    /**
+     * Ordering (from zero up) of execution.
+     *
+     * @return the sequence in which this service should tick
+     */
+    int priority();
+
 }
