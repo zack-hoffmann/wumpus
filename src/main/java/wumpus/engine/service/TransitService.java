@@ -1,27 +1,19 @@
 package wumpus.engine.service;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.Container;
-import wumpus.engine.entity.component.Dead;
-import wumpus.engine.entity.component.Descriptive;
-import wumpus.engine.entity.component.Hidden;
+import wumpus.engine.entity.component.Examining;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
-import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
-import wumpus.engine.entity.component.SuperBat;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.entity.component.Wumpus;
-import wumpus.engine.type.Direction;
-import wumpus.io.TextTools;
 
 /**
  * Service for moving all entities with a transit component.
@@ -34,25 +26,15 @@ public final class TransitService implements Service {
     private final EntityStore store;
 
     /**
+     * The smell of a wumpus in the adjacent room.
+     */
+    private static final String WUMPUS_SMELL = "You smell a wumpus nearby!\n";
+
+    /**
      * The sound of a wumpus moving.
      */
     private static final String WUMPUS_MOVE = "You hear the thunderous sound "
             + "of trampling hooves as a wumpus changes its location.";
-
-    /**
-     * The feel of a drafty pit.
-     */
-    private static final String PIT_DRAFT = "You feel a cool draft.\n";
-
-    /**
-     * The sound of a super bat.
-     */
-    private static final String BAT_SOUND = "You hear screeching nearby.\n";
-
-    /**
-     * The smell of a wumpus in the adjacent room.
-     */
-    private static final String WUMPUS_SMELL = "You smell a wumpus nearby!\n";
 
     /**
      * Creates a new transit service with the given entity store.
@@ -115,83 +97,11 @@ public final class TransitService implements Service {
         e.registerComponent(new Physical(to.getId()));
         final Container toC = to.getComponent(Container.class);
         to.registerComponent(new Container(toC, e.getId()));
+        if (e.hasComponent(Player.class)) {
+            e.registerComponent(new Examining(to.getId()));
+        }
         store.commit(to);
         store.commit(e);
-
-        if (e.hasComponent(Player.class) && to.hasComponent(Room.class)) {
-            playerEnter(e, to);
-        }
-    }
-
-    /**
-     * Describe a player room entry to the player and cause entry triggers.
-     *
-     * @param player
-     *                   entity of the player
-     * @param to
-     *                   the room the player is entering
-     */
-    private void playerEnter(final Entity player, final Entity to) {
-        if (player.hasComponent(Listener.class)) {
-            final StringBuilder exs = new StringBuilder();
-
-            exs.append("\n" + "You have entered "
-                    + to.getComponent(Descriptive.class).getShortDescription()
-                    + ".\n");
-
-            final Map<Direction, Long> exits = to.getComponent(Room.class)
-                    .getLinkedRooms();
-            if (!exits.isEmpty()) {
-
-                exs.append("You see the following exits:\n");
-                exs.append(exits.entrySet().stream()
-                        .map(e -> TextTools.capitalize(e.getKey().name())
-                                + " - "
-                                + store.get(e.getValue()).get()
-                                        .getComponent(Descriptive.class)
-                                        .getShortDescription())
-                        .collect(Collectors.joining("\n")));
-                exs.append("\n");
-            }
-
-            to.getComponent(Container.class).getContents().stream()
-                    .map(id -> store.get(id).get())
-                    .collect(EntityStream.collector())
-                    .component(Descriptive.class)
-                    .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
-                        if (d.getEntity().get().hasComponent(Dead.class)) {
-                            return "The corpse of " + d.getShortDescription();
-                        } else {
-                            return d.getShortDescription();
-                        }
-                    }).map(d -> TextTools.capitalize(d))
-                    .forEach(d -> exs.append(d + " is here.\n"));
-
-            if (!exits.isEmpty()) {
-                final Set<Entity> contents = exits.entrySet().stream()
-                        .flatMap(e -> store.get(e.getValue()).get()
-                                .getComponent(Container.class).getContents()
-                                .stream())
-                        .map(l -> store.get(l).get())
-                        .collect(Collectors.toSet());
-                if (contents.stream().filter(e -> e.hasComponent(Wumpus.class))
-                        .findAny().isPresent()) {
-                    exs.append(WUMPUS_SMELL);
-                }
-                if (contents.stream()
-                        .filter(e -> e.hasComponent(SuperBat.class)
-                                && !e.hasComponent(Dead.class))
-                        .findAny().isPresent()) {
-                    exs.append(BAT_SOUND);
-                }
-                if (contents.stream().filter(e -> e.hasComponent(PitTrap.class))
-                        .findAny().isPresent()) {
-                    exs.append(PIT_DRAFT);
-                }
-            }
-
-            player.getComponent(Listener.class).tell(exs.toString());
-        }
     }
 
     /**

@@ -24,6 +24,7 @@ import wumpus.engine.command.West;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Listener;
+import wumpus.engine.service.ExaminingService;
 import wumpus.engine.service.HazardService;
 import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
@@ -76,6 +77,7 @@ public class App implements Runnable {
         services.add(players);
         services.add(new LairService(store));
         services.add(new TransitService(store));
+        services.add(new ExaminingService(store));
         services.add(new HazardService(store));
 
         final ScheduledExecutorService tickService = Executors
