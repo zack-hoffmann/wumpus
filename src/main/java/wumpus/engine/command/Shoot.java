@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
+import wumpus.engine.entity.component.Arrow;
 import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
@@ -14,6 +15,7 @@ import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Room;
+import wumpus.engine.service.PlayerService;
 import wumpus.engine.type.Direction;
 
 /**
@@ -24,12 +26,17 @@ public final class Shoot implements Command {
     @Override
     public String exec(final long source, final EntityStore store,
             final String... args) {
+        final PlayerService playerService = new PlayerService(store);
         final Entity se = store.get(source).get();
+        final Optional<Entity> arrows = playerService.getInventoryItem(source,
+                Arrow.class);
         final OptionalLong location = se.getComponent(Physical.class)
                 .getLocation();
         final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot shoot, for you are dead.";
+        } else if (arrows.isEmpty()) {
+            return "You do not have any arrows.";
         } else if (location.isEmpty()) {
             return "You cannot shoot from where you are...";
         } else if (args.length < 1) {
@@ -43,6 +50,7 @@ public final class Shoot implements Command {
             if (dest.isEmpty()) {
                 return "You cannot shoot in that direction.";
             } else {
+                playerService.adjustInventoryItem(source, Arrow.class, -1);
                 final Stream<Entity> contents = dest.get()
                         .getComponent(Container.class).getContents().stream()
                         .map(l -> store.get(l).get());

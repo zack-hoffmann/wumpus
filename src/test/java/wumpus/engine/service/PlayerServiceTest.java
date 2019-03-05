@@ -36,7 +36,7 @@ public final class PlayerServiceTest {
     @Test
     public void playerGenerated() {
         final PlayerService s = new PlayerService(store);
-        final Optional<Entity> e = store.get(s.createPlayer());
+        final Optional<Entity> e = store.get(s.createPlayer(0));
         Assert.assertTrue(e.isPresent());
     }
 
@@ -45,7 +45,7 @@ public final class PlayerServiceTest {
      */
     public void playerIsPhysical() {
         final PlayerService s = new PlayerService(store);
-        final Optional<Entity> e = store.get(s.createPlayer());
+        final Optional<Entity> e = store.get(s.createPlayer(0));
         Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Physical.class));
     }
@@ -55,7 +55,7 @@ public final class PlayerServiceTest {
      */
     public void playerIsStranded() {
         final PlayerService s = new PlayerService(store);
-        final Optional<Entity> e = store.get(s.createPlayer());
+        final Optional<Entity> e = store.get(s.createPlayer(0));
         Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .getComponent(Physical.class).getLocation().isEmpty());
     }

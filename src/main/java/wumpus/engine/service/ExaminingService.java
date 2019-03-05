@@ -14,6 +14,7 @@ import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Examining;
 import wumpus.engine.entity.component.Hidden;
+import wumpus.engine.entity.component.Item;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Player;
@@ -97,13 +98,20 @@ public final class ExaminingService implements Service {
         targetContents.stream().map(id -> store.get(id).get())
                 .collect(EntityStream.collector()).component(Descriptive.class)
                 .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
-                    if (d.getEntity().get().hasComponent(Dead.class)) {
-                        return "The corpse of " + d.getShortDescription();
+                    if (d.hasComponent(Item.class)) {
+                        final int count = d.getComponent(Item.class).getCount();
+                        if (count > 1) {
+                            return count + " " + d.getShortDescription() + "s are";
+                        } else {
+                            return count + " " + d.getShortDescription();
+                        }
+                    } else if (d.hasComponent(Dead.class)) {
+                        return "The corpse of " + d.getShortDescription() + " is ";
                     } else {
-                        return d.getShortDescription();
+                        return d.getShortDescription() + " is ";
                     }
                 }).map(d -> TextTools.capitalize(d))
-                .forEach(d -> out.append("   " + d + " is here.\n"));
+                .forEach(d -> out.append("   " + d + " here.\n"));
 
         if (!exits.isEmpty()) {
             out.append("You see the following exits:\n");

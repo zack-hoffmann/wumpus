@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import wumpus.engine.command.CommandLibrary;
 import wumpus.engine.command.Debug;
 import wumpus.engine.command.East;
+import wumpus.engine.command.Inventory;
 import wumpus.engine.command.Look;
 import wumpus.engine.command.Move;
 import wumpus.engine.command.North;
@@ -45,6 +46,11 @@ public class App implements Runnable {
     private static final Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
+     * Starting arrow count.
+     */
+    private static final int STARTING_ARROWS = 3;
+
+    /**
      * Duration of a tick in milliseconds.
      */
     private static final int TICK_IN_MILLIS = 10;
@@ -70,10 +76,10 @@ public class App implements Runnable {
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
                 new North(), new East(), new South(), new West(), new Shoot(),
-                new Debug(), new Look());
+                new Debug(), new Look(), new Inventory());
 
         final PlayerService players = new PlayerService(store);
-        final long player = players.createPlayer();
+        final long player = players.createPlayer(STARTING_ARROWS);
         players.attachPlayer(player, io);
         final Set<Service> services = new HashSet<>();
         services.add(players);
