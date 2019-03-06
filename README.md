@@ -8,5 +8,8 @@ Faithful to the original Hunt the Wumpus game, the early map layout will be room
 
 **Amended:** This game will use a randomized map instead, since that is a reasonable variation of early versions that has better long-term gameplay.
 
-## Step 2 - Basic Gameplay
+## Step 2 - Basic Gameplay (COMPLETE)
 The core game includes using deduction from environmental clues to find and kill the wumpus by shooting it with an arrow without running in to it.  Environmental hazards include fatal pit traps and "super bats" which can move the player to a random location in the wumpus lair.  As an added challenge, the player should be limited to three arrows.
+
+## Step 3 - Continuous World
+Create a persistent central location outside of the lairs, then allow new lairs to be generated as needed.  This should allow the player to play continuously, regardless of winning or losing.

@@ -27,6 +27,30 @@ public final class Room extends AbstractEntityComponent {
     }
 
     /**
+     * Initialize room based on an existing room with an additional link.
+     *
+     * @param r
+     *              an existing room to extend
+     * @param d
+     *              the direction of the new link
+     * @param i
+     *              the ID of the new link
+     */
+    public Room(final Room r, final Direction d, final long i) {
+        final Map<Direction, Long> rooms = r.getLinkedRooms();
+        rooms.put(d, i);
+        this.linkedRooms = rooms.entrySet().stream().collect(
+                Collectors.toConcurrentMap(e -> e.getKey(), e -> e.getValue()));
+    }
+
+    /**
+     * Initialize room with no links.
+     */
+    public Room() {
+        this(Map.of());
+    }
+
+    /**
      * Retrieve linked rooms.
      *
      * @return map of linked rooms
