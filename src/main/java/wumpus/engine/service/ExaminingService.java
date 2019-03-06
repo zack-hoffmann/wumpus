@@ -101,12 +101,14 @@ public final class ExaminingService implements Service {
                     if (d.hasComponent(Item.class)) {
                         final int count = d.getComponent(Item.class).getCount();
                         if (count > 1) {
-                            return count + " " + d.getShortDescription() + "s are";
+                            return count + " " + d.getShortDescription()
+                                    + "s are";
                         } else {
                             return count + " " + d.getShortDescription();
                         }
                     } else if (d.hasComponent(Dead.class)) {
-                        return "The corpse of " + d.getShortDescription() + " is ";
+                        return "The corpse of " + d.getShortDescription()
+                                + " is ";
                     } else {
                         return d.getShortDescription() + " is ";
                     }
