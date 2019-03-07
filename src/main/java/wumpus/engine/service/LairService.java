@@ -208,8 +208,10 @@ public final class LairService implements Service {
                         l.put(Direction.west, grid[i - 1][j].getId());
                     }
                     grid[i][j].registerComponent(new Room(l));
-                    grid[i][j].registerComponent(
-                            new Descriptive("a dark cavern"));
+                    grid[i][j].registerComponent(new Descriptive(
+                            "a dark cavern",
+                            "This room is lit low by your lantern, but you "
+                                    + "cannot see very far."));
                     grid[i][j].registerComponent(new Container());
                     store.commit(grid[i][j]);
                 }
@@ -232,15 +234,15 @@ public final class LairService implements Service {
         final Entity lair = store.create();
         final long[] rooms = generateRooms(size);
         lair.registerComponent(new Container(rooms));
-        long entrance = -1L;
+        long firstRoom = -1L;
         long wumpus = -1L;
         if (size > 0) {
-            entrance = rooms[random.get() % rooms.length];
+            firstRoom = rooms[random.get() % rooms.length];
             if (size > 1) {
                 long wumpusRoom;
                 do {
                     wumpusRoom = rooms[random.get() % rooms.length];
-                } while (wumpusRoom == entrance);
+                } while (wumpusRoom == firstRoom);
                 wumpus = hazards.createWumpus(wumpusRoom);
             }
             for (int i = 0; i <= size / BAT_FACTOR; i++) {
@@ -248,7 +250,7 @@ public final class LairService implements Service {
                 do {
                     batRoom = rooms[random.get() % rooms.length];
 
-                } while (batRoom == entrance);
+                } while (batRoom == firstRoom);
                 hazards.createBat(batRoom);
             }
             for (int i = 0; i <= size / PIT_FACTOR; i++) {
@@ -256,11 +258,19 @@ public final class LairService implements Service {
                 do {
                     pitRoom = rooms[random.get() % rooms.length];
 
-                } while (pitRoom == entrance);
+                } while (pitRoom == firstRoom);
                 hazards.createPitTrap(pitRoom);
             }
         }
-        lair.registerComponent(new Lair(entrance, wumpus));
+
+        final Entity entrance = store.create();
+        entrance.registerComponent(new Room(Map.of(Direction.down, firstRoom)));
+        entrance.registerComponent(new Descriptive(
+                "the mouth of a cave opening",
+                "In the forest floor there is a big hole, with the stench of a"
+                        + " wumpus rising from it. "));
+        entrance.registerComponent(new Container());
+        lair.registerComponent(new Lair(entrance.getId(), wumpus));
         store.commit(lair);
         return lair.getId();
     }

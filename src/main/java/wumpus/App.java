@@ -33,6 +33,7 @@ import wumpus.engine.service.LairService;
 import wumpus.engine.service.PlayerService;
 import wumpus.engine.service.Service;
 import wumpus.engine.service.TransitService;
+import wumpus.engine.service.WorldService;
 import wumpus.io.StandardIOAdapter;
 
 /**
@@ -83,6 +84,7 @@ public class App implements Runnable {
         players.attachPlayer(player, io);
         final Set<Service> services = new HashSet<>();
         services.add(players);
+        services.add(new WorldService(store));
         services.add(new LairService(store));
         services.add(new TransitService(store));
         services.add(new ExaminingService(store));

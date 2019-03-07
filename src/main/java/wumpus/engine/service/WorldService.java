@@ -90,18 +90,15 @@ public final class WorldService implements Service {
 
     @Override
     public void tick() {
-        // if no taverns exist, create one
         final Entity tavern = store.stream().component(Tavern.class)
                 .map(t -> t.getEntity().get()).findAny()
                 .orElseGet(() -> this.createTavern());
-        // if no wilderness exists, create one
         final Entity wilderness = store.stream().component(Wilderness.class)
                 .map(t -> t.getEntity().get()).findAny()
                 .orElseGet(() -> this.createWilderness());
-        // link tavern and wilderness, and link wilderness to random open lair
-        Room tavernRoom = tavern.getComponent(Room.class);
-        tavernRoom = new Room(tavernRoom, Direction.north, wilderness.getId());
-        tavern.registerComponent(tavernRoom);
+
+        tavern.registerComponent(
+                new Room(Map.of(Direction.north, wilderness.getId())));
         // TODO needs random
         final Optional<Entity> randomLair = store.stream().component(Lair.class)
                 .map(l -> l.getEntity().get()).findAny();
@@ -110,6 +107,9 @@ public final class WorldService implements Service {
                     tavern.getId(), Direction.north,
                     randomLair.get().getComponent(Lair.class).getEntrace())));
         }
+
+        store.commit(tavern);
+        store.commit(wilderness);
     }
 
     @Override

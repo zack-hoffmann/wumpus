@@ -95,6 +95,8 @@ public final class ExaminingService implements Service {
 
         out.append(" " + target.getShortDescription() + ". ---O\n");
 
+        out.append(target.getLongDescription() + "\n");
+
         targetContents.stream().map(id -> store.get(id).get())
                 .collect(EntityStream.collector()).component(Descriptive.class)
                 .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {

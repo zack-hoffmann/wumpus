@@ -10,10 +10,10 @@ import wumpus.engine.entity.component.Component;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Item;
-import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
+import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Transit;
 import wumpus.io.IOAdapter;
 
@@ -159,18 +159,16 @@ public final class PlayerService implements Service {
 
     @Override
     public void tick() {
-        final Optional<Lair> defaultLair = store.stream().component(Lair.class)
+        final Optional<Tavern> start = store.stream().component(Tavern.class)
                 .findAny();
 
-        // If a default lair is available, move all players with no location to
-        // that lair entrance.
-        if (defaultLair.isPresent()) {
+        if (start.isPresent()) {
             store.stream().components(Set.of(Player.class, Physical.class))
                     .map(m -> m.getByComponent(Physical.class))
                     .filter(p -> p.getLocation().isEmpty())
                     .map(p -> p.getEntity().get())
-                    .forEach(e -> e.registerComponent(
-                            new Transit(defaultLair.get().getEntrace())));
+                    .forEach(e -> e.registerComponent(new Transit(
+                            start.get().getEntity().get().getId())));
         }
     }
 
