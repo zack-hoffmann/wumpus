@@ -270,8 +270,14 @@ public final class LairService implements Service {
                 "In the forest floor there is a big hole, with the stench of a"
                         + " wumpus rising from it. "));
         entrance.registerComponent(new Container());
+        final Room firstRoomE = store.get(firstRoom).get()
+                .getComponent(Room.class);
+        firstRoomE.registerComponent(
+                new Room(firstRoomE, Direction.up, entrance.getId()));
         lair.registerComponent(new Lair(entrance.getId(), wumpus));
         store.commit(lair);
+        store.commit(entrance);
+        store.commit(firstRoomE.getEntity().get());
         return lair.getId();
     }
 

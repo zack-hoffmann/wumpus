@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import wumpus.engine.command.CommandLibrary;
 import wumpus.engine.command.Debug;
+import wumpus.engine.command.Down;
 import wumpus.engine.command.East;
 import wumpus.engine.command.Inventory;
 import wumpus.engine.command.Look;
@@ -23,6 +24,7 @@ import wumpus.engine.command.North;
 import wumpus.engine.command.Quit;
 import wumpus.engine.command.Shoot;
 import wumpus.engine.command.South;
+import wumpus.engine.command.Up;
 import wumpus.engine.command.West;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
@@ -76,8 +78,9 @@ public class App implements Runnable {
         final StandardIOAdapter io = new StandardIOAdapter(ioServ);
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary(new Quit(), new Move(),
-                new North(), new East(), new South(), new West(), new Shoot(),
-                new Debug(), new Look(), new Inventory());
+                new North(), new East(), new South(), new West(), new Up(),
+                new Down(), new Shoot(), new Debug(), new Look(),
+                new Inventory());
 
         final PlayerService players = new PlayerService(store);
         final long player = players.createPlayer(STARTING_ARROWS);

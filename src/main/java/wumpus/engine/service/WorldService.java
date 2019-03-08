@@ -83,7 +83,7 @@ public final class WorldService implements Service {
         e.registerComponent(new Wilderness());
         e.registerComponent(new Container());
         e.registerComponent(new Room());
-        e.registerComponent(new Descriptive("The Wilderness", WILDERNESS_DESC));
+        e.registerComponent(new Descriptive("the wilderness", WILDERNESS_DESC));
         store.commit(e);
         return e;
     }
@@ -103,9 +103,14 @@ public final class WorldService implements Service {
         final Optional<Entity> randomLair = store.stream().component(Lair.class)
                 .map(l -> l.getEntity().get()).findAny();
         if (randomLair.isPresent()) {
+            final Lair lair = randomLair.get().getComponent(Lair.class);
+            final Room entrace = store.get(lair.getEntrace()).get()
+                    .getComponent(Room.class);
+            lair.registerComponent(
+                    new Room(entrace, Direction.south, wilderness.getId()));
+            store.commit(lair.getEntity().get());
             wilderness.registerComponent(new Room(Map.of(Direction.south,
-                    tavern.getId(), Direction.north,
-                    randomLair.get().getComponent(Lair.class).getEntrace())));
+                    tavern.getId(), Direction.north, lair.getEntrace())));
         }
 
         store.commit(tavern);

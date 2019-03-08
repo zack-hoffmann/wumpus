@@ -57,17 +57,6 @@ public final class LairServiceTest {
     }
 
     /**
-     * Verify that empty lair does not have legal entrace entity.
-     */
-    public void emptyLairHasNoEntrance() {
-        final int size = 0;
-        final LairService s = new LairService(store);
-        final Optional<Entity> e = store.get(s.createLair(size));
-        assertTrue(e.orElse(Testing.badEntitySupplier().get())
-                .getComponent(Lair.class).getEntrace() < 0);
-    }
-
-    /**
      * Verify that non-empty lair has an entrance entity.
      */
     public void lairHasEntrance() {
@@ -88,18 +77,6 @@ public final class LairServiceTest {
         final Optional<Entity> e = store.get(s.createLair(size));
         assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Container.class));
-    }
-
-    /**
-     * Verify that an empty lair can be created.
-     */
-    @Test
-    public void emptyLair() {
-        final int size = 0;
-        final LairService s = new LairService(store);
-        final Optional<Entity> e = store.get(s.createLair(size));
-        assertEquals(size, e.get().getComponent(Container.class).getContents()
-                .size());
     }
 
     /**
