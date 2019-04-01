@@ -110,9 +110,9 @@ public final class ExaminingService implements Service {
                         }
                     } else if (d.hasComponent(Dead.class)) {
                         return "The corpse of " + d.getShortDescription()
-                                + " is ";
+                                + " is";
                     } else {
-                        return d.getShortDescription() + " is ";
+                        return d.getShortDescription() + " is";
                     }
                 }).map(d -> TextTools.capitalize(d))
                 .forEach(d -> out.append("   " + d + " here.\n"));

@@ -222,6 +222,15 @@ public final class LairService implements Service {
                 .filter(Objects::nonNull).mapToLong(Entity::getId).toArray();
     }
 
+    /**
+     * Helper method for generating lair wumpus.
+     *
+     * @param rooms
+     *                      lair rooms
+     * @param firstRoom
+     *                      starting room to not put wumpus in
+     * @return ID of new wumpus entity
+     */
     private long generateWumpus(final long[] rooms, final long firstRoom) {
         if (rooms.length > 1) {
             long wumpusRoom;

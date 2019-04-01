@@ -41,7 +41,8 @@ public final class Entity implements ComponentRegistry {
          */
         public ComponentMap(final Entity e) {
             entity = e;
-            delegate = new ConcurrentHashMap<Class<? extends Component>, Component>();
+            delegate = new ConcurrentHashMap<Class<? extends Component>, //
+                    Component>();
         }
 
         /**
@@ -174,8 +175,8 @@ public final class Entity implements ComponentRegistry {
     public void registerComponent(final Component component) {
         components.put(component.getClass(), component);
         component.defaultDepedencies().stream()
-                .filter(c -> hasComponent(c.getClass()))
-                .forEach(c -> components.put(c.getClass(), c));
+                .filter(c -> !hasComponent(c.getClass()))
+                .forEach(c -> registerComponent(c));
         this.backRegister(component);
     }
 
