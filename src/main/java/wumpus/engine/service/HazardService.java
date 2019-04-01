@@ -87,25 +87,6 @@ public final class HazardService implements Service {
     }
 
     /**
-     * Create a new wumpus entity at a location.
-     *
-     * @param location
-     *                     the entity ID of the container to put the wumpus in
-     * @return the entity ID of the new wumpus
-     */
-    public long createWumpus(final long location) {
-        final Entity wumpus = store.create();
-        wumpus.registerComponent(new Wumpus());
-        wumpus.registerComponent(new Physical());
-        wumpus.registerComponent(new Hazard());
-        wumpus.registerComponent(new Transit(location));
-        wumpus.registerComponent(new Descriptive("a wumpus",
-                "a huge, filthy, smelly, savage wumpus"));
-        store.commit(wumpus);
-        return wumpus.getId();
-    }
-
-    /**
      * Add a Super Bat at the given room entity.
      *
      * @param location

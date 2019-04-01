@@ -1,6 +1,7 @@
 package wumpus.engine.entity.component;
 
 import java.util.Optional;
+import java.util.Set;
 
 import wumpus.engine.entity.Entity;
 
@@ -16,6 +17,17 @@ public interface Component {
      */
     default Optional<Entity> getEntity() {
         return Optional.empty();
+    }
+
+    /**
+     * Get a set of components which an entity with this component must also
+     * have. These should only be applied if the entity does not already have
+     * these components, regardless of value.
+     *
+     * @return a set of default dependency components
+     */
+    default Set<Component> defaultDepedencies() {
+        return Set.of();
     }
 
 }

@@ -222,6 +222,22 @@ public final class LairService implements Service {
                 .filter(Objects::nonNull).mapToLong(Entity::getId).toArray();
     }
 
+    private long generateWumpus(final long[] rooms, final long firstRoom) {
+        if (rooms.length > 1) {
+            long wumpusRoom;
+            do {
+                wumpusRoom = rooms[random.get() % rooms.length];
+            } while (wumpusRoom == firstRoom);
+            final Entity we = store.create();
+            we.registerComponent(new Wumpus());
+            we.registerComponent(new Transit(wumpusRoom));
+            store.commit(we);
+            return we.getId();
+        } else {
+            return -1L;
+        }
+    }
+
     /**
      * Create a new layer with a given number of rooms.
      *
@@ -234,17 +250,10 @@ public final class LairService implements Service {
         final Entity lair = store.create();
         final long[] rooms = generateRooms(size);
         lair.registerComponent(new Container(rooms));
-        long firstRoom = -1L;
-        long wumpus = -1L;
+        long firstRoom = rooms[random.get() % rooms.length];
+        long wumpus = generateWumpus(rooms, firstRoom);
         if (size > 0) {
-            firstRoom = rooms[random.get() % rooms.length];
-            if (size > 1) {
-                long wumpusRoom;
-                do {
-                    wumpusRoom = rooms[random.get() % rooms.length];
-                } while (wumpusRoom == firstRoom);
-                wumpus = hazards.createWumpus(wumpusRoom);
-            }
+
             for (int i = 0; i <= size / BAT_FACTOR; i++) {
                 long batRoom;
                 do {
