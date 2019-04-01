@@ -18,7 +18,6 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -102,7 +101,7 @@ public final class EntityStream implements Stream<Entity> {
      *
      * @param clazz
      *                  the component to match
-     * @param       <C>
+     * @param <C>
      *                  the component type to match
      * @return a stream of those components from the given entities
      */
@@ -124,11 +123,7 @@ public final class EntityStream implements Stream<Entity> {
         return delegate
                 .filter(e -> clazzes.stream().map(z -> e.hasComponent(z))
                         .reduce(true, (i, d) -> i && d))
-                .map(e -> new Entity.ComponentMap(e,
-                        e.getComponents().stream()
-                                .filter(com -> clazzes.contains(com.getClass()))
-                                .collect(Collectors.toMap(com -> com.getClass(),
-                                        Function.identity()))));
+                .map(e -> e.getComponentMap());
     }
 
     @Override

@@ -1,13 +1,12 @@
 package wumpus.engine.entity;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.ConcurrentHashMap;
 
 import wumpus.engine.entity.component.AbstractEntityComponent;
 import wumpus.engine.entity.component.Component;
@@ -38,23 +37,20 @@ public final class Entity implements ComponentRegistry {
          * Create component map with delegate inner map.
          *
          * @param e
-         *               the entity associated with this map
-         * @param cs
-         *               the map to wrap
+         *              the entity associated with this map
          */
-        public ComponentMap(final Entity e,
-                final Map<Class<? extends Component>, Component> cs) {
+        public ComponentMap(final Entity e) {
             entity = e;
-            delegate = cs;
+            delegate = new ConcurrentHashMap<Class<? extends Component>, Component>();
         }
 
         /**
          * Get a component from the map in a typesafe manner.
          *
          * @param c
-         *              the type of the component to get
-         * @param   <C>
-         *              the component type
+         *                the type of the component to get
+         * @param <C>
+         *                the component type
          * @return the matching component
          */
         public <C extends Component> C getByComponent(final Class<C> c) {
@@ -108,10 +104,11 @@ public final class Entity implements ComponentRegistry {
      */
     public Entity(final long i, final Component... cs) {
         this.id = i;
-        this.components = new ComponentMap(this,
-                Stream.of(cs).collect(Collectors.toConcurrentMap(
-                        c -> c.getClass(), Function.identity())));
-        this.components.values().stream().forEach(c -> this.backRegister(c));
+        this.components = new ComponentMap(this);
+        Arrays.stream(cs).forEach(c -> {
+            this.registerComponent(c);
+            this.backRegister(c);
+        });
     }
 
     /**
@@ -149,6 +146,15 @@ public final class Entity implements ComponentRegistry {
         return id;
     }
 
+    /**
+     * Get this entity's internal map of components.
+     *
+     * @return component map for this entity
+     */
+    public ComponentMap getComponentMap() {
+        return components;
+    }
+
     @Override
     public boolean hasComponent(final Class<? extends Component> c) {
         return components.keySet().contains(c);
@@ -167,6 +173,9 @@ public final class Entity implements ComponentRegistry {
     @Override
     public void registerComponent(final Component component) {
         components.put(component.getClass(), component);
+        component.defaultDepedencies().stream()
+                .filter(c -> hasComponent(c.getClass()))
+                .forEach(c -> components.put(c.getClass(), c));
         this.backRegister(component);
     }
 
