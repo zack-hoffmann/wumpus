@@ -18,11 +18,14 @@ import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
+import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
+import wumpus.engine.entity.component.PitTrap;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
+import wumpus.engine.entity.component.SuperBat;
 import wumpus.engine.entity.component.Transit;
 import wumpus.engine.entity.component.Wumpus;
 import wumpus.engine.type.Direction;
@@ -87,11 +90,6 @@ public final class LairService implements Service {
     private static final int DEFAULT_GAP_CHANCE = 15;
 
     /**
-     * Default size of a lair.
-     */
-    private static final int DEFAULT_SIZE = 20;
-
-    /**
      * The number of rooms required before an additional super bat is
      * introduced.
      */
@@ -125,18 +123,26 @@ public final class LairService implements Service {
     private final int gapChance;
 
     /**
+     * Default size of new lairs.
+     */
+    private final int defaultSize;
+
+    /**
      * Create a new lair service with a given entity store. This will use the
      * default random number supplier of Java Random seeded with the current
      * millisecond timestamp.
      *
      * @param s
-     *              the entity store for this service
+     *               the entity store for this service
+     * @param ds
+     *               the default lair size
      */
-    public LairService(final EntityStore s) {
+    public LairService(final EntityStore s, final int ds) {
         this.store = s;
         final Random ran = new Random(System.currentTimeMillis());
         this.random = () -> ran.nextInt(MAX_RAND_GEN) + 1;
         this.gapChance = DEFAULT_GAP_CHANCE;
+        this.defaultSize = ds;
     }
 
     /**
@@ -212,7 +218,6 @@ public final class LairService implements Service {
                             "a dark cavern",
                             "This room is lit low by your lantern, but you "
                                     + "cannot see very far."));
-                    grid[i][j].registerComponent(new Container());
                     store.commit(grid[i][j]);
                 }
             }
@@ -248,38 +253,65 @@ public final class LairService implements Service {
     }
 
     /**
+     * Helper method for generating lair super bats.
+     *
+     * @param rooms
+     *                      lair rooms
+     * @param firstRoom
+     *                      starting room to not put bats in
+     */
+    private void generateBats(final long[] rooms, final long firstRoom) {
+        for (int i = 0; i <= rooms.length / BAT_FACTOR; i++) {
+            long batRoom;
+            do {
+                batRoom = rooms[random.get() % rooms.length];
+            } while (batRoom == firstRoom);
+
+            final Entity bat = store.create();
+            bat.registerComponent(new SuperBat());
+            bat.registerComponent(new Transit(batRoom));
+            store.commit(bat);
+        }
+    }
+
+    /**
+     * Helper method for generating pit traps.
+     *
+     * @param rooms
+     *                      lair rooms
+     * @param firstRoom
+     *                      starting room to not put pit traps in
+     */
+    private void generatePits(final long[] rooms, final long firstRoom) {
+        for (int i = 0; i <= rooms.length / PIT_FACTOR; i++) {
+            long pitRoom;
+            do {
+                pitRoom = rooms[random.get() % rooms.length];
+            } while (pitRoom == firstRoom);
+
+            final Entity pit = store.create();
+            pit.registerComponent(new PitTrap());
+            pit.registerComponent(new Hidden());
+            pit.registerComponent(new Transit(pitRoom));
+            store.commit(pit);
+        }
+    }
+
+    /**
      * Create a new layer with a given number of rooms.
      *
      * @param size
      *                 the number of rooms to be generated in the lair.
      * @return the ID of the generated lair.
      */
-    public long createLair(final int size) {
-        final HazardService hazards = new HazardService(store);
+    private long createLair(final int size) {
         final Entity lair = store.create();
         final long[] rooms = generateRooms(size);
         lair.registerComponent(new Container(rooms));
         long firstRoom = rooms[random.get() % rooms.length];
         long wumpus = generateWumpus(rooms, firstRoom);
-        if (size > 0) {
-
-            for (int i = 0; i <= size / BAT_FACTOR; i++) {
-                long batRoom;
-                do {
-                    batRoom = rooms[random.get() % rooms.length];
-
-                } while (batRoom == firstRoom);
-                hazards.createBat(batRoom);
-            }
-            for (int i = 0; i <= size / PIT_FACTOR; i++) {
-                long pitRoom;
-                do {
-                    pitRoom = rooms[random.get() % rooms.length];
-
-                } while (pitRoom == firstRoom);
-                hazards.createPitTrap(pitRoom);
-            }
-        }
+        generateBats(rooms, firstRoom);
+        generatePits(rooms, firstRoom);
 
         final Entity entrance = store.create();
         entrance.registerComponent(new Room(Map.of(Direction.down, firstRoom)));
@@ -287,7 +319,6 @@ public final class LairService implements Service {
                 "the mouth of a cave opening",
                 "In the forest floor there is a big hole, with the stench of a"
                         + " wumpus rising from it. "));
-        entrance.registerComponent(new Container());
         final Room firstRoomE = store.get(firstRoom).get()
                 .getComponent(Room.class);
         firstRoomE.registerComponent(
@@ -305,7 +336,7 @@ public final class LairService implements Service {
                 .findAny();
         if (defaultLair.isEmpty()) {
             LOG.info("No lair found.  Creating a new default.");
-            createLair(DEFAULT_SIZE);
+            createLair(defaultSize);
         }
 
         final StringBuilder exs = new StringBuilder();

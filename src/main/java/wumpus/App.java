@@ -49,6 +49,11 @@ public class App implements Runnable {
     private static final Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
+     * Default size of a lair.
+     */
+    private static final int DEFAULT_SIZE = 20;
+
+    /**
      * Starting arrow count.
      */
     private static final int STARTING_ARROWS = 3;
@@ -88,7 +93,7 @@ public class App implements Runnable {
         final Set<Service> services = new HashSet<>();
         services.add(players);
         services.add(new WorldService(store));
-        services.add(new LairService(store));
+        services.add(new LairService(store, DEFAULT_SIZE));
         services.add(new TransitService(store));
         services.add(new ExaminingService(store));
         services.add(new HazardService(store));

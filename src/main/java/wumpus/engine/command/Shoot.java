@@ -44,6 +44,7 @@ public final class Shoot implements Command {
         } else if (direction.isEmpty()) {
             return "Not a valid direction.";
         } else {
+            // TODO shooting in an invalid direction not getting picked up (NPE)
             final Optional<Entity> dest = store.get(store
                     .get(location.getAsLong()).get().getComponent(Room.class)
                     .getLinkedRooms().get(direction.get()));

@@ -6,13 +6,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
-import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Hazard;
 import wumpus.engine.entity.component.Hidden;
 import wumpus.engine.entity.component.Listener;
@@ -84,46 +82,6 @@ public final class HazardService implements Service {
      */
     public HazardService(final EntityStore s) {
         this.store = s;
-    }
-
-    /**
-     * Add a Super Bat at the given room entity.
-     *
-     * @param location
-     *                     entity ID of a room to put the bat in
-     * @return the entity ID of the new bat
-     */
-    public long createBat(final long location) {
-        final Entity bat = store.create();
-        bat.registerComponent(new SuperBat());
-        bat.registerComponent(new Hazard());
-        bat.registerComponent(new Physical());
-        bat.registerComponent(new Transit(location));
-        bat.registerComponent(new Descriptive("a super bat",
-                "a massive bat with an ear-piercing screech"));
-        store.commit(bat);
-        return bat.getId();
-    }
-
-    /**
-     * Add a pit trap at the given room entity.
-     *
-     * @param location
-     *                     entity ID of a room to put the pit in
-     * @return the entity ID of the new pit
-     */
-    public long createPitTrap(final long location) {
-        final Entity pit = store.create();
-        pit.registerComponent(new PitTrap());
-        pit.registerComponent(new Hazard());
-        pit.registerComponent(new Physical());
-        pit.registerComponent(new Hidden());
-        pit.registerComponent(new Transit(location));
-        pit.registerComponent(
-                new Descriptive("a pit trap", "a seemingly endless dark pit"));
-
-        store.commit(pit);
-        return pit.getId();
     }
 
     /**

@@ -1,6 +1,7 @@
 package wumpus.engine.entity.component;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import wumpus.engine.type.Direction;
@@ -57,5 +58,10 @@ public final class Room extends AbstractEntityComponent {
      */
     public Map<Direction, Long> getLinkedRooms() {
         return linkedRooms;
+    }
+
+    @Override
+    public Set<Component> defaultDepedencies() {
+        return Set.of(new Container());
     }
 }

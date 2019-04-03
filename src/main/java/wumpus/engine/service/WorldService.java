@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
-import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Room;
@@ -65,7 +64,6 @@ public final class WorldService implements Service {
     private Entity createTavern() {
         final Entity e = store.create();
         e.registerComponent(new Tavern());
-        e.registerComponent(new Container());
         e.registerComponent(new Room());
         e.registerComponent(
                 new Descriptive("The 'Booth and Ale' Tavern", TAVERN_DESC));
@@ -81,7 +79,6 @@ public final class WorldService implements Service {
     private Entity createWilderness() {
         final Entity e = store.create();
         e.registerComponent(new Wilderness());
-        e.registerComponent(new Container());
         e.registerComponent(new Room());
         e.registerComponent(new Descriptive("the wilderness", WILDERNESS_DESC));
         store.commit(e);
