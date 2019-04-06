@@ -1,5 +1,7 @@
 package wumpus.engine.entity.component;
 
+import java.util.Set;
+
 /**
  * Describes an entity which is controlled by a player.
  */
@@ -27,5 +29,10 @@ public final class Player extends AbstractEntityComponent {
      */
     public long getInventory() {
         return inventory;
+    }
+
+    @Override
+    public Set<Component> defaultDepedencies() {
+        return Set.of(new Physical());
     }
 }

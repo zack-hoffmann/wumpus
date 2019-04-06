@@ -26,6 +26,7 @@ import wumpus.engine.command.Shoot;
 import wumpus.engine.command.South;
 import wumpus.engine.command.Up;
 import wumpus.engine.command.West;
+import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Listener;
@@ -52,11 +53,6 @@ public class App implements Runnable {
      * Default size of a lair.
      */
     private static final int DEFAULT_SIZE = 20;
-
-    /**
-     * Starting arrow count.
-     */
-    private static final int STARTING_ARROWS = 3;
 
     /**
      * Duration of a tick in milliseconds.
@@ -87,16 +83,19 @@ public class App implements Runnable {
                 new Down(), new Shoot(), new Debug(), new Look(),
                 new Inventory());
 
-        final PlayerService players = new PlayerService(store);
-        final long player = players.createPlayer(STARTING_ARROWS);
-        players.attachPlayer(player, io);
         final Set<Service> services = new HashSet<>();
-        services.add(players);
+        services.add(new PlayerService(store));
         services.add(new WorldService(store));
         services.add(new LairService(store, DEFAULT_SIZE));
         services.add(new TransitService(store));
         services.add(new ExaminingService(store));
         services.add(new HazardService(store));
+
+        final Entity player = store.create();
+        player.registerComponent(new Listener(m -> {
+            io.post("\n" + m.toString());
+        }));
+        store.commit(player);
 
         final ScheduledExecutorService tickService = Executors
                 .newScheduledThreadPool(1);
@@ -110,7 +109,7 @@ public class App implements Runnable {
 
         io.post("\nWelcome to Hunt the Wumpus by Zack Hoffmann!");
 
-        while (store.get(player).get().hasComponent(Listener.class)) {
+        while (store.get(player.getId()).get().hasComponent(Listener.class)) {
             Optional<String> i = io.poll();
             if (i.isPresent()) {
                 if (LOG.isLoggable(Level.FINE)) {
@@ -118,8 +117,8 @@ public class App implements Runnable {
                 }
                 final String[] tokens = i.get().split("\\s+");
                 if (tokens.length > 0 && tokens[0].trim().length() > 0) {
-                    final String response = lib.execute(tokens[0], player,
-                            store,
+                    final String response = lib.execute(tokens[0],
+                            player.getId(), store,
                             Arrays.copyOfRange(tokens, 1, tokens.length));
                     io.post(response);
                 }

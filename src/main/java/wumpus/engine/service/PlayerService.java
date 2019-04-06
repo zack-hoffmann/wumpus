@@ -8,14 +8,13 @@ import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Arrow;
 import wumpus.engine.entity.component.Component;
 import wumpus.engine.entity.component.Container;
-import wumpus.engine.entity.component.Descriptive;
+import wumpus.engine.entity.component.Inventory;
 import wumpus.engine.entity.component.Item;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Transit;
-import wumpus.io.IOAdapter;
 
 /**
  * Service for the managment of players.
@@ -45,66 +44,19 @@ public final class PlayerService implements Service {
     /**
      * Create a new player entity.
      *
-     * @param arrowCount
-     *                       starting arrow count
-     * @return the id of the new player entity
+     * @param e
+     *              the entity to associate the player component with
      */
-    public long createPlayer(final int arrowCount) {
+    private void createPlayer(final Entity e) {
         final Entity a = store.create();
         a.registerComponent(new Arrow());
-        a.registerComponent(new Descriptive("arrow"));
-        a.registerComponent(new Item(arrowCount));
         store.commit(a);
         final Entity i = store.create();
-        i.registerComponent(new Descriptive("the contents of your inventory"));
+        i.registerComponent(new Inventory());
         i.registerComponent(new Container(a.getId()));
         store.commit(i);
-        final Entity e = store.create();
         e.registerComponent(new Player(i.getId()));
-        e.registerComponent(new Physical());
         store.commit(e);
-        return e.getId();
-    }
-
-    /**
-     * Associate a player with an I/O-based listener.
-     *
-     * @param playerId
-     *                     entity ID of the player
-     * @param io
-     *                     I/O adapter for the player
-     */
-    public void attachPlayer(final long playerId, final IOAdapter io) {
-        store.get(playerId).ifPresent(e -> {
-            e.registerComponent(new Listener(m -> {
-                io.post("\n" + m.toString());
-            }));
-            store.commit(e);
-        });
-    }
-
-    /**
-     * Disassociate a player from their listener.
-     *
-     * @param playerId
-     *                     entity ID of the player
-     */
-    public void detachPlayer(final long playerId) {
-        store.get(playerId).ifPresent(e -> {
-            e.deregisterComponent(Listener.class);
-            store.commit(e);
-        });
-    }
-
-    /**
-     * Count the number of active players in the game. This goes by players with
-     * listeners attached.
-     *
-     * @return the number of players active in the game
-     */
-    public long getAttachedPlayerCount() {
-        return store.stream().components(Set.of(Player.class, Listener.class))
-                .count();
     }
 
     /**
@@ -159,6 +111,11 @@ public final class PlayerService implements Service {
 
     @Override
     public void tick() {
+        // Find listeners without players and attach
+        store.stream().component(Listener.class)
+                .filter(c -> !c.hasComponent(Player.class))
+                .forEach(l -> createPlayer(l.getEntity().get()));
+
         final Optional<Tavern> start = store.stream().component(Tavern.class)
                 .findAny();
 
