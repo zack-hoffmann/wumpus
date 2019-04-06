@@ -12,10 +12,11 @@ import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Hidden;
+import wumpus.engine.entity.component.Item;
 import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.PitTrap;
+import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Room;
-import wumpus.engine.service.PlayerService;
 import wumpus.engine.type.Direction;
 
 /**
@@ -26,10 +27,12 @@ public final class Shoot implements Command {
     @Override
     public String exec(final long source, final EntityStore store,
             final String... args) {
-        final PlayerService playerService = new PlayerService(store);
         final Entity se = store.get(source).get();
-        final Optional<Entity> arrows = playerService.getInventoryItem(source,
-                Arrow.class);
+        final Entity inventory = store
+                .get(se.getComponent(Player.class).getInventory()).get();
+        final Optional<Entity> arrows = inventory.getComponent(Container.class)
+                .getContents().stream().map(c -> store.get(c).get())
+                .filter(e -> e.hasComponent(Arrow.class)).findFirst();
         final OptionalLong location = se.getComponent(Physical.class)
                 .getLocation();
         final Optional<Direction> direction = Direction.match(args[0]);
@@ -51,7 +54,22 @@ public final class Shoot implements Command {
             if (dest.isEmpty()) {
                 return "You cannot shoot in that direction.";
             } else {
-                playerService.adjustInventoryItem(source, Arrow.class, -1);
+                final Container container = store
+                        .get(se.getComponent(Player.class).getInventory()).get()
+                        .getComponent(Container.class);
+                final Entity item = container.getContents().stream()
+                        .map(c -> store.get(c).get())
+                        .filter(e -> e.hasComponent(Arrow.class)).findFirst()
+                        .get();
+                final Item i = item.getComponent(Item.class);
+                if (i.getCount() - 1 <= 0) {
+                    container.registerComponent(
+                            new Container(container, c -> c != item.getId()));
+                    store.commit(container.getEntity().get());
+                } else {
+                    item.registerComponent(new Item(i, -1));
+                    store.commit(item);
+                }
                 final Stream<Entity> contents = dest.get()
                         .getComponent(Container.class).getContents().stream()
                         .map(l -> store.get(l).get());
