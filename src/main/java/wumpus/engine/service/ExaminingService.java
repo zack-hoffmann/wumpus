@@ -120,6 +120,7 @@ public final class ExaminingService implements Service {
         if (!exits.isEmpty()) {
             out.append("You see the following exits:\n");
             out.append(exits.entrySet().stream()
+                    .sorted((m, n) -> m.getKey().compareTo(n.getKey()))
                     .map(e -> "   " + TextTools.capitalize(e.getKey().name())
                             + " - "
                             + store.get(e.getValue()).get()
