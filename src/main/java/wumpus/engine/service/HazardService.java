@@ -30,7 +30,7 @@ public final class HazardService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 100;
+    private static final int PRIORITY = 100;
 
     /**
      * Message displayed to a player when a wumpus kills them.

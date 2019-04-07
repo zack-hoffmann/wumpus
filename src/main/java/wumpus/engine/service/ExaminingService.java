@@ -32,7 +32,7 @@ public final class ExaminingService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 20;
+    private static final int PRIORITY = 20;
 
     /**
      * The feel of a drafty pit.

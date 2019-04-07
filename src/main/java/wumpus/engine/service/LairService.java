@@ -41,7 +41,7 @@ public final class LairService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 80;
+    private static final int PRIORITY = 80;
 
     /**
      * Logger.

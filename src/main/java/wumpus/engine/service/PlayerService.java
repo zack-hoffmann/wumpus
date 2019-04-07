@@ -22,7 +22,7 @@ public final class PlayerService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 5;
+    private static final int PRIORITY = 5;
 
     /**
      * The entity store used by this service.

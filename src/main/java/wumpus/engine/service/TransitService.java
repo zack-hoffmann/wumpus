@@ -23,7 +23,7 @@ public final class TransitService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 10;
+    private static final int PRIORITY = 10;
 
     /**
      * The entity store used by this service.

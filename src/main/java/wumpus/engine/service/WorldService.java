@@ -20,7 +20,7 @@ public final class WorldService implements Service {
     /**
      * Execution priority of this service.
      */
-    public static final int PRIORITY = 79;
+    private static final int PRIORITY = 79;
 
     /**
      * Description of the tavern.
