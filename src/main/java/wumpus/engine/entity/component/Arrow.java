@@ -7,8 +7,13 @@ import java.util.Set;
  */
 public final class Arrow extends AbstractEntityComponent {
 
+    /**
+     * The number of arrows a player should start with.
+     */
+    private static final int DEFAULT_ARROWS = 3;
+
     @Override
     public Set<Component> defaultDepedencies() {
-        return Set.of(new Descriptive("arrow"), new Item(1));
+        return Set.of(new Descriptive("arrow"), new Item(DEFAULT_ARROWS));
     }
 }

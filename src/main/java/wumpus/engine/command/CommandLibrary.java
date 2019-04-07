@@ -43,6 +43,13 @@ public final class CommandLibrary {
     private static final Command INVALID = new InvalidCommand();
 
     /**
+     * Known game commands.
+     */
+    private static final Command[] COMMANDS = { new Quit(), new Move(),
+            new North(), new East(), new South(), new West(), new Up(),
+            new Down(), new Shoot(), new Debug(), new Look(), new Inventory() };
+
+    /**
      * Map of command names to commands.
      */
     private final Map<String, Command> nameMap;
@@ -58,10 +65,10 @@ public final class CommandLibrary {
      * @param commands
      *                     commands to initialize the library with
      */
-    public CommandLibrary(final Command... commands) {
-        this.nameMap = Arrays.stream(commands).collect(
+    public CommandLibrary() {
+        this.nameMap = Arrays.stream(COMMANDS).collect(
                 Collectors.toMap(c -> c.getName(), Function.identity()));
-        this.aliasMap = Arrays.stream(commands)
+        this.aliasMap = Arrays.stream(COMMANDS)
                 .map(c -> c.getAliases().stream()
                         .collect(Collectors.toMap(Function.identity(), s -> c)))
                 .map(m -> m.entrySet()).flatMap(s -> s.stream())
