@@ -64,7 +64,7 @@ public class App implements Runnable {
         LOG.fine("Fine logging is enabled.");
 
         final ExecutorService ioServ = Executors.newCachedThreadPool();
-        final StandardIOAdapter io = new StandardIOAdapter(ioServ);
+
         final EntityStore store = new MemoryEntityStore();
         final CommandLibrary lib = new CommandLibrary();
 
@@ -76,12 +76,6 @@ public class App implements Runnable {
         services.add(new ExaminingService(store));
         services.add(new HazardService(store));
 
-        final Entity player = store.create();
-        player.registerComponent(new Listener(m -> {
-            io.post("\n" + m.toString());
-        }));
-        store.commit(player);
-
         final ScheduledExecutorService tickService = Executors
                 .newScheduledThreadPool(1);
         tickService.scheduleAtFixedRate(
@@ -92,32 +86,10 @@ public class App implements Runnable {
 
         LOG.info("The game engine has started.");
 
-        io.post("\nWelcome to Hunt the Wumpus by Zack Hoffmann!");
-
-        while (store.get(player.getId()).get().hasComponent(Listener.class)) {
-            Optional<String> i = io.poll();
-            if (i.isPresent()) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Input found: " + i.get());
-                }
-                final String[] tokens = i.get().split("\\s+");
-                if (tokens.length > 0 && tokens[0].trim().length() > 0) {
-                    final String response = lib.execute(tokens[0],
-                            player.getId(), store,
-                            Arrays.copyOfRange(tokens, 1, tokens.length));
-                    io.post(response);
-                }
-            }
-        }
-        io.post("\nThank you for playing!\n<Press Enter to close>\n");
+        gameSession(ioServ, lib, store);
 
         LOG.info("Shutting down I/O.");
-        try {
-            io.shutdown();
-        } catch (IOException e) {
-            LOG.log(Level.WARNING,
-                    "Could not shut down I/O adapter completely.", e);
-        }
+
         ioServ.shutdown();
         try {
             ioServ.awaitTermination(1, TimeUnit.SECONDS);
@@ -135,5 +107,49 @@ public class App implements Runnable {
         }
 
         LOG.info("The game is now shut down.");
+    }
+
+    /**
+     * Controls the player's session with the game.
+     *
+     * @param serv
+     *                  the executor service for IO threads
+     * @param lib
+     *                  the command library
+     * @param store
+     *                  the entity store
+     */
+    private static void gameSession(final ExecutorService serv,
+            final CommandLibrary lib, final EntityStore store) {
+
+        final StandardIOAdapter io = new StandardIOAdapter(serv);
+        io.post("\nWelcome to Hunt the Wumpus by Zack Hoffmann!");
+        final Entity player = store.create();
+        player.registerComponent(new Listener(m -> {
+            io.post("\n" + m.toString());
+        }));
+        store.commit(player);
+        while (store.get(player.getId()).get().hasComponent(Listener.class)) {
+            Optional<String> i = io.poll();
+            if (i.isPresent()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Input found: " + i.get());
+                }
+                final String[] tokens = i.get().split("\\s+");
+                if (tokens.length > 0 && tokens[0].trim().length() > 0) {
+                    final String response = lib.execute(tokens[0],
+                            player.getId(), store,
+                            Arrays.copyOfRange(tokens, 1, tokens.length));
+                    io.post(response);
+                }
+            }
+        }
+        io.post("\nThank you for playing!\n<Press Enter to close>\n");
+        try {
+            io.shutdown();
+        } catch (IOException e) {
+            LOG.log(Level.WARNING,
+                    "Could not shut down I/O adapter completely.", e);
+        }
     }
 }

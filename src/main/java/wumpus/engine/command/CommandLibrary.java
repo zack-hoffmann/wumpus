@@ -1,6 +1,5 @@
 package wumpus.engine.command;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,9 +44,9 @@ public final class CommandLibrary {
     /**
      * Known game commands.
      */
-    private static final Command[] COMMANDS = { new Quit(), new Move(),
+    private static final Set<Command> COMMANDS = Set.of(new Quit(), new Move(),
             new North(), new East(), new South(), new West(), new Up(),
-            new Down(), new Shoot(), new Debug(), new Look(), new Inventory() };
+            new Down(), new Shoot(), new Debug(), new Look(), new Inventory());
 
     /**
      * Map of command names to commands.
@@ -61,14 +60,11 @@ public final class CommandLibrary {
 
     /**
      * Initialize the command library with a list of commands.
-     *
-     * @param commands
-     *                     commands to initialize the library with
      */
     public CommandLibrary() {
-        this.nameMap = Arrays.stream(COMMANDS).collect(
+        this.nameMap = COMMANDS.stream().collect(
                 Collectors.toMap(c -> c.getName(), Function.identity()));
-        this.aliasMap = Arrays.stream(COMMANDS)
+        this.aliasMap = COMMANDS.stream()
                 .map(c -> c.getAliases().stream()
                         .collect(Collectors.toMap(Function.identity(), s -> c)))
                 .map(m -> m.entrySet()).flatMap(s -> s.stream())
