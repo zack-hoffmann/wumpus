@@ -1,20 +1,14 @@
 package wumpus;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import wumpus.engine.command.CommandLibrary;
-import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Listener;
@@ -25,7 +19,7 @@ import wumpus.engine.service.PlayerService;
 import wumpus.engine.service.Service;
 import wumpus.engine.service.TransitService;
 import wumpus.engine.service.WorldService;
-import wumpus.io.StandardIOAdapter;
+import wumpus.io.SessionManager;
 
 /**
  * Application instance for the wumpus game.
@@ -63,10 +57,7 @@ public class App implements Runnable {
         LOG.info("The game engine is starting...");
         LOG.fine("Fine logging is enabled.");
 
-        final ExecutorService ioServ = Executors.newCachedThreadPool();
-
         final EntityStore store = new MemoryEntityStore();
-        final CommandLibrary lib = new CommandLibrary();
 
         final Set<Service> services = new HashSet<>();
         services.add(new PlayerService(store));
@@ -84,20 +75,19 @@ public class App implements Runnable {
                         .forEach(Service::tick),
                 0, TICK_IN_MILLIS, TimeUnit.MILLISECONDS);
 
+        final SessionManager sessions = new SessionManager(store);
+        sessions.start();
         LOG.info("The game engine has started.");
 
-        gameSession(ioServ, lib, store);
+        sessions.create();
 
-        LOG.info("Shutting down I/O.");
-
-        ioServ.shutdown();
-        try {
-            ioServ.awaitTermination(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOG.log(Level.WARNING, "Interrupted while shutting down I/O.", e);
-        }
+        long count;
+        do {
+            count = store.stream().component(Listener.class).count();
+        } while (count > 0);
 
         LOG.info("Shutting down game services.");
+        sessions.stop();
         tickService.shutdown();
         try {
             tickService.awaitTermination(1, TimeUnit.SECONDS);
@@ -109,47 +99,4 @@ public class App implements Runnable {
         LOG.info("The game is now shut down.");
     }
 
-    /**
-     * Controls the player's session with the game.
-     *
-     * @param serv
-     *                  the executor service for IO threads
-     * @param lib
-     *                  the command library
-     * @param store
-     *                  the entity store
-     */
-    private static void gameSession(final ExecutorService serv,
-            final CommandLibrary lib, final EntityStore store) {
-
-        final StandardIOAdapter io = new StandardIOAdapter(serv);
-        io.post("\nWelcome to Hunt the Wumpus by Zack Hoffmann!");
-        final Entity player = store.create();
-        player.registerComponent(new Listener(m -> {
-            io.post("\n" + m.toString());
-        }));
-        store.commit(player);
-        while (store.get(player.getId()).get().hasComponent(Listener.class)) {
-            Optional<String> i = io.poll();
-            if (i.isPresent()) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Input found: " + i.get());
-                }
-                final String[] tokens = i.get().split("\\s+");
-                if (tokens.length > 0 && tokens[0].trim().length() > 0) {
-                    final String response = lib.execute(tokens[0],
-                            player.getId(), store,
-                            Arrays.copyOfRange(tokens, 1, tokens.length));
-                    io.post(response);
-                }
-            }
-        }
-        io.post("\nThank you for playing!\n<Press Enter to close>\n");
-        try {
-            io.shutdown();
-        } catch (IOException e) {
-            LOG.log(Level.WARNING,
-                    "Could not shut down I/O adapter completely.", e);
-        }
-    }
 }

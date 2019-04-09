@@ -31,4 +31,10 @@ public interface IOAdapter {
      */
     void shutdown() throws IOException;
 
+    /**
+     * Determines if input and output streams are open.
+     *
+     * @return true is both are open
+     */
+    boolean isOpen();
 }

@@ -73,4 +73,9 @@ public final class StandardIOAdapter implements IOAdapter {
         inRunner.stop();
         outRunner.stop();
     }
+
+    @Override
+    public boolean isOpen() {
+        return inRunner.isRunning() && outRunner.isRunning();
+    }
 }
