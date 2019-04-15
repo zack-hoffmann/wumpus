@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.MemoryEntityStore;
 import wumpus.engine.entity.component.Listener;
+import wumpus.engine.service.CooldownService;
 import wumpus.engine.service.ExaminingService;
 import wumpus.engine.service.HazardService;
 import wumpus.engine.service.LairService;
@@ -60,6 +61,7 @@ public class App implements Runnable {
         final EntityStore store = new MemoryEntityStore();
 
         final Set<Service> services = new HashSet<>();
+        services.add(new CooldownService(store));
         services.add(new PlayerService(store));
         services.add(new WorldService(store));
         services.add(new LairService(store, DEFAULT_SIZE));

@@ -7,6 +7,8 @@ import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Arrow;
 import wumpus.engine.entity.component.Container;
+import wumpus.engine.entity.component.Cooldown;
+import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Inventory;
 import wumpus.engine.entity.component.Listener;
 import wumpus.engine.entity.component.Physical;
@@ -23,6 +25,12 @@ public final class PlayerService implements Service {
      * Execution priority of this service.
      */
     private static final int PRIORITY = 5;
+
+    /**
+     * Message to display on player respawn.
+     */
+    private static final String RESPAWN = "Your soul is whisked away in to the "
+            + "body of a new adventurer!";
 
     /**
      * The entity store used by this service.
@@ -46,6 +54,16 @@ public final class PlayerService implements Service {
      *              the entity to associate the player component with
      */
     private void createPlayer(final Entity e) {
+        e.registerComponent(new Player(newPlayerInventory()));
+        store.commit(e);
+    }
+
+    /**
+     * Generate the inventory of a new player.
+     *
+     * @return the entity ID of the new inventory
+     */
+    private long newPlayerInventory() {
         final Entity a = store.create();
         a.registerComponent(new Arrow());
         store.commit(a);
@@ -53,8 +71,7 @@ public final class PlayerService implements Service {
         i.registerComponent(new Inventory());
         i.registerComponent(new Container(a.getId()));
         store.commit(i);
-        e.registerComponent(new Player(i.getId()));
-        store.commit(e);
+        return i.getId();
     }
 
     @Override
@@ -74,6 +91,17 @@ public final class PlayerService implements Service {
                     .map(p -> p.getEntity().get())
                     .forEach(e -> e.registerComponent(new Transit(
                             start.get().getEntity().get().getId())));
+            store.stream().components(Set.of(Player.class, Dead.class))
+                    .map(cm -> cm.getEntity())
+                    .filter(e -> !e.hasComponent(Cooldown.class)).forEach(e -> {
+                        e.deregisterComponent(Dead.class);
+                        e.registerComponent(new Player(newPlayerInventory()));
+                        e.registerComponent(new Transit(
+                                e.getComponent(Physical.class).getLocation()
+                                        .getAsLong(),
+                                start.get().getEntity().get().getId()));
+                        e.getComponent(Listener.class).tell(RESPAWN);
+                    });
         }
     }
 

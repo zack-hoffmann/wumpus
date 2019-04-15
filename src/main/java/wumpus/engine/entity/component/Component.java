@@ -1,5 +1,7 @@
 package wumpus.engine.entity.component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +30,15 @@ public interface Component {
      */
     default Set<Component> defaultDepedencies() {
         return Set.of();
+    }
+
+    /**
+     * Specify values to return to debug services.
+     *
+     * @return values to display
+     */
+    default List<String> debug() {
+        return new ArrayList<>();
     }
 
 }
