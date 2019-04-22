@@ -83,10 +83,10 @@ public class App implements Runnable {
 
         sessions.create();
 
-        long count;
-        do {
+        long count = store.stream().component(Listener.class).count();
+        while (count > 0) {
             count = store.stream().component(Listener.class).count();
-        } while (count > 0);
+        }
 
         LOG.info("Shutting down game services.");
         sessions.stop();

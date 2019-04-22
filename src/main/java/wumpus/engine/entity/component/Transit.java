@@ -1,5 +1,6 @@
 package wumpus.engine.entity.component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,8 +21,10 @@ public final class Transit extends AbstractEntityComponent {
     /**
      * Create component with from and to locations.
      *
-     * @param f entity coming from
-     * @param t entity going to
+     * @param f
+     *              entity coming from
+     * @param t
+     *              entity going to
      */
     public Transit(final long f, final long t) {
         this.from = Optional.of(f);
@@ -33,7 +36,8 @@ public final class Transit extends AbstractEntityComponent {
      *
      * Used in cases where the entity is being moved in to the world.
      *
-     * @param t entity going to
+     * @param t
+     *              entity going to
      */
     public Transit(final long t) {
         this.from = Optional.empty();
@@ -56,5 +60,14 @@ public final class Transit extends AbstractEntityComponent {
      */
     public long getTo() {
         return to;
+    }
+
+    @Override
+    public List<String> debug() {
+        if (from.isPresent()) {
+            return List.of(Long.toString(from.get()), Long.toString(to));
+        } else {
+            return List.of(Long.toString(to));
+        }
     }
 }

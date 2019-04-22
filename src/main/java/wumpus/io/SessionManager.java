@@ -2,9 +2,9 @@ package wumpus.io;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -58,7 +58,7 @@ public final class SessionManager {
      *              the entity store this manager should use
      */
     public SessionManager(final EntityStore s) {
-        sessions = new HashSet<>();
+        sessions = ConcurrentHashMap.newKeySet();
         service = Executors.newCachedThreadPool();
         library = new CommandLibrary();
         store = s;

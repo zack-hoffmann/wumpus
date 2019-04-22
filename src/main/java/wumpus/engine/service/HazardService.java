@@ -119,19 +119,14 @@ public final class HazardService implements Service {
      * Action of a player encountering a pit trap.
      *
      * @param player
-     *                     the player component
+     *                   the player component
      * @param pit
-     *                     the pit component
-     * @param location
-     *                     the id of the location where this encounter takes
-     *                     place
+     *                   the pit component
      */
-    private void pitTrigger(final Player player, final PitTrap pit,
-            final long location) {
+    private void pitTrigger(final Player player, final PitTrap pit) {
         if (pit.hasComponent(Hidden.class)) {
             pit.deregisterComponent(Hidden.class);
             player.registerComponent(new Dead());
-            player.registerComponent(new Transit(location, -1));
             store.commit(pit.getEntity().get());
             store.commit(pit.getEntity().get());
             if (player.hasComponent(Listener.class)) {
@@ -177,7 +172,7 @@ public final class HazardService implements Service {
                                     e.getComponent(SuperBat.class), loc);
                         } else if (e.hasComponent(PitTrap.class)) {
                             pitTrigger(player.get(),
-                                    e.getComponent(PitTrap.class), loc);
+                                    e.getComponent(PitTrap.class));
                         } else if (e.hasComponent(Wumpus.class)) {
                             wumpusKill(player.get(),
                                     e.getComponent(Wumpus.class));
