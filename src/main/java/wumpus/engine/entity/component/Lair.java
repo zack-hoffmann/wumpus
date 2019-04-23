@@ -1,5 +1,7 @@
 package wumpus.engine.entity.component;
 
+import java.util.Set;
+
 /**
  * Representing an entity which is a wumpus lair.
  */
@@ -46,4 +48,8 @@ public final class Lair extends AbstractEntityComponent {
         return wumpus;
     }
 
+    @Override
+    public Set<Component> dependencies() {
+        return Set.of(new Zone());
+    }
 }

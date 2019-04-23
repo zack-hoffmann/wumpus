@@ -3,6 +3,7 @@ package wumpus.engine.entity.component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -39,24 +40,28 @@ public final class Container extends AbstractEntityComponent {
     /**
      * Build a container from another container.
      *
-     * @param c the original container to build from
-     * @param cs additional entities to add to the container
+     * @param c
+     *               the original container to build from
+     * @param cs
+     *               additional entities to add to the container
      */
     public Container(final Container c, final long... cs) {
-        contents = Stream.concat(c.getContents().stream(),
-                    Arrays.stream(cs).boxed())
+        contents = Stream
+                .concat(c.getContents().stream(), Arrays.stream(cs).boxed())
                 .collect(Collectors.toUnmodifiableSet());
     }
 
     /**
      * Build a container from a subset of another container.
      *
-     * @param c the original container to build from
-     * @param rem the condition of entities to keep
+     * @param c
+     *                the original container to build from
+     * @param rem
+     *                the condition of entities to keep
      */
     public Container(final Container c, final Predicate<Long> rem) {
         contents = c.getContents().stream().filter(rem)
-            .collect(Collectors.toUnmodifiableSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -66,5 +71,11 @@ public final class Container extends AbstractEntityComponent {
      */
     public Set<Long> getContents() {
         return contents;
+    }
+
+    @Override
+    public List<String> debug() {
+        return List.of("[" + contents.stream().map(l -> l.toString())
+                .collect(Collectors.joining(",")) + "]");
     }
 }

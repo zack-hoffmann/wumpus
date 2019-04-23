@@ -2,6 +2,7 @@ package wumpus.engine.service;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -153,7 +154,7 @@ public final class LairService implements Service {
      *
      * @return the array of IDs for the generated rooms
      */
-    private long[] generateRooms(final int size) {
+    private List<Long> generateRooms(final int size) {
         final int h = size * 2;
         final int v = size * 2;
         final Entity[][] grid = new Entity[h][v];
@@ -224,7 +225,8 @@ public final class LairService implements Service {
         }
 
         return Arrays.stream(grid).flatMap(a -> Arrays.stream(a))
-                .filter(Objects::nonNull).mapToLong(Entity::getId).toArray();
+                .filter(Objects::nonNull).map(Entity::getId)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -236,11 +238,11 @@ public final class LairService implements Service {
      *                      starting room to not put wumpus in
      * @return ID of new wumpus entity
      */
-    private long generateWumpus(final long[] rooms, final long firstRoom) {
-        if (rooms.length > 1) {
+    private long generateWumpus(final List<Long> rooms, final long firstRoom) {
+        if (rooms.size() > 1) {
             long wumpusRoom;
             do {
-                wumpusRoom = rooms[random.get() % rooms.length];
+                wumpusRoom = rooms.get(random.get() % rooms.size());
             } while (wumpusRoom == firstRoom);
             final Entity we = store.create();
             we.registerComponent(new Wumpus());
@@ -259,19 +261,24 @@ public final class LairService implements Service {
      *                      lair rooms
      * @param firstRoom
      *                      starting room to not put bats in
+     * @return the set of entity IDs generated
      */
-    private void generateBats(final long[] rooms, final long firstRoom) {
-        for (int i = 0; i <= rooms.length / BAT_FACTOR; i++) {
+    private Set<Long> generateBats(final List<Long> rooms,
+            final long firstRoom) {
+        Set<Long> bats = new HashSet<>();
+        for (int i = 0; i <= rooms.size() / BAT_FACTOR; i++) {
             long batRoom;
             do {
-                batRoom = rooms[random.get() % rooms.length];
+                batRoom = rooms.get(random.get() % rooms.size());
             } while (batRoom == firstRoom);
 
             final Entity bat = store.create();
             bat.registerComponent(new SuperBat());
             bat.registerComponent(new Transit(batRoom));
             store.commit(bat);
+            bats.add(bat.getId());
         }
+        return bats;
     }
 
     /**
@@ -281,12 +288,15 @@ public final class LairService implements Service {
      *                      lair rooms
      * @param firstRoom
      *                      starting room to not put pit traps in
+     * @return the set of entity IDs generated
      */
-    private void generatePits(final long[] rooms, final long firstRoom) {
-        for (int i = 0; i <= rooms.length / PIT_FACTOR; i++) {
+    private Set<Long> generatePits(final List<Long> rooms,
+            final long firstRoom) {
+        Set<Long> pits = new HashSet<>();
+        for (int i = 0; i <= rooms.size() / PIT_FACTOR; i++) {
             long pitRoom;
             do {
-                pitRoom = rooms[random.get() % rooms.length];
+                pitRoom = rooms.get(random.get() % rooms.size());
             } while (pitRoom == firstRoom);
 
             final Entity pit = store.create();
@@ -294,7 +304,9 @@ public final class LairService implements Service {
             pit.registerComponent(new Hidden());
             pit.registerComponent(new Transit(pitRoom));
             store.commit(pit);
+            pits.add(pit.getId());
         }
+        return pits;
     }
 
     /**
@@ -306,12 +318,16 @@ public final class LairService implements Service {
      */
     private long createLair(final int size) {
         final Entity lair = store.create();
-        final long[] rooms = generateRooms(size);
-        lair.registerComponent(new Container(rooms));
-        long firstRoom = rooms[random.get() % rooms.length];
-        long wumpus = generateWumpus(rooms, firstRoom);
-        generateBats(rooms, firstRoom);
-        generatePits(rooms, firstRoom);
+        final List<Long> rooms = generateRooms(size);
+        final long firstRoom = rooms.get(random.get() % rooms.size());
+        final long wumpus = generateWumpus(rooms, firstRoom);
+        final Set<Long> bats = generateBats(rooms, firstRoom);
+        final Set<Long> pits = generatePits(rooms, firstRoom);
+        final Set<Long> contents = new HashSet<>();
+        contents.add(wumpus);
+        contents.addAll(rooms);
+        contents.addAll(bats);
+        contents.addAll(pits);
 
         final Entity entrance = store.create();
         entrance.registerComponent(new Room(Map.of(Direction.down, firstRoom)));
@@ -324,6 +340,8 @@ public final class LairService implements Service {
         firstRoomE.registerComponent(
                 new Room(firstRoomE, Direction.up, entrance.getId()));
         lair.registerComponent(new Lair(entrance.getId(), wumpus));
+        lair.registerComponent(new Container(
+                contents.stream().mapToLong(l -> l.longValue()).toArray()));
         store.commit(lair);
         store.commit(entrance);
         store.commit(firstRoomE.getEntity().get());

@@ -98,7 +98,9 @@ public final class LairServiceTest {
         final Optional<Entity> e = store.stream().component(Lair.class)
                 .map(c -> c.getEntity()).findFirst().get();
         assertEquals(size,
-                e.get().getComponent(Container.class).getContents().size());
+                e.get().getComponent(Container.class).getContents().stream()
+                        .map(l -> store.get(l).get())
+                        .filter(n -> n.hasComponent(Room.class)).count());
     }
 
     /**
