@@ -8,7 +8,7 @@ import java.util.Set;
 public final class Wumpus extends AbstractEntityComponent {
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Physical(), new Hazard(), new Descriptive("a wumpus",
                 "a huge, filthy, smelly, savage wumpus"));
     }

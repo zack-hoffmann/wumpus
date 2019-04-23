@@ -13,7 +13,7 @@ public final class Arrow extends AbstractEntityComponent {
     private static final int DEFAULT_ARROWS = 3;
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Descriptive("arrow"), new Item(DEFAULT_ARROWS));
     }
 }

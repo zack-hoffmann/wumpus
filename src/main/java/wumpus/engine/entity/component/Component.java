@@ -28,7 +28,7 @@ public interface Component {
      *
      * @return a set of default dependency components
      */
-    default Set<Component> defaultDepedencies() {
+    default Set<Component> dependencies() {
         return Set.of();
     }
 

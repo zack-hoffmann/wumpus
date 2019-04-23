@@ -174,7 +174,7 @@ public final class Entity implements ComponentRegistry {
     @Override
     public void registerComponent(final Component component) {
         components.put(component.getClass(), component);
-        component.defaultDepedencies().stream()
+        component.dependencies().stream()
                 .filter(c -> !hasComponent(c.getClass()))
                 .forEach(c -> registerComponent(c));
         this.backRegister(component);

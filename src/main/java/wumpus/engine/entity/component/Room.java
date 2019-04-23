@@ -61,7 +61,7 @@ public final class Room extends AbstractEntityComponent {
     }
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Container());
     }
 }

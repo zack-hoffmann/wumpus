@@ -13,7 +13,7 @@ public final class Dead extends AbstractEntityComponent {
     private static final int DEATH_COOLDOWN = 500;
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Cooldown(DEATH_COOLDOWN));
     }
 }

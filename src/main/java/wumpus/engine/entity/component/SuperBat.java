@@ -8,7 +8,7 @@ import java.util.Set;
 public final class SuperBat extends AbstractEntityComponent {
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Physical(), new Hazard(), new Descriptive(
                 "a super bat", "a massive bat with an ear-piercing screech"));
     }

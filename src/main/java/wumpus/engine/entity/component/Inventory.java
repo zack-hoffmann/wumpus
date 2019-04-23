@@ -8,7 +8,7 @@ import java.util.Set;
 public final class Inventory extends AbstractEntityComponent {
 
     @Override
-    public Set<Component> defaultDepedencies() {
+    public Set<Component> dependencies() {
         return Set.of(new Descriptive("the contents of your inventory"),
                 new Container());
     }
