@@ -61,18 +61,4 @@ public final class PlayerServiceTest {
                 .hasComponent(Physical.class));
     }
 
-    /**
-     * Verify that the generated player is stranded in the world space.
-     */
-    public void playerIsStranded() {
-        final PlayerService s = new PlayerService(store);
-        final Entity player = store.create();
-        player.registerComponent(new Listener(m -> {
-        }));
-        store.commit(player);
-        s.tick();
-        final Optional<Entity> e = store.get(player.getId());
-        Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
-                .getComponent(Physical.class).getLocation().isEmpty());
-    }
 }

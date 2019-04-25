@@ -1,6 +1,5 @@
 package wumpus.engine.command;
 
-import java.util.OptionalLong;
 import java.util.Set;
 
 import wumpus.engine.entity.Entity;
@@ -17,11 +16,11 @@ public final class Look implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         final Entity e = store.get(source).get();
-        final OptionalLong loc = e.getComponent(Physical.class).getLocation();
-        if (loc.isEmpty() || store.get(loc.getAsLong()).isEmpty()) {
+        final long loc = e.getComponent(Physical.class).getLocation();
+        if (store.get(loc).isEmpty()) {
             return "You are not sure where you are...";
         } else {
-            e.registerComponent(new Examining(loc.getAsLong()));
+            e.registerComponent(new Examining(loc));
             store.commit(e);
             return "You take a look around";
         }

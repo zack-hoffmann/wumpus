@@ -1,7 +1,6 @@
 package wumpus.engine.command;
 
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import wumpus.engine.entity.Entity;
@@ -21,27 +20,22 @@ public final class Move implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         final Entity se = store.get(source).get();
-        final OptionalLong location = se.getComponent(Physical.class)
-                .getLocation();
+        final long location = se.getComponent(Physical.class).getLocation();
         final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot move, for you are dead.";
-        } else if (location.isEmpty()) {
-            return "You cannot move from where you are...";
         } else if (args.length < 1) {
             return "You must provide a direction.";
         } else if (direction.isEmpty()) {
             return "Not a valid direction.";
         } else {
-            final Long dest = store.get(location.getAsLong()).get()
-                    .getComponent(Room.class).getLinkedRooms()
-                    .get(direction.get());
+            final Long dest = store.get(location).get().getComponent(Room.class)
+                    .getLinkedRooms().get(direction.get());
             if (dest == null) {
                 return "You cannot move in that direction.";
             } else {
 
-                store.get(source).get().registerComponent(
-                        new Transit(location.getAsLong(), dest));
+                store.get(source).get().registerComponent(new Transit(dest));
                 return "You head " + direction.get().name() + "...";
             }
         }

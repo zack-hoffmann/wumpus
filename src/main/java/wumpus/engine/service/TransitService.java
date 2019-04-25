@@ -57,12 +57,26 @@ public final class TransitService implements Service {
                 .forEach(m -> {
                     final Entity e = m.getEntity();
                     final Transit t = m.getByComponent(Transit.class);
+                    final Entity from = store
+                            .get(m.getByComponent(Physical.class).getLocation())
+                            .get();
+                    final Entity to = store.get(t.getTo()).get();
 
-                    t.getFrom().ifPresent(from -> {
-                        removeFromContainer(e, store.get(from).get());
-                    });
+                    final Container fromC = from.getComponent(Container.class);
+                    final Container toC = to.getComponent(Container.class);
 
-                    putInContainer(e, store.get(t.getTo()).get());
+                    final Predicate<Long> rem = (l -> l != e.getId());
+                    from.registerComponent(new Container(fromC, rem));
+                    to.registerComponent(new Container(toC, e.getId()));
+
+                    e.registerComponent(new Physical(to.getId()));
+                    if (e.hasComponent(Player.class)) {
+                        e.registerComponent(new Examining(to.getId()));
+                    }
+
+                    store.commit(from);
+                    store.commit(to);
+                    store.commit(e);
 
                     if (e.hasComponent(Wumpus.class)) {
                         wumpusMove(t);
@@ -75,52 +89,15 @@ public final class TransitService implements Service {
     }
 
     /**
-     * Remove an entity from a container.
-     *
-     * @param e
-     *                 the entity to remove
-     * @param from
-     *                 the entity of the container to remove from
-     */
-    private void removeFromContainer(final Entity e, final Entity from) {
-        e.registerComponent(new Physical());
-        final Container fromC = from.getComponent(Container.class);
-        final Predicate<Long> rem = (l -> l != e.getId());
-        from.registerComponent(new Container(fromC, rem));
-        store.commit(from);
-    }
-
-    /**
-     * Put an entity in a container.
-     *
-     * @param e
-     *               the entity to put
-     * @param to
-     *               the entity of the container to put in to
-     */
-    private void putInContainer(final Entity e, final Entity to) {
-        e.registerComponent(new Physical(to.getId()));
-        final Container toC = to.getComponent(Container.class);
-        to.registerComponent(new Container(toC, e.getId()));
-        if (e.hasComponent(Player.class)) {
-            e.registerComponent(new Examining(to.getId()));
-        }
-        store.commit(to);
-        store.commit(e);
-    }
-
-    /**
      * Process special actions for wumpus movement.
      *
      * @param t
      *              the location the wumpus is moving to
      */
     private void wumpusMove(final Transit t) {
-        if (t.getFrom().isPresent()) {
-            store.stream().components(Set.of(Player.class, Listener.class))
-                    .map(cm -> cm.getByComponent(Listener.class))
-                    .forEach(l -> l.tell(WUMPUS_MOVE));
-        }
+        store.stream().components(Set.of(Player.class, Listener.class))
+                .map(cm -> cm.getByComponent(Listener.class))
+                .forEach(l -> l.tell(WUMPUS_MOVE));
 
         store.get(t.getTo()).get().getComponent(Room.class).getLinkedRooms()
                 .values().stream().map(id -> store.get(id).get())

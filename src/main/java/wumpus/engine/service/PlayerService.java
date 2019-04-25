@@ -9,12 +9,13 @@ import wumpus.engine.entity.component.Arrow;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Cooldown;
 import wumpus.engine.entity.component.Dead;
+import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Inventory;
 import wumpus.engine.entity.component.Listener;
-import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Transit;
+import wumpus.engine.entity.component.Void;
 
 /**
  * Service for the managment of players.
@@ -54,7 +55,9 @@ public final class PlayerService implements Service {
      *              the entity to associate the player component with
      */
     private void createPlayer(final Entity e) {
-        e.registerComponent(new Player(newPlayerInventory()));
+        final long voidId = store.stream().component(Void.class)
+                .map(v -> v.getEntity().get()).findAny().get().getId();
+        e.registerComponent(new Player(newPlayerInventory(), voidId));
         store.commit(e);
     }
 
@@ -74,8 +77,25 @@ public final class PlayerService implements Service {
         return i.getId();
     }
 
+    /**
+     * Generate a void space.
+     *
+     * @return the entity of the new void
+     */
+    private Entity createVoid() {
+        final Entity e = store.create();
+        e.registerComponent(new Void());
+        e.registerComponent(new Descriptive("an infinite abyss", "nothing"));
+        e.registerComponent(new Container(e.getId()));
+        store.commit(e);
+        return e;
+    }
+
     @Override
     public void tick() {
+        if (!store.stream().component(Void.class).findAny().isPresent()) {
+            createVoid();
+        }
         // Find listeners without players and attach
         store.stream().component(Listener.class)
                 .filter(c -> !c.hasComponent(Player.class))
@@ -83,22 +103,23 @@ public final class PlayerService implements Service {
 
         final Optional<Tavern> start = store.stream().component(Tavern.class)
                 .findAny();
+        final Optional<Void> voidz = store.stream().component(Void.class)
+                .findAny();
 
-        if (start.isPresent()) {
-            store.stream().components(Set.of(Player.class, Physical.class))
-                    .map(m -> m.getByComponent(Physical.class))
-                    .filter(p -> p.getLocation().isEmpty())
-                    .map(p -> p.getEntity().get())
+        if (start.isPresent() && voidz.isPresent()) {
+            final Entity voide = voidz.get().getEntity().get();
+            voide.getComponent(Container.class).getContents().stream()
+                    .map(l -> store.get(l).get())
+                    .filter(e -> e.hasComponent(Player.class))
                     .forEach(e -> e.registerComponent(new Transit(
                             start.get().getEntity().get().getId())));
             store.stream().components(Set.of(Player.class, Dead.class))
                     .map(cm -> cm.getEntity())
                     .filter(e -> !e.hasComponent(Cooldown.class)).forEach(e -> {
                         e.deregisterComponent(Dead.class);
-                        e.registerComponent(new Player(newPlayerInventory()));
+                        e.registerComponent(new Player(newPlayerInventory(),
+                                voide.getId()));
                         e.registerComponent(new Transit(
-                                e.getComponent(Physical.class).getLocation()
-                                        .getAsLong(),
                                 start.get().getEntity().get().getId()));
                         e.getComponent(Listener.class).tell(RESPAWN);
                     });

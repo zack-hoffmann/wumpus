@@ -13,13 +13,21 @@ public final class Player extends AbstractEntityComponent {
     private final long inventory;
 
     /**
+     * Initial location of the player.
+     */
+    private final long location;
+
+    /**
      * Create a player with a given inventory.
      *
      * @param i
      *              the entity ID of the inventory container
+     * @param l
+     *              initial location
      */
-    public Player(final long i) {
+    public Player(final long i, final long l) {
         this.inventory = i;
+        this.location = l;
     }
 
     /**
@@ -33,6 +41,6 @@ public final class Player extends AbstractEntityComponent {
 
     @Override
     public Set<Component> dependencies() {
-        return Set.of(new Physical());
+        return Set.of(new Physical(location));
     }
 }

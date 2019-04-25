@@ -1,7 +1,6 @@
 package wumpus.engine.command;
 
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -33,24 +32,21 @@ public final class Shoot implements Command {
         final Optional<Entity> arrows = inventory.getComponent(Container.class)
                 .getContents().stream().map(c -> store.get(c).get())
                 .filter(e -> e.hasComponent(Arrow.class)).findFirst();
-        final OptionalLong location = se.getComponent(Physical.class)
-                .getLocation();
+        final long location = se.getComponent(Physical.class).getLocation();
         final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot shoot, for you are dead.";
         } else if (arrows.isEmpty()) {
             return "You do not have any arrows.";
-        } else if (location.isEmpty()) {
-            return "You cannot shoot from where you are...";
         } else if (args.length < 1) {
             return "You must provide a direction to shoot.";
         } else if (direction.isEmpty()) {
             return "Not a valid direction.";
         } else {
             // TODO shooting in an invalid direction not getting picked up (NPE)
-            final Optional<Entity> dest = store.get(store
-                    .get(location.getAsLong()).get().getComponent(Room.class)
-                    .getLinkedRooms().get(direction.get()));
+            final Optional<Entity> dest = store
+                    .get(store.get(location).get().getComponent(Room.class)
+                            .getLinkedRooms().get(direction.get()));
             if (dest.isEmpty()) {
                 return "You cannot shoot in that direction.";
             } else {

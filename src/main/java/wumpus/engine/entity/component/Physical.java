@@ -1,7 +1,5 @@
 package wumpus.engine.entity.component;
 
-import java.util.OptionalLong;
-
 /**
  * Marks an entity which exists in the world space.
  */
@@ -9,9 +7,6 @@ public final class Physical extends AbstractEntityComponent {
 
     /**
      * The location in which this entity exists in the world space.
-     *
-     * A value less than or equal to zero here indicates a "stranded" physical
-     * entity which may need to be placed somewhere.
      */
     private final long location;
 
@@ -26,26 +21,11 @@ public final class Physical extends AbstractEntityComponent {
     }
 
     /**
-     * Create a stranded physical entity (no location).
+     * Retrieve the entity location of the entity in the world.
      *
-     * These should be handled by some service to manage stranded physical
-     * entities.
+     * @return the present entity ID of the containing entity
      */
-    public Physical() {
-        this(0);
-    }
-
-    /**
-     * Retrieve the possible entity location of the entity in the world.
-     *
-     * @return the present entity ID of the containing entity or empty if
-     *         stranded
-     */
-    public OptionalLong getLocation() {
-        if (location > 0) {
-            return OptionalLong.of(location);
-        } else {
-            return OptionalLong.empty();
-        }
+    public long getLocation() {
+        return location;
     }
 }

@@ -245,7 +245,7 @@ public final class LairService implements Service {
                 wumpusRoom = rooms.get(random.get() % rooms.size());
             } while (wumpusRoom == firstRoom);
             final Entity we = store.create();
-            we.registerComponent(new Wumpus());
+            we.registerComponent(new Wumpus(wumpusRoom));
             we.registerComponent(new Transit(wumpusRoom));
             store.commit(we);
             return we.getId();
@@ -273,7 +273,7 @@ public final class LairService implements Service {
             } while (batRoom == firstRoom);
 
             final Entity bat = store.create();
-            bat.registerComponent(new SuperBat());
+            bat.registerComponent(new SuperBat(batRoom));
             bat.registerComponent(new Transit(batRoom));
             store.commit(bat);
             bats.add(bat.getId());
@@ -300,7 +300,7 @@ public final class LairService implements Service {
             } while (pitRoom == firstRoom);
 
             final Entity pit = store.create();
-            pit.registerComponent(new PitTrap());
+            pit.registerComponent(new PitTrap(pitRoom));
             pit.registerComponent(new Hidden());
             pit.registerComponent(new Transit(pitRoom));
             store.commit(pit);
@@ -365,14 +365,14 @@ public final class LairService implements Service {
                             .filter(w -> !w.hasComponent(Dead.class))
                             .forEach(w -> {
                                 final long wLoc = w.getComponent(Physical.class)
-                                        .getLocation().getAsLong();
+                                        .getLocation();
                                 final List<Long> ds = store.get(wLoc).get()
                                         .getComponent(Room.class)
                                         .getLinkedRooms().values().stream()
                                         .collect(Collectors.toList());
                                 final long wDest = ds
                                         .get(random.get() % ds.size());
-                                w.registerComponent(new Transit(wLoc, wDest));
+                                w.registerComponent(new Transit(wDest));
                             });
                     final Entity e = cm.getEntity();
                     e.deregisterComponent(ArrowHit.class);

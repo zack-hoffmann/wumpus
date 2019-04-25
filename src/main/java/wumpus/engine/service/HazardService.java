@@ -88,15 +88,11 @@ public final class HazardService implements Service {
      * Action of a player encountering a super bat.
      *
      * @param player
-     *                     the player component
+     *                   the player component
      * @param bat
-     *                     the bat component
-     * @param location
-     *                     the id of the location where this encounter takes
-     *                     place
+     *                   the bat component
      */
-    private void batMove(final Player player, final SuperBat bat,
-            final long location) {
+    private void batMove(final Player player, final SuperBat bat) {
         if (!bat.hasComponent(Dead.class)) {
             final List<Room> rooms = store.stream().component(Room.class)
                     .collect(Collectors.toList());
@@ -105,8 +101,8 @@ public final class HazardService implements Service {
                     .getId();
             final long batRoom = rooms.get(new Random().nextInt(rooms.size()))
                     .getEntity().get().getId();
-            player.registerComponent(new Transit(location, playerRoom));
-            bat.registerComponent(new Transit(location, batRoom));
+            player.registerComponent(new Transit(playerRoom));
+            bat.registerComponent(new Transit(batRoom));
             store.commit(player.getEntity().get());
             store.commit(bat.getEntity().get());
             if (player.hasComponent(Listener.class)) {
@@ -154,11 +150,9 @@ public final class HazardService implements Service {
     @Override
     public void tick() {
         store.stream().components(Set.of(Hazard.class, Physical.class))
-                .filter(cm -> cm.getByComponent(Physical.class).getLocation()
-                        .isPresent())
                 .map(cm -> cm.getEntity()).forEach(e -> {
                     final long loc = e.getComponent(Physical.class)
-                            .getLocation().getAsLong();
+                            .getLocation();
                     final Optional<Player> player = store.get(loc).get()
                             .getComponent(Container.class).getContents()
                             .stream().map(i -> store.get(i).get())
@@ -169,7 +163,7 @@ public final class HazardService implements Service {
                     if (player.isPresent()) {
                         if (e.hasComponent(SuperBat.class)) {
                             batMove(player.get(),
-                                    e.getComponent(SuperBat.class), loc);
+                                    e.getComponent(SuperBat.class));
                         } else if (e.hasComponent(PitTrap.class)) {
                             pitTrigger(player.get(),
                                     e.getComponent(PitTrap.class));
