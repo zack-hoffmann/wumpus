@@ -10,6 +10,7 @@ import wumpus.engine.entity.component.Lair;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Wilderness;
+import wumpus.engine.entity.component.Zone;
 import wumpus.engine.type.Direction;
 
 /**
@@ -57,14 +58,28 @@ public final class WorldService implements Service {
     }
 
     /**
+     * Create the overworld zone.
+     *
+     * @return new overworld zone
+     */
+    private Entity createOverworld() {
+        final Entity e = store.create();
+        e.registerComponent(new Zone());
+        store.commit(e);
+        return e;
+    }
+
+    /**
      * Create a tavern room.
      *
+     * @param zone
+     *                 the entity ID of the overworld zone
      * @return new tavern entity
      */
-    private Entity createTavern() {
+    private Entity createTavern(final long zone) {
         final Entity e = store.create();
         e.registerComponent(new Tavern());
-        e.registerComponent(new Room());
+        e.registerComponent(new Room(zone));
         e.registerComponent(
                 new Descriptive("The 'Booth and Ale' Tavern", TAVERN_DESC));
         store.commit(e);
@@ -74,12 +89,14 @@ public final class WorldService implements Service {
     /**
      * Create a wilderness room.
      *
+     * @param zone
+     *                 the entity ID of the overworld zone
      * @return new wilderness entity
      */
-    private Entity createWilderness() {
+    private Entity createWilderness(final long zone) {
         final Entity e = store.create();
         e.registerComponent(new Wilderness());
-        e.registerComponent(new Room());
+        e.registerComponent(new Room(zone));
         e.registerComponent(new Descriptive("the wilderness", WILDERNESS_DESC));
         store.commit(e);
         return e;
@@ -87,15 +104,20 @@ public final class WorldService implements Service {
 
     @Override
     public void tick() {
+        final Entity overworld = store.stream().component(Zone.class)
+                .filter(z -> !z.hasComponent(Lair.class))
+                .map(t -> t.getEntity().get()).findAny()
+                .orElseGet(() -> this.createOverworld());
         final Entity tavern = store.stream().component(Tavern.class)
                 .map(t -> t.getEntity().get()).findAny()
-                .orElseGet(() -> this.createTavern());
+                .orElseGet(() -> this.createTavern(overworld.getId()));
         final Entity wilderness = store.stream().component(Wilderness.class)
                 .map(t -> t.getEntity().get()).findAny()
-                .orElseGet(() -> this.createWilderness());
+                .orElseGet(() -> this.createWilderness(overworld.getId()));
 
         tavern.registerComponent(
-                new Room(Map.of(Direction.north, wilderness.getId())));
+                new Room(Map.of(Direction.north, wilderness.getId()),
+                        overworld.getId()));
         // TODO needs random
         final Optional<Entity> randomLair = store.stream().component(Lair.class)
                 .map(l -> l.getEntity().get()).findAny();
@@ -106,8 +128,11 @@ public final class WorldService implements Service {
             lair.registerComponent(
                     new Room(entrace, Direction.south, wilderness.getId()));
             store.commit(lair.getEntity().get());
-            wilderness.registerComponent(new Room(Map.of(Direction.south,
-                    tavern.getId(), Direction.north, lair.getEntrace())));
+            wilderness
+                    .registerComponent(new Room(
+                            Map.of(Direction.south, tavern.getId(),
+                                    Direction.north, lair.getEntrace()),
+                            overworld.getId()));
         }
 
         store.commit(tavern);

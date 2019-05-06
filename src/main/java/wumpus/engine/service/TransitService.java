@@ -64,12 +64,14 @@ public final class TransitService implements Service {
 
                     final Container fromC = from.getComponent(Container.class);
                     final Container toC = to.getComponent(Container.class);
+                    final Room toR = to.getComponent(Room.class);
 
                     final Predicate<Long> rem = (l -> l != e.getId());
                     from.registerComponent(new Container(fromC, rem));
                     to.registerComponent(new Container(toC, e.getId()));
 
-                    e.registerComponent(new Physical(to.getId()));
+                    e.registerComponent(
+                            new Physical(to.getId(), toR.getZone()));
                     if (e.hasComponent(Player.class)) {
                         e.registerComponent(new Examining(to.getId()));
                     }

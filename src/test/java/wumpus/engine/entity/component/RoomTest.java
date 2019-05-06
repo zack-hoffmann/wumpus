@@ -30,8 +30,10 @@ public final class RoomTest {
      */
     @Test
     public void hasNoLinks() {
-        final Room r = new Room(new HashMap<Direction, Long>());
+        final long zoneId = 1L;
+        final Room r = new Room(new HashMap<Direction, Long>(), zoneId);
         assertTrue(r.getLinkedRooms().isEmpty());
+        assertEquals(1L, r.getZone());
     }
 
     /**
@@ -39,9 +41,11 @@ public final class RoomTest {
      */
     @Test
     public void hasLink() {
+        final long zoneId = 1L;
         final Map<Direction, Long> links = new HashMap<Direction, Long>();
         links.put(TEST_LINK, TEST_ID);
-        final Room r = new Room(links);
+        final Room r = new Room(links, zoneId);
         assertEquals(TEST_ID, r.getLinkedRooms().get(TEST_LINK));
+        assertEquals(1L, r.getZone());
     }
 }

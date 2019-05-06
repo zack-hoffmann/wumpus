@@ -151,10 +151,12 @@ public final class LairService implements Service {
      *
      * @param size
      *                 the number of rooms to be generated in the lair
+     * @param zone
+     *                 the entity ID of the lair zone (usually itself)
      *
      * @return the array of IDs for the generated rooms
      */
-    private List<Long> generateRooms(final int size) {
+    private List<Long> generateRooms(final int size, final long zone) {
         final int h = size * 2;
         final int v = size * 2;
         final Entity[][] grid = new Entity[h][v];
@@ -214,7 +216,7 @@ public final class LairService implements Service {
                     if (i > 0 && grid[i - 1][j] != null) {
                         l.put(Direction.west, grid[i - 1][j].getId());
                     }
-                    grid[i][j].registerComponent(new Room(l));
+                    grid[i][j].registerComponent(new Room(l, zone));
                     grid[i][j].registerComponent(new Descriptive(
                             "a dark cavern",
                             "This room is lit low by your lantern, but you "
@@ -236,16 +238,20 @@ public final class LairService implements Service {
      *                      lair rooms
      * @param firstRoom
      *                      starting room to not put wumpus in
+     * @param zone
+     *                      lair zone ID
      * @return ID of new wumpus entity
      */
-    private long generateWumpus(final List<Long> rooms, final long firstRoom) {
+    private long generateWumpus(final List<Long> rooms, final long firstRoom,
+            final long zone) {
         if (rooms.size() > 1) {
             long wumpusRoom;
             do {
                 wumpusRoom = rooms.get(random.get() % rooms.size());
             } while (wumpusRoom == firstRoom);
             final Entity we = store.create();
-            we.registerComponent(new Wumpus(wumpusRoom));
+            we.registerComponent(new Wumpus());
+            we.registerComponent(new Physical(wumpusRoom, zone));
             we.registerComponent(new Transit(wumpusRoom));
             store.commit(we);
             return we.getId();
@@ -261,10 +267,12 @@ public final class LairService implements Service {
      *                      lair rooms
      * @param firstRoom
      *                      starting room to not put bats in
+     * @param zone
+     *                      lair zone ID
      * @return the set of entity IDs generated
      */
-    private Set<Long> generateBats(final List<Long> rooms,
-            final long firstRoom) {
+    private Set<Long> generateBats(final List<Long> rooms, final long firstRoom,
+            final long zone) {
         Set<Long> bats = new HashSet<>();
         for (int i = 0; i <= rooms.size() / BAT_FACTOR; i++) {
             long batRoom;
@@ -273,7 +281,8 @@ public final class LairService implements Service {
             } while (batRoom == firstRoom);
 
             final Entity bat = store.create();
-            bat.registerComponent(new SuperBat(batRoom));
+            bat.registerComponent(new SuperBat());
+            bat.registerComponent(new Physical(batRoom, zone));
             bat.registerComponent(new Transit(batRoom));
             store.commit(bat);
             bats.add(bat.getId());
@@ -288,10 +297,12 @@ public final class LairService implements Service {
      *                      lair rooms
      * @param firstRoom
      *                      starting room to not put pit traps in
+     * @param zone
+     *                      lair zone ID
      * @return the set of entity IDs generated
      */
-    private Set<Long> generatePits(final List<Long> rooms,
-            final long firstRoom) {
+    private Set<Long> generatePits(final List<Long> rooms, final long firstRoom,
+            final long zone) {
         Set<Long> pits = new HashSet<>();
         for (int i = 0; i <= rooms.size() / PIT_FACTOR; i++) {
             long pitRoom;
@@ -300,8 +311,9 @@ public final class LairService implements Service {
             } while (pitRoom == firstRoom);
 
             final Entity pit = store.create();
-            pit.registerComponent(new PitTrap(pitRoom));
+            pit.registerComponent(new PitTrap());
             pit.registerComponent(new Hidden());
+            pit.registerComponent(new Physical(pitRoom, zone));
             pit.registerComponent(new Transit(pitRoom));
             store.commit(pit);
             pits.add(pit.getId());
@@ -318,11 +330,11 @@ public final class LairService implements Service {
      */
     private long createLair(final int size) {
         final Entity lair = store.create();
-        final List<Long> rooms = generateRooms(size);
+        final List<Long> rooms = generateRooms(size, lair.getId());
         final long firstRoom = rooms.get(random.get() % rooms.size());
-        final long wumpus = generateWumpus(rooms, firstRoom);
-        final Set<Long> bats = generateBats(rooms, firstRoom);
-        final Set<Long> pits = generatePits(rooms, firstRoom);
+        final long wumpus = generateWumpus(rooms, firstRoom, lair.getId());
+        final Set<Long> bats = generateBats(rooms, firstRoom, lair.getId());
+        final Set<Long> pits = generatePits(rooms, firstRoom, lair.getId());
         final Set<Long> contents = new HashSet<>();
         contents.add(wumpus);
         contents.addAll(rooms);
@@ -330,7 +342,8 @@ public final class LairService implements Service {
         contents.addAll(pits);
 
         final Entity entrance = store.create();
-        entrance.registerComponent(new Room(Map.of(Direction.down, firstRoom)));
+        entrance.registerComponent(
+                new Room(Map.of(Direction.down, firstRoom), lair.getId()));
         entrance.registerComponent(new Descriptive(
                 "the mouth of a cave opening",
                 "In the forest floor there is a big hole, with the stench of a"

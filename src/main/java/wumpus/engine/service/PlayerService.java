@@ -12,6 +12,7 @@ import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Inventory;
 import wumpus.engine.entity.component.Listener;
+import wumpus.engine.entity.component.Physical;
 import wumpus.engine.entity.component.Player;
 import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Transit;
@@ -57,7 +58,9 @@ public final class PlayerService implements Service {
     private void createPlayer(final Entity e) {
         final long voidId = store.stream().component(Void.class)
                 .map(v -> v.getEntity().get()).findAny().get().getId();
-        e.registerComponent(new Player(newPlayerInventory(), voidId));
+        e.registerComponent(new Player(newPlayerInventory()));
+        e.registerComponent(new Physical(voidId, voidId));
+        e.registerComponent(new Transit(voidId));
         store.commit(e);
     }
 
@@ -117,8 +120,7 @@ public final class PlayerService implements Service {
                     .map(cm -> cm.getEntity())
                     .filter(e -> !e.hasComponent(Cooldown.class)).forEach(e -> {
                         e.deregisterComponent(Dead.class);
-                        e.registerComponent(new Player(newPlayerInventory(),
-                                voide.getId()));
+                        e.registerComponent(new Player(newPlayerInventory()));
                         e.registerComponent(new Transit(
                                 start.get().getEntity().get().getId()));
                         e.getComponent(Listener.class).tell(RESPAWN);

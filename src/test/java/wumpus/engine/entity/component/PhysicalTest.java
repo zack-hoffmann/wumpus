@@ -13,8 +13,10 @@ public final class PhysicalTest {
      */
     @Test
     public void hasLocation() {
+        final long zoneId = 2L;
         final long locId = 1L;
-        final Physical p = new Physical(locId);
+        final Physical p = new Physical(locId, zoneId);
         Assert.assertEquals(1L, p.getLocation());
+        Assert.assertEquals(2L, p.getZone());
     }
 }
