@@ -17,6 +17,8 @@ public interface EntityStore {
      */
     EntityStream stream();
 
+    // TODO contents stream
+
     /**
      * Retrieves an individual entity by ID.
      *
