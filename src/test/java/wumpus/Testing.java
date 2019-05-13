@@ -47,6 +47,11 @@ public final class Testing {
         public int hashCode() {
             return MockComponent.class.getName().hashCode() + value.hashCode();
         }
+
+        @Override
+        public Entity getEntity() {
+            return null;
+        }
     }
 
     /**

@@ -2,7 +2,6 @@ package wumpus.engine.entity.component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import wumpus.engine.entity.Entity;
@@ -15,11 +14,9 @@ public interface Component {
     /**
      * Retrieve a reference to the entity this component is registered to.
      *
-     * @return an optional reference to the registering entity
+     * @return a reference to the registering entity
      */
-    default Optional<Entity> getEntity() {
-        return Optional.empty();
-    }
+    Entity getEntity();
 
     /**
      * Get a set of components which an entity with this component must also

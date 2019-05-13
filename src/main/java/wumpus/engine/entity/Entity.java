@@ -132,8 +132,7 @@ public final class Entity implements ComponentRegistry {
      */
     private void backDeregister(final Component c) {
         if (c != null && c instanceof AbstractEntityComponent
-                && c.getEntity().isPresent()
-                && this.equals(c.getEntity().get())) {
+                && this.equals(c.getEntity())) {
             ((AbstractEntityComponent) c).setEntity(null);
         }
     }

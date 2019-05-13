@@ -61,7 +61,7 @@ public final class Shoot implements Command {
                 if (i.getCount() - 1 <= 0) {
                     container.registerComponent(
                             new Container(container, c -> c != item.getId()));
-                    store.commit(container.getEntity().get());
+                    store.commit(container.getEntity());
                 } else {
                     item.registerComponent(new Item(i, -1));
                     store.commit(item);

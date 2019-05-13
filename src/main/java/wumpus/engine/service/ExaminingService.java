@@ -87,7 +87,7 @@ public final class ExaminingService implements Service {
         }
 
         out.append("\nO--- You ");
-        if (targetContents.contains(p.getEntity().get().getId())) {
+        if (targetContents.contains(p.getEntity().getId())) {
             out.append("are in");
         } else {
             out.append("see");
@@ -166,7 +166,7 @@ public final class ExaminingService implements Service {
                         examine(p, t.getComponent(Descriptive.class));
                     }
                     p.deregisterComponent(Examining.class);
-                    store.commit(p.getEntity().get());
+                    store.commit(p.getEntity());
                 });
     }
 

@@ -97,14 +97,14 @@ public final class HazardService implements Service {
             final List<Room> rooms = store.stream().component(Room.class)
                     .collect(Collectors.toList());
             final long playerRoom = rooms
-                    .get(new Random().nextInt(rooms.size())).getEntity().get()
+                    .get(new Random().nextInt(rooms.size())).getEntity()
                     .getId();
             final long batRoom = rooms.get(new Random().nextInt(rooms.size()))
-                    .getEntity().get().getId();
+                    .getEntity().getId();
             player.registerComponent(new Transit(playerRoom));
             bat.registerComponent(new Transit(batRoom));
-            store.commit(player.getEntity().get());
-            store.commit(bat.getEntity().get());
+            store.commit(player.getEntity());
+            store.commit(bat.getEntity());
             if (player.hasComponent(Listener.class)) {
                 player.getComponent(Listener.class).tell(BAT_MOVE);
             }
@@ -123,8 +123,8 @@ public final class HazardService implements Service {
         if (pit.hasComponent(Hidden.class)) {
             pit.deregisterComponent(Hidden.class);
             player.registerComponent(new Dead());
-            store.commit(pit.getEntity().get());
-            store.commit(pit.getEntity().get());
+            store.commit(pit.getEntity());
+            store.commit(pit.getEntity());
             if (player.hasComponent(Listener.class)) {
                 player.getComponent(Listener.class).tell(PIT_DEATH);
             }
@@ -142,7 +142,7 @@ public final class HazardService implements Service {
     private void wumpusKill(final Player player, final Wumpus wumpus) {
         if (!wumpus.hasComponent(Dead.class)) {
             player.registerComponent(new Dead());
-            store.commit(player.getEntity().get());
+            store.commit(player.getEntity());
             player.getComponent(Listener.class).tell(DEATH);
         }
     }

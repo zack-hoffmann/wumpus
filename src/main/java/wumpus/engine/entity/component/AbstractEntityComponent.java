@@ -1,6 +1,5 @@
 package wumpus.engine.entity.component;
 
-import java.util.Optional;
 import java.util.Set;
 
 import wumpus.engine.entity.ComponentRegistry;
@@ -19,8 +18,8 @@ public abstract class AbstractEntityComponent
     private Entity entity;
 
     @Override
-    public final Optional<Entity> getEntity() {
-        return Optional.ofNullable(entity);
+    public final Entity getEntity() {
+        return entity;
     }
 
     /**
@@ -37,26 +36,26 @@ public abstract class AbstractEntityComponent
 
     @Override
     public final boolean hasComponent(final Class<? extends Component> c) {
-        return getEntity().map(e -> e.hasComponent(c)).orElse(false);
+        return entity.hasComponent(c);
     }
 
     @Override
     public final Set<Component> getComponents() {
-        return getEntity().map(e -> e.getComponents()).orElse(Set.of());
+        return entity.getComponents();
     }
 
     @Override
     public final <C extends Component> C getComponent(final Class<C> c) {
-        return getEntity().map(e -> e.getComponent(c)).orElse(null);
+        return entity.getComponent(c);
     }
 
     @Override
     public final void registerComponent(final Component component) {
-        getEntity().ifPresent(e -> e.registerComponent(component));
+        entity.registerComponent(component);
     }
 
     @Override
     public final void deregisterComponent(final Class<? extends Component> c) {
-        getEntity().ifPresent(e -> e.deregisterComponent(c));
+        entity.deregisterComponent(c);
     }
 }

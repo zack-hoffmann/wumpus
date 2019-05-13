@@ -57,7 +57,7 @@ public final class PlayerService implements Service {
      */
     private void createPlayer(final Entity e) {
         final long voidId = store.stream().component(Void.class)
-                .map(v -> v.getEntity().get()).findAny().get().getId();
+                .map(v -> v.getEntity()).findAny().get().getId();
         e.registerComponent(new Player(newPlayerInventory()));
         e.registerComponent(new Physical(voidId, voidId));
         e.registerComponent(new Transit(voidId));
@@ -102,7 +102,7 @@ public final class PlayerService implements Service {
         // Find listeners without players and attach
         store.stream().component(Listener.class)
                 .filter(c -> !c.hasComponent(Player.class))
-                .forEach(l -> createPlayer(l.getEntity().get()));
+                .forEach(l -> createPlayer(l.getEntity()));
 
         final Optional<Tavern> start = store.stream().component(Tavern.class)
                 .findAny();
@@ -110,19 +110,19 @@ public final class PlayerService implements Service {
                 .findAny();
 
         if (start.isPresent() && voidz.isPresent()) {
-            final Entity voide = voidz.get().getEntity().get();
+            final Entity voide = voidz.get().getEntity();
             voide.getComponent(Container.class).getContents().stream()
                     .map(l -> store.get(l).get())
                     .filter(e -> e.hasComponent(Player.class))
-                    .forEach(e -> e.registerComponent(new Transit(
-                            start.get().getEntity().get().getId())));
+                    .forEach(e -> e.registerComponent(
+                            new Transit(start.get().getEntity().getId())));
             store.stream().components(Set.of(Player.class, Dead.class))
                     .map(cm -> cm.getEntity())
                     .filter(e -> !e.hasComponent(Cooldown.class)).forEach(e -> {
                         e.deregisterComponent(Dead.class);
                         e.registerComponent(new Player(newPlayerInventory()));
-                        e.registerComponent(new Transit(
-                                start.get().getEntity().get().getId()));
+                        e.registerComponent(
+                                new Transit(start.get().getEntity().getId()));
                         e.getComponent(Listener.class).tell(RESPAWN);
                     });
         }

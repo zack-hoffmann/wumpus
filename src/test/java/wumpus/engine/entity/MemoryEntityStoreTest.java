@@ -70,6 +70,10 @@ public final class MemoryEntityStoreTest {
         final EntityStore es = new MemoryEntityStore();
         final Entity e = es.create();
         final Component c = new Component() {
+            @Override
+            public Entity getEntity() {
+                return null;
+            }
         };
         e.registerComponent(c);
         es.commit(e);

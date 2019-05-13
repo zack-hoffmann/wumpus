@@ -32,7 +32,7 @@ public final class CooldownService implements Service {
     @Override
     public void tick() {
         store.stream().component(Cooldown.class).forEach(c -> {
-            final Entity e = c.getEntity().get();
+            final Entity e = c.getEntity();
             e.registerComponent(c.tick());
             if (c.cool()) {
                 e.deregisterComponent(Cooldown.class);

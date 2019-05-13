@@ -24,6 +24,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import wumpus.engine.entity.component.Component;
+import wumpus.engine.entity.component.Expired;
 
 /**
  * A {@link Stream} of Entities, with helper methods for accessing components.
@@ -88,11 +89,13 @@ public final class EntityStream implements Stream<Entity> {
     /**
      * Create this stream wrapping another stream of entities.
      *
+     * Will exclude expired entities.
+     *
      * @param d
      *              the stream to be wrapped
      */
     public EntityStream(final Stream<Entity> d) {
-        this.delegate = d;
+        this.delegate = d.filter(e -> !e.hasComponent(Expired.class));
     }
 
     /**

@@ -43,7 +43,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         assertTrue(e.isPresent());
     }
 
@@ -55,7 +55,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         assertTrue(e.orElse(Testing.badEntitySupplier().get())
                 .hasComponent(Lair.class));
     }
@@ -68,7 +68,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         assertTrue(e.orElse(Testing.badEntitySupplier().get())
                 .getComponent(Lair.class).getEntrace() >= 0);
     }
@@ -82,7 +82,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Container.class));
     }
@@ -96,7 +96,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         assertEquals(size,
                 e.get().getComponent(Container.class).getContents().stream()
                         .map(l -> store.get(l).get())
@@ -112,7 +112,7 @@ public final class LairServiceTest {
         final LairService s = new LairService(store, size);
         s.tick();
         final Optional<Entity> e = store.stream().component(Lair.class)
-                .map(c -> c.getEntity()).findFirst().get();
+                .map(c -> c.getEntity()).findFirst();
         final int roomCount = (int) e.orElseGet(Testing.badEntitySupplier())
                 .getComponent(Container.class).getContents().stream()
                 .map(i -> store.get(i)).filter(o -> o.isPresent())

@@ -357,7 +357,7 @@ public final class LairService implements Service {
                 contents.stream().mapToLong(l -> l.longValue()).toArray()));
         store.commit(lair);
         store.commit(entrance);
-        store.commit(firstRoomE.getEntity().get());
+        store.commit(firstRoomE.getEntity());
         return lair.getId();
     }
 

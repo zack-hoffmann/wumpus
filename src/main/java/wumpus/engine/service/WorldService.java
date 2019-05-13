@@ -106,13 +106,13 @@ public final class WorldService implements Service {
     public void tick() {
         final Entity overworld = store.stream().component(Zone.class)
                 .filter(z -> !z.hasComponent(Lair.class))
-                .map(t -> t.getEntity().get()).findAny()
+                .map(t -> t.getEntity()).findAny()
                 .orElseGet(() -> this.createOverworld());
         final Entity tavern = store.stream().component(Tavern.class)
-                .map(t -> t.getEntity().get()).findAny()
+                .map(t -> t.getEntity()).findAny()
                 .orElseGet(() -> this.createTavern(overworld.getId()));
         final Entity wilderness = store.stream().component(Wilderness.class)
-                .map(t -> t.getEntity().get()).findAny()
+                .map(t -> t.getEntity()).findAny()
                 .orElseGet(() -> this.createWilderness(overworld.getId()));
 
         tavern.registerComponent(
@@ -120,14 +120,14 @@ public final class WorldService implements Service {
                         overworld.getId()));
         // TODO needs random
         final Optional<Entity> randomLair = store.stream().component(Lair.class)
-                .map(l -> l.getEntity().get()).findAny();
+                .map(l -> l.getEntity()).findAny();
         if (randomLair.isPresent()) {
             final Lair lair = randomLair.get().getComponent(Lair.class);
             final Room entrace = store.get(lair.getEntrace()).get()
                     .getComponent(Room.class);
             lair.registerComponent(
                     new Room(entrace, Direction.south, wilderness.getId()));
-            store.commit(lair.getEntity().get());
+            store.commit(lair.getEntity());
             wilderness
                     .registerComponent(new Room(
                             Map.of(Direction.south, tavern.getId(),

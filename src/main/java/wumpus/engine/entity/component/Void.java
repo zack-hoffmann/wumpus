@@ -9,6 +9,6 @@ public final class Void extends AbstractEntityComponent {
 
     @Override
     public Set<Component> dependencies() {
-        return Set.of(new Room(this.getEntity().get().getId()), new Zone());
+        return Set.of(new Room(this.getEntity().getId()), new Zone());
     }
 }
