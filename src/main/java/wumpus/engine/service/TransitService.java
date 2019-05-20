@@ -2,6 +2,8 @@ package wumpus.engine.service;
 
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
@@ -19,6 +21,12 @@ import wumpus.engine.entity.component.Wumpus;
  * Service for moving all entities with a transit component.
  */
 public final class TransitService implements Service {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TransitService.class.getName());
 
     /**
      * Execution priority of this service.
@@ -76,16 +84,33 @@ public final class TransitService implements Service {
                         e.registerComponent(new Examining(to.getId()));
                     }
 
-                    store.commit(from);
-                    store.commit(to);
-                    store.commit(e);
+                    if (LOG.isLoggable(Level.INFO)) {
+                        final Container fromZ = store
+                                .get(from.getComponent(Room.class).getZone())
+                                .get().getComponent(Container.class);
+                        LOG.info(fromZ.debug().toString());
+                        final Container toZ = store.get(toR.getZone()).get()
+                                .getComponent(Container.class);
+                        LOG.info(toZ.debug().toString());
+                        fromZ.registerComponent(new Container(fromZ, rem));
+                        LOG.info(fromZ.debug().toString());
+                        toZ.registerComponent(new Container(toZ, e.getId()));
+                        LOG.info(toZ.debug().toString());
 
+                        e.deregisterComponent(Transit.class);
+
+                        LOG.info(from.toString() + from.getId());
+                        store.commit(from);
+                        // store.commit(fromZ.getEntity());
+                        LOG.info(to.toString() + to.getId());
+                        store.commit(to);
+                        // store.commit(toZ.getEntity());
+                        LOG.info(e.toString() + e.getId());
+                        store.commit(e);
+                    }
                     if (e.hasComponent(Wumpus.class)) {
                         wumpusMove(t);
                     }
-
-                    e.deregisterComponent(Transit.class);
-                    store.commit(e);
 
                 });
     }

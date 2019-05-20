@@ -195,4 +195,9 @@ public final class Entity implements ComponentRegistry {
         return Long.valueOf(id).hashCode();
     }
 
+    @Override
+    public String toString() {
+        return id + ":" + components;
+    }
+
 }
