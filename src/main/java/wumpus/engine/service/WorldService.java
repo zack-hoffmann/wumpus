@@ -7,10 +7,10 @@ import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
 import wumpus.engine.entity.component.Descriptive;
 import wumpus.engine.entity.component.Lair;
+import wumpus.engine.entity.component.Overworld;
 import wumpus.engine.entity.component.Room;
 import wumpus.engine.entity.component.Tavern;
 import wumpus.engine.entity.component.Wilderness;
-import wumpus.engine.entity.component.Zone;
 import wumpus.engine.type.Direction;
 
 /**
@@ -64,7 +64,7 @@ public final class WorldService implements Service {
      */
     private Entity createOverworld() {
         final Entity e = store.create();
-        e.registerComponent(new Zone());
+        e.registerComponent(new Overworld());
         store.commit(e);
         return e;
     }
@@ -104,8 +104,7 @@ public final class WorldService implements Service {
 
     @Override
     public void tick() {
-        final Entity overworld = store.stream().component(Zone.class)
-                .filter(z -> !z.hasComponent(Lair.class))
+        final Entity overworld = store.stream().component(Overworld.class)
                 .map(t -> t.getEntity()).findAny()
                 .orElseGet(() -> this.createOverworld());
         final Entity tavern = store.stream().component(Tavern.class)

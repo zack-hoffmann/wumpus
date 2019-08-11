@@ -362,7 +362,7 @@ public final class LairService implements Service {
         store.commit(entrance);
         store.commit(firstRoomE.getEntity());
         if (LOG.isLoggable(Level.INFO)) {
-            LOG.info("Generated new layer " + lair.getId());
+            LOG.info("Generated new lair " + lair.getId());
         }
         return lair.getId();
     }
