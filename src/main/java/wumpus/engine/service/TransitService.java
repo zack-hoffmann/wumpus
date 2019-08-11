@@ -70,8 +70,7 @@ public final class TransitService implements Service {
                     from.registerComponent(new Container(fromC, rem));
                     to.registerComponent(new Container(toC, e.id()));
 
-                    e.registerComponent(
-                            new Physical(to.id(), toR.zone()));
+                    e.registerComponent(new Physical(to.id(), toR.zone()));
                     if (e.hasComponent(Player.class)) {
                         e.registerComponent(new Examining(to.id()));
                     }
@@ -87,7 +86,9 @@ public final class TransitService implements Service {
                     e.deregisterComponent(Transit.class);
 
                     store.commit(from);
+                    store.commit(fromZ.entity());
                     store.commit(to);
+                    store.commit(toZ.entity());
                     store.commit(e);
 
                     if (e.hasComponent(Wumpus.class)) {
@@ -108,11 +109,9 @@ public final class TransitService implements Service {
                 .map(cm -> cm.byComponent(Listener.class))
                 .forEach(l -> l.tell(WUMPUS_MOVE));
 
-        store.get(t.to()).get().component(Room.class).linkedRooms()
-                .values().stream().map(id -> store.get(id).get())
-                .flatMap(e -> e.component(Container.class).contents()
-                        .stream())
-                .map(id -> store.get(id).get())
+        store.get(t.to()).get().component(Room.class).linkedRooms().values()
+                .stream().map(id -> store.get(id).get())
+                .flatMap(e -> e.contentsStream(store))
                 .collect(EntityStream.collector(store))
                 .components(Set.of(Player.class, Listener.class))
                 .map(cm -> cm.byComponent(Listener.class))

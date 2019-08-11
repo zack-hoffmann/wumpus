@@ -111,8 +111,7 @@ public final class PlayerService implements Service {
 
         if (start.isPresent() && voidz.isPresent()) {
             final Entity voide = voidz.get().entity();
-            voide.component(Container.class).contents().stream()
-                    .map(l -> store.get(l).get())
+            voide.contentsStream(store)
                     .filter(e -> e.hasComponent(Player.class))
                     .forEach(e -> e.registerComponent(
                             new Transit(start.get().entity().id())));
