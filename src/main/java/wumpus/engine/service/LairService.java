@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
-import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.ArrowHit;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
@@ -370,30 +369,22 @@ public final class LairService implements Service {
     @Override
     public void tick() {
 
-        store.stream().components(Set.of(Lair.class, Container.class))
-                .forEach(cm -> {
-                    final Entity e = cm.entity();
-                    final Set<Long> contents = cm
-                            .byComponent(Container.class).contents();
-                    final boolean hasPlayer = contents.stream()
-                            .map(i -> store.get(i).get())
-                            .collect(EntityStream.collector(store))
-                            .component(Player.class).findAny().isPresent();
-                    final boolean hasLivingWumpus = contents.stream()
-                            .map(i -> store.get(i).get())
-                            .collect(EntityStream.collector(store))
-                            .component(Wumpus.class)
-                            .filter(w -> !w.hasComponent(Dead.class)).findAny()
-                            .isPresent();
-                    if (!(hasPlayer || hasLivingWumpus)) {
-                        if (LOG.isLoggable(Level.INFO)) {
-                            LOG.info("Expiring lair " + e.id());
-                        }
-                        e.registerComponent(new Expired());
-                        contents.stream().map(i -> store.get(i).get()).forEach(
-                                x -> x.registerComponent(new Expired()));
-                    }
-                });
+        store.stream().component(Lair.class).map(l -> l.entity()).forEach(e -> {
+            final boolean hasPlayer = e.contentsStream(store)
+                    .component(Player.class).findAny().isPresent();
+            final boolean hasLivingWumpus = e.contentsStream(store)
+                    .component(Wumpus.class)
+                    .filter(w -> !w.hasComponent(Dead.class)).findAny()
+                    .isPresent();
+            if (!(hasPlayer || hasLivingWumpus)) {
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.info("Expiring lair " + e.id());
+                }
+                e.registerComponent(new Expired());
+                e.contentsStream(store)
+                        .forEach(x -> x.registerComponent(new Expired()));
+            }
+        });
 
         final Optional<Lair> defaultLair = store.stream().component(Lair.class)
                 .findAny();
@@ -412,8 +403,8 @@ public final class LairService implements Service {
                                 final long wLoc = w.component(Physical.class)
                                         .location();
                                 final List<Long> ds = store.get(wLoc).get()
-                                        .component(Room.class)
-                                        .linkedRooms().values().stream()
+                                        .component(Room.class).linkedRooms()
+                                        .values().stream()
                                         .collect(Collectors.toList());
                                 final long wDest = ds
                                         .get(random.get() % ds.size());

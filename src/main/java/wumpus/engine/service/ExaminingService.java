@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import wumpus.engine.entity.Entity;
 import wumpus.engine.entity.EntityStore;
-import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Descriptive;
@@ -75,14 +74,16 @@ public final class ExaminingService implements Service {
     private void examine(final Player p, final Descriptive target) {
         final StringBuilder out = new StringBuilder();
         final Set<Long> targetContents = new HashSet<>();
-        final Map<Direction, Long> exits = new HashMap<>();
+        final Map<Direction, Entity> exits = new HashMap<>();
 
         if (target.hasComponent(Container.class)) {
-            targetContents.addAll(target.component(Container.class).contents());
+            targetContents.addAll(target.entity().contents());
         }
 
         if (target.hasComponent(Room.class)) {
-            exits.putAll(target.component(Room.class).linkedRooms());
+            exits.putAll(target.component(Room.class).linkedRooms().entrySet()
+                    .stream().collect(Collectors.toMap(e -> e.getKey(),
+                            e -> store.get(e.getValue()).get())));
         }
 
         out.append("\nO--- You ");
@@ -96,9 +97,7 @@ public final class ExaminingService implements Service {
 
         out.append(target.longDescription() + "\n");
 
-        targetContents.stream().map(id -> store.get(id).get())
-                .collect(EntityStream.collector(store))
-                .component(Descriptive.class)
+        target.entity().contentsStream(store).component(Descriptive.class)
                 .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
                     if (d.hasComponent(Item.class)) {
                         final int count = d.component(Item.class).count();
@@ -121,15 +120,13 @@ public final class ExaminingService implements Service {
                     .sorted((m, n) -> m.getKey().compareTo(n.getKey()))
                     .map(e -> "   " + TextTools.capitalize(e.getKey().name())
                             + " - "
-                            + store.get(e.getValue()).get()
-                                    .component(Descriptive.class)
+                            + e.getValue().component(Descriptive.class)
                                     .shortDescription())
                     .collect(Collectors.joining("\n")));
             out.append("\n");
-            final Set<Entity> contents = exits.entrySet().stream()
-                    .flatMap(e -> store.get(e.getValue()).get()
-                            .component(Container.class).contents().stream())
-                    .map(l -> store.get(l).get()).collect(Collectors.toSet());
+            final Set<Entity> contents = exits.values().stream()
+                    .flatMap(e -> e.contentsStream(store))
+                    .collect(Collectors.toSet());
             if (contents.stream().filter(e -> e.hasComponent(Wumpus.class))
                     .findAny().isPresent()) {
                 out.append(WUMPUS_SMELL);

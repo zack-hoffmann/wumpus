@@ -7,9 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import wumpus.engine.entity.EntityStore;
-import wumpus.engine.entity.EntityStream;
 import wumpus.engine.entity.component.ArrowHit;
-import wumpus.engine.entity.component.Container;
 import wumpus.engine.entity.component.Dead;
 import wumpus.engine.entity.component.Hazard;
 import wumpus.engine.entity.component.Hidden;
@@ -97,8 +95,7 @@ public final class HazardService implements Service {
             final List<Room> rooms = store.stream().component(Room.class)
                     .collect(Collectors.toList());
             final long playerRoom = rooms
-                    .get(new Random().nextInt(rooms.size())).entity()
-                    .id();
+                    .get(new Random().nextInt(rooms.size())).entity().id();
             final long batRoom = rooms.get(new Random().nextInt(rooms.size()))
                     .entity().id();
             player.registerComponent(new Transit(playerRoom));
@@ -151,25 +148,19 @@ public final class HazardService implements Service {
     public void tick() {
         store.stream().components(Set.of(Hazard.class, Physical.class))
                 .map(cm -> cm.entity()).forEach(e -> {
-                    final long loc = e.component(Physical.class)
-                            .location();
+                    final long loc = e.component(Physical.class).location();
                     final Optional<Player> player = store.get(loc).get()
-                            .component(Container.class).contents()
-                            .stream().map(i -> store.get(i).get())
-                            .collect(EntityStream.collector(store))
-                            .component(Player.class)
+                            .contentsStream(store).component(Player.class)
                             .filter(p -> !p.hasComponent(Dead.class))
                             .findFirst();
                     if (player.isPresent()) {
                         if (e.hasComponent(SuperBat.class)) {
-                            batMove(player.get(),
-                                    e.component(SuperBat.class));
+                            batMove(player.get(), e.component(SuperBat.class));
                         } else if (e.hasComponent(PitTrap.class)) {
                             pitTrigger(player.get(),
                                     e.component(PitTrap.class));
                         } else if (e.hasComponent(Wumpus.class)) {
-                            wumpusKill(player.get(),
-                                    e.component(Wumpus.class));
+                            wumpusKill(player.get(), e.component(Wumpus.class));
                         }
                     }
 
