@@ -21,12 +21,12 @@ public final class West implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "west";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("w");
     }
 

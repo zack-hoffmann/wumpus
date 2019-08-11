@@ -21,12 +21,12 @@ public final class Up implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "up";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("u");
     }
 

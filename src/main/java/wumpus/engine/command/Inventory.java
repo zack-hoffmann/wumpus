@@ -16,19 +16,19 @@ public final class Inventory implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         final Entity e = store.get(source).get();
-        final long inventory = e.getComponent(Player.class).getInventory();
+        final long inventory = e.component(Player.class).inventory();
         e.registerComponent(new Examining(inventory));
         store.commit(e);
         return "You examine your belongings.";
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "inventory";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("i");
     }
 

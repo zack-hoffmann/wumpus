@@ -208,16 +208,16 @@ public final class LairService implements Service {
                 if (grid[i][j] != null) {
                     final Map<Direction, Long> l = new HashMap<>();
                     if (j > 0 && grid[i][j - 1] != null) {
-                        l.put(Direction.north, grid[i][j - 1].getId());
+                        l.put(Direction.north, grid[i][j - 1].id());
                     }
                     if (i < h - 1 && grid[i + 1][j] != null) {
-                        l.put(Direction.east, grid[i + 1][j].getId());
+                        l.put(Direction.east, grid[i + 1][j].id());
                     }
                     if (j < v - 1 && grid[i][j + 1] != null) {
-                        l.put(Direction.south, grid[i][j + 1].getId());
+                        l.put(Direction.south, grid[i][j + 1].id());
                     }
                     if (i > 0 && grid[i - 1][j] != null) {
-                        l.put(Direction.west, grid[i - 1][j].getId());
+                        l.put(Direction.west, grid[i - 1][j].id());
                     }
                     grid[i][j].registerComponent(new Room(l, zone));
                     grid[i][j].registerComponent(new Descriptive(
@@ -230,7 +230,7 @@ public final class LairService implements Service {
         }
 
         return Arrays.stream(grid).flatMap(a -> Arrays.stream(a))
-                .filter(Objects::nonNull).map(Entity::getId)
+                .filter(Objects::nonNull).map(Entity::id)
                 .collect(Collectors.toList());
     }
 
@@ -257,7 +257,7 @@ public final class LairService implements Service {
             we.registerComponent(new Physical(wumpusRoom, zone));
             we.registerComponent(new Transit(wumpusRoom));
             store.commit(we);
-            return we.getId();
+            return we.id();
         } else {
             return -1L;
         }
@@ -288,7 +288,7 @@ public final class LairService implements Service {
             bat.registerComponent(new Physical(batRoom, zone));
             bat.registerComponent(new Transit(batRoom));
             store.commit(bat);
-            bats.add(bat.getId());
+            bats.add(bat.id());
         }
         return bats;
     }
@@ -319,7 +319,7 @@ public final class LairService implements Service {
             pit.registerComponent(new Physical(pitRoom, zone));
             pit.registerComponent(new Transit(pitRoom));
             store.commit(pit);
-            pits.add(pit.getId());
+            pits.add(pit.id());
         }
         return pits;
     }
@@ -333,11 +333,11 @@ public final class LairService implements Service {
      */
     private long createLair(final int size) {
         final Entity lair = store.create();
-        final List<Long> rooms = generateRooms(size, lair.getId());
+        final List<Long> rooms = generateRooms(size, lair.id());
         final long firstRoom = rooms.get(random.get() % rooms.size());
-        final long wumpus = generateWumpus(rooms, firstRoom, lair.getId());
-        final Set<Long> bats = generateBats(rooms, firstRoom, lair.getId());
-        final Set<Long> pits = generatePits(rooms, firstRoom, lair.getId());
+        final long wumpus = generateWumpus(rooms, firstRoom, lair.id());
+        final Set<Long> bats = generateBats(rooms, firstRoom, lair.id());
+        final Set<Long> pits = generatePits(rooms, firstRoom, lair.id());
         final Set<Long> contents = new HashSet<>();
         contents.add(wumpus);
         contents.addAll(rooms);
@@ -346,25 +346,25 @@ public final class LairService implements Service {
 
         final Entity entrance = store.create();
         entrance.registerComponent(
-                new Room(Map.of(Direction.down, firstRoom), lair.getId()));
+                new Room(Map.of(Direction.down, firstRoom), lair.id()));
         entrance.registerComponent(new Descriptive(
                 "the mouth of a cave opening",
                 "In the forest floor there is a big hole, with the stench of a"
                         + " wumpus rising from it. "));
         final Room firstRoomE = store.get(firstRoom).get()
-                .getComponent(Room.class);
+                .component(Room.class);
         firstRoomE.registerComponent(
-                new Room(firstRoomE, Direction.up, entrance.getId()));
-        lair.registerComponent(new Lair(entrance.getId(), wumpus));
+                new Room(firstRoomE, Direction.up, entrance.id()));
+        lair.registerComponent(new Lair(entrance.id(), wumpus));
         lair.registerComponent(new Container(
                 contents.stream().mapToLong(l -> l.longValue()).toArray()));
         store.commit(lair);
         store.commit(entrance);
-        store.commit(firstRoomE.getEntity());
+        store.commit(firstRoomE.entity());
         if (LOG.isLoggable(Level.INFO)) {
-            LOG.info("Generated new lair " + lair.getId());
+            LOG.info("Generated new lair " + lair.id());
         }
-        return lair.getId();
+        return lair.id();
     }
 
     @Override
@@ -372,9 +372,9 @@ public final class LairService implements Service {
 
         store.stream().components(Set.of(Lair.class, Container.class))
                 .forEach(cm -> {
-                    final Entity e = cm.getEntity();
+                    final Entity e = cm.entity();
                     final Set<Long> contents = cm
-                            .getByComponent(Container.class).getContents();
+                            .byComponent(Container.class).contents();
                     final boolean hasPlayer = contents.stream()
                             .map(i -> store.get(i).get())
                             .collect(EntityStream.collector())
@@ -387,7 +387,7 @@ public final class LairService implements Service {
                             .isPresent();
                     if (!(hasPlayer || hasLivingWumpus)) {
                         if (LOG.isLoggable(Level.INFO)) {
-                            LOG.info("Expiring lair " + e.getId());
+                            LOG.info("Expiring lair " + e.id());
                         }
                         e.registerComponent(new Expired());
                         contents.stream().map(i -> store.get(i).get()).forEach(
@@ -409,24 +409,24 @@ public final class LairService implements Service {
                     store.stream().component(Wumpus.class)
                             .filter(w -> !w.hasComponent(Dead.class))
                             .forEach(w -> {
-                                final long wLoc = w.getComponent(Physical.class)
-                                        .getLocation();
+                                final long wLoc = w.component(Physical.class)
+                                        .location();
                                 final List<Long> ds = store.get(wLoc).get()
-                                        .getComponent(Room.class)
-                                        .getLinkedRooms().values().stream()
+                                        .component(Room.class)
+                                        .linkedRooms().values().stream()
                                         .collect(Collectors.toList());
                                 final long wDest = ds
                                         .get(random.get() % ds.size());
                                 w.registerComponent(new Transit(wDest));
                             });
-                    final Entity e = cm.getEntity();
+                    final Entity e = cm.entity();
                     e.deregisterComponent(ArrowHit.class);
                     store.commit(e);
                 });
 
         if (exs.length() > 0) {
             store.stream().components(Set.of(Player.class, Listener.class))
-                    .map(cm -> cm.getByComponent(Listener.class))
+                    .map(cm -> cm.byComponent(Listener.class))
                     .forEach(l -> l.tell(exs.toString()));
         }
     }

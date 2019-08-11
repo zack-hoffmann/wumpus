@@ -14,7 +14,7 @@ public final class Debug implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         return store.stream()
-                .map(e -> e.getId() + "[" + (e.getComponents().stream()
+                .map(e -> e.id() + "[" + (e.components().stream()
                         .map(c -> c.getClass().getSimpleName() + "("
                                 + c.debug().stream()
                                         .collect(Collectors.joining(","))
@@ -24,12 +24,12 @@ public final class Debug implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "debug";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of();
     }
 

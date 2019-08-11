@@ -28,11 +28,11 @@ public final class Shoot implements Command {
             final String... args) {
         final Entity se = store.get(source).get();
         final Entity inventory = store
-                .get(se.getComponent(Player.class).getInventory()).get();
-        final Optional<Entity> arrows = inventory.getComponent(Container.class)
-                .getContents().stream().map(c -> store.get(c).get())
+                .get(se.component(Player.class).inventory()).get();
+        final Optional<Entity> arrows = inventory.component(Container.class)
+                .contents().stream().map(c -> store.get(c).get())
                 .filter(e -> e.hasComponent(Arrow.class)).findFirst();
-        final long location = se.getComponent(Physical.class).getLocation();
+        final long location = se.component(Physical.class).location();
         final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot shoot, for you are dead.";
@@ -45,29 +45,29 @@ public final class Shoot implements Command {
         } else {
             // TODO shooting in an invalid direction not getting picked up (NPE)
             final Optional<Entity> dest = store
-                    .get(store.get(location).get().getComponent(Room.class)
-                            .getLinkedRooms().get(direction.get()));
+                    .get(store.get(location).get().component(Room.class)
+                            .linkedRooms().get(direction.get()));
             if (dest.isEmpty()) {
                 return "You cannot shoot in that direction.";
             } else {
                 final Container container = store
-                        .get(se.getComponent(Player.class).getInventory()).get()
-                        .getComponent(Container.class);
-                final Entity item = container.getContents().stream()
+                        .get(se.component(Player.class).inventory()).get()
+                        .component(Container.class);
+                final Entity item = container.contents().stream()
                         .map(c -> store.get(c).get())
                         .filter(e -> e.hasComponent(Arrow.class)).findFirst()
                         .get();
-                final Item i = item.getComponent(Item.class);
-                if (i.getCount() - 1 <= 0) {
+                final Item i = item.component(Item.class);
+                if (i.count() - 1 <= 0) {
                     container.registerComponent(
-                            new Container(container, c -> c != item.getId()));
-                    store.commit(container.getEntity());
+                            new Container(container, c -> c != item.id()));
+                    store.commit(container.entity());
                 } else {
                     item.registerComponent(new Item(i, -1));
                     store.commit(item);
                 }
                 final Stream<Entity> contents = dest.get()
-                        .getComponent(Container.class).getContents().stream()
+                        .component(Container.class).contents().stream()
                         .map(l -> store.get(l).get());
                 final Optional<Entity> target = contents
                         .filter(e -> e.hasComponent(Physical.class)
@@ -89,12 +89,12 @@ public final class Shoot implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "shoot";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("sh");
     }
 

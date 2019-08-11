@@ -16,7 +16,7 @@ public final class Look implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         final Entity e = store.get(source).get();
-        final long loc = e.getComponent(Physical.class).getLocation();
+        final long loc = e.component(Physical.class).location();
         if (store.get(loc).isEmpty()) {
             return "You are not sure where you are...";
         } else {
@@ -27,12 +27,12 @@ public final class Look implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "look";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("l");
     }
 

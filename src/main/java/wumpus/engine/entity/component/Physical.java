@@ -35,7 +35,7 @@ public final class Physical extends AbstractEntityComponent {
      *
      * @return the present entity ID of the containing entity
      */
-    public long getLocation() {
+    public long location() {
         return location;
     }
 
@@ -44,7 +44,7 @@ public final class Physical extends AbstractEntityComponent {
      *
      * @return the present entity ID of the containing zone
      */
-    public long getZone() {
+    public long zone() {
         return zone;
     }
 

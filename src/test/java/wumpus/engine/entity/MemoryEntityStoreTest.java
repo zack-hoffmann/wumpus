@@ -39,7 +39,7 @@ public final class MemoryEntityStoreTest {
     public void hasCreatedEntity() {
         final EntityStore es = new MemoryEntityStore();
         final Entity e = es.create();
-        assertTrue(es.get(e.getId()).isPresent());
+        assertTrue(es.get(e.id()).isPresent());
     }
 
     /**
@@ -58,7 +58,7 @@ public final class MemoryEntityStoreTest {
     @Test
     public void createdEntityHasNoComponents() {
         final EntityStore es = new MemoryEntityStore();
-        assertTrue(es.create().getComponents().isEmpty());
+        assertTrue(es.create().components().isEmpty());
     }
 
     /**
@@ -71,13 +71,13 @@ public final class MemoryEntityStoreTest {
         final Entity e = es.create();
         final Component c = new Component() {
             @Override
-            public Entity getEntity() {
+            public Entity entity() {
                 return null;
             }
         };
         e.registerComponent(c);
         es.commit(e);
-        final Optional<Entity> n = es.get(e.getId());
+        final Optional<Entity> n = es.get(e.id());
         assertTrue(n.isPresent());
         assertTrue(n.get().hasComponent(c.getClass()));
     }

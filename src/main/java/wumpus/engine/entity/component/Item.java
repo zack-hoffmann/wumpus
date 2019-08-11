@@ -29,7 +29,7 @@ public final class Item extends AbstractEntityComponent {
      *              the difference to the count
      */
     public Item(final Item i, final int d) {
-        this(i.getCount() + d);
+        this(i.count() + d);
     }
 
     /**
@@ -37,7 +37,7 @@ public final class Item extends AbstractEntityComponent {
      *
      * @return the count of this item
      */
-    public int getCount() {
+    public int count() {
         return count;
     }
 }

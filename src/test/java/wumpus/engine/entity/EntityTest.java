@@ -19,7 +19,7 @@ public final class EntityTest {
     public void hasId() {
         final long id = 1L;
         final Entity e = new Entity(id);
-        Assert.assertEquals(id, e.getId());
+        Assert.assertEquals(id, e.id());
     }
 
     /**
@@ -47,7 +47,7 @@ public final class EntityTest {
     public void getSameComponent() {
         final Component c = Testing.getMockComponent("x");
         final Entity e = new Entity(0L, c);
-        Assert.assertEquals(c, e.getComponent(Testing.MockComponent.class));
+        Assert.assertEquals(c, e.component(Testing.MockComponent.class));
     }
 
     /**
@@ -57,7 +57,7 @@ public final class EntityTest {
     public void getSameComponentFromSet() {
         final Component c = Testing.getMockComponent("x");
         final Entity e = new Entity(0L, c);
-        Assert.assertTrue(e.getComponents().contains(c));
+        Assert.assertTrue(e.components().contains(c));
     }
 
     /**

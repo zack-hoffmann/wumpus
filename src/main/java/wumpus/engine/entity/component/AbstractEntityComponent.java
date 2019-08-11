@@ -18,7 +18,7 @@ public abstract class AbstractEntityComponent
     private Entity entity;
 
     @Override
-    public final Entity getEntity() {
+    public final Entity entity() {
         return entity;
     }
 
@@ -40,13 +40,13 @@ public abstract class AbstractEntityComponent
     }
 
     @Override
-    public final Set<Component> getComponents() {
-        return entity.getComponents();
+    public final Set<Component> components() {
+        return entity.components();
     }
 
     @Override
-    public final <C extends Component> C getComponent(final Class<C> c) {
-        return entity.getComponent(c);
+    public final <C extends Component> C component(final Class<C> c) {
+        return entity.component(c);
     }
 
     @Override

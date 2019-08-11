@@ -48,7 +48,7 @@ public final class Descriptive extends AbstractEntityComponent {
      *
      * @return a short description of the entity
      */
-    public String getShortDescription() {
+    public String shortDescription() {
         return shortDescription;
     }
 
@@ -57,7 +57,7 @@ public final class Descriptive extends AbstractEntityComponent {
      *
      * @return a detailed description of the entity
      */
-    public String getLongDescription() {
+    public String longDescription() {
         return longDescription;
     }
 }

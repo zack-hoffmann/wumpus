@@ -42,7 +42,7 @@ public final class PlayerServiceTest {
         }));
         store.commit(player);
         s.tick();
-        final Optional<Entity> e = store.get(player.getId());
+        final Optional<Entity> e = store.get(player.id());
         Assert.assertTrue(e.isPresent());
     }
 
@@ -56,7 +56,7 @@ public final class PlayerServiceTest {
         }));
         store.commit(player);
         s.tick();
-        final Optional<Entity> e = store.get(player.getId());
+        final Optional<Entity> e = store.get(player.id());
         Assert.assertTrue(e.orElseGet(Testing.badEntitySupplier())
                 .hasComponent(Physical.class));
     }

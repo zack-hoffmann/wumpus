@@ -97,16 +97,16 @@ public final class HazardService implements Service {
             final List<Room> rooms = store.stream().component(Room.class)
                     .collect(Collectors.toList());
             final long playerRoom = rooms
-                    .get(new Random().nextInt(rooms.size())).getEntity()
-                    .getId();
+                    .get(new Random().nextInt(rooms.size())).entity()
+                    .id();
             final long batRoom = rooms.get(new Random().nextInt(rooms.size()))
-                    .getEntity().getId();
+                    .entity().id();
             player.registerComponent(new Transit(playerRoom));
             bat.registerComponent(new Transit(batRoom));
-            store.commit(player.getEntity());
-            store.commit(bat.getEntity());
+            store.commit(player.entity());
+            store.commit(bat.entity());
             if (player.hasComponent(Listener.class)) {
-                player.getComponent(Listener.class).tell(BAT_MOVE);
+                player.component(Listener.class).tell(BAT_MOVE);
             }
         }
     }
@@ -123,10 +123,10 @@ public final class HazardService implements Service {
         if (pit.hasComponent(Hidden.class)) {
             pit.deregisterComponent(Hidden.class);
             player.registerComponent(new Dead());
-            store.commit(pit.getEntity());
-            store.commit(pit.getEntity());
+            store.commit(pit.entity());
+            store.commit(pit.entity());
             if (player.hasComponent(Listener.class)) {
-                player.getComponent(Listener.class).tell(PIT_DEATH);
+                player.component(Listener.class).tell(PIT_DEATH);
             }
         }
     }
@@ -142,19 +142,19 @@ public final class HazardService implements Service {
     private void wumpusKill(final Player player, final Wumpus wumpus) {
         if (!wumpus.hasComponent(Dead.class)) {
             player.registerComponent(new Dead());
-            store.commit(player.getEntity());
-            player.getComponent(Listener.class).tell(DEATH);
+            store.commit(player.entity());
+            player.component(Listener.class).tell(DEATH);
         }
     }
 
     @Override
     public void tick() {
         store.stream().components(Set.of(Hazard.class, Physical.class))
-                .map(cm -> cm.getEntity()).forEach(e -> {
-                    final long loc = e.getComponent(Physical.class)
-                            .getLocation();
+                .map(cm -> cm.entity()).forEach(e -> {
+                    final long loc = e.component(Physical.class)
+                            .location();
                     final Optional<Player> player = store.get(loc).get()
-                            .getComponent(Container.class).getContents()
+                            .component(Container.class).contents()
                             .stream().map(i -> store.get(i).get())
                             .collect(EntityStream.collector())
                             .component(Player.class)
@@ -163,20 +163,20 @@ public final class HazardService implements Service {
                     if (player.isPresent()) {
                         if (e.hasComponent(SuperBat.class)) {
                             batMove(player.get(),
-                                    e.getComponent(SuperBat.class));
+                                    e.component(SuperBat.class));
                         } else if (e.hasComponent(PitTrap.class)) {
                             pitTrigger(player.get(),
-                                    e.getComponent(PitTrap.class));
+                                    e.component(PitTrap.class));
                         } else if (e.hasComponent(Wumpus.class)) {
                             wumpusKill(player.get(),
-                                    e.getComponent(Wumpus.class));
+                                    e.component(Wumpus.class));
                         }
                     }
 
                 });
         final StringBuilder exs = new StringBuilder();
         store.stream().components(Set.of(Hazard.class, ArrowHit.class))
-                .map(cm -> cm.getEntity()).forEach(e -> {
+                .map(cm -> cm.entity()).forEach(e -> {
                     if (e.hasComponent(SuperBat.class)) {
                         e.registerComponent(new Dead());
                         exs.append(BAT_DEATH);
@@ -193,7 +193,7 @@ public final class HazardService implements Service {
                 });
         if (exs.length() > 0) {
             store.stream().components(Set.of(Player.class, Listener.class))
-                    .map(cm -> cm.getByComponent(Listener.class))
+                    .map(cm -> cm.byComponent(Listener.class))
                     .forEach(l -> l.tell(exs.toString()));
         }
     }

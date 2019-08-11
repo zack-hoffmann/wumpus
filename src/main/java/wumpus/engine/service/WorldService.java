@@ -105,33 +105,33 @@ public final class WorldService implements Service {
     @Override
     public void tick() {
         final Entity overworld = store.stream().component(Overworld.class)
-                .map(t -> t.getEntity()).findAny()
+                .map(t -> t.entity()).findAny()
                 .orElseGet(() -> this.createOverworld());
         final Entity tavern = store.stream().component(Tavern.class)
-                .map(t -> t.getEntity()).findAny()
-                .orElseGet(() -> this.createTavern(overworld.getId()));
+                .map(t -> t.entity()).findAny()
+                .orElseGet(() -> this.createTavern(overworld.id()));
         final Entity wilderness = store.stream().component(Wilderness.class)
-                .map(t -> t.getEntity()).findAny()
-                .orElseGet(() -> this.createWilderness(overworld.getId()));
+                .map(t -> t.entity()).findAny()
+                .orElseGet(() -> this.createWilderness(overworld.id()));
 
         tavern.registerComponent(
-                new Room(Map.of(Direction.north, wilderness.getId()),
-                        overworld.getId()));
+                new Room(Map.of(Direction.north, wilderness.id()),
+                        overworld.id()));
         // TODO needs random
         final Optional<Entity> randomLair = store.stream().component(Lair.class)
-                .map(l -> l.getEntity()).findAny();
+                .map(l -> l.entity()).findAny();
         if (randomLair.isPresent()) {
-            final Lair lair = randomLair.get().getComponent(Lair.class);
-            final Room entrace = store.get(lair.getEntrace()).get()
-                    .getComponent(Room.class);
+            final Lair lair = randomLair.get().component(Lair.class);
+            final Room entrace = store.get(lair.entrance()).get()
+                    .component(Room.class);
             lair.registerComponent(
-                    new Room(entrace, Direction.south, wilderness.getId()));
-            store.commit(lair.getEntity());
+                    new Room(entrace, Direction.south, wilderness.id()));
+            store.commit(lair.entity());
             wilderness
                     .registerComponent(new Room(
-                            Map.of(Direction.south, tavern.getId(),
-                                    Direction.north, lair.getEntrace()),
-                            overworld.getId()));
+                            Map.of(Direction.south, tavern.id(),
+                                    Direction.north, lair.entrance()),
+                            overworld.id()));
         }
 
         store.commit(tavern);

@@ -47,7 +47,7 @@ public final class EntityStreamTest {
         final Set<Class<? extends Component>> compSet = Set
                 .of(Testing.MockComponent.class);
         assertEquals(1L, es.components(compSet).filter(
-                m -> m.getByComponent(Testing.MockComponent.class) != null)
+                m -> m.byComponent(Testing.MockComponent.class) != null)
                 .count());
         es.close();
     }

@@ -57,7 +57,7 @@ public final class PlayerService implements Service {
      */
     private void createPlayer(final Entity e) {
         final long voidId = store.stream().component(Void.class)
-                .map(v -> v.getEntity()).findAny().get().getId();
+                .map(v -> v.entity()).findAny().get().id();
         e.registerComponent(new Player(newPlayerInventory()));
         e.registerComponent(new Physical(voidId, voidId));
         e.registerComponent(new Transit(voidId));
@@ -75,9 +75,9 @@ public final class PlayerService implements Service {
         store.commit(a);
         final Entity i = store.create();
         i.registerComponent(new Inventory());
-        i.registerComponent(new Container(a.getId()));
+        i.registerComponent(new Container(a.id()));
         store.commit(i);
-        return i.getId();
+        return i.id();
     }
 
     /**
@@ -89,7 +89,7 @@ public final class PlayerService implements Service {
         final Entity e = store.create();
         e.registerComponent(new Void());
         e.registerComponent(new Descriptive("an infinite abyss", "nothing"));
-        e.registerComponent(new Container(e.getId()));
+        e.registerComponent(new Container(e.id()));
         store.commit(e);
         return e;
     }
@@ -102,7 +102,7 @@ public final class PlayerService implements Service {
         // Find listeners without players and attach
         store.stream().component(Listener.class)
                 .filter(c -> !c.hasComponent(Player.class))
-                .forEach(l -> createPlayer(l.getEntity()));
+                .forEach(l -> createPlayer(l.entity()));
 
         final Optional<Tavern> start = store.stream().component(Tavern.class)
                 .findAny();
@@ -110,20 +110,20 @@ public final class PlayerService implements Service {
                 .findAny();
 
         if (start.isPresent() && voidz.isPresent()) {
-            final Entity voide = voidz.get().getEntity();
-            voide.getComponent(Container.class).getContents().stream()
+            final Entity voide = voidz.get().entity();
+            voide.component(Container.class).contents().stream()
                     .map(l -> store.get(l).get())
                     .filter(e -> e.hasComponent(Player.class))
                     .forEach(e -> e.registerComponent(
-                            new Transit(start.get().getEntity().getId())));
+                            new Transit(start.get().entity().id())));
             store.stream().components(Set.of(Player.class, Dead.class))
-                    .map(cm -> cm.getEntity())
+                    .map(cm -> cm.entity())
                     .filter(e -> !e.hasComponent(Cooldown.class)).forEach(e -> {
                         e.deregisterComponent(Dead.class);
                         e.registerComponent(new Player(newPlayerInventory()));
                         e.registerComponent(
-                                new Transit(start.get().getEntity().getId()));
-                        e.getComponent(Listener.class).tell(RESPAWN);
+                                new Transit(start.get().entity().id()));
+                        e.component(Listener.class).tell(RESPAWN);
                     });
         }
     }

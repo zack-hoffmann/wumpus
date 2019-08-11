@@ -14,6 +14,6 @@ public final class TransitTest {
     @Test
     public void sendTo() {
         final Transit t = new Transit(1L);
-        assertEquals(1L, t.getTo());
+        assertEquals(1L, t.to());
     }
 }

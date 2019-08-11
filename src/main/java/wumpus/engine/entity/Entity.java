@@ -54,7 +54,7 @@ public final class Entity implements ComponentRegistry {
          *                the component type
          * @return the matching component
          */
-        public <C extends Component> C getByComponent(final Class<C> c) {
+        public <C extends Component> C byComponent(final Class<C> c) {
             final Component cand = delegate.get(c);
             if (c.equals(cand.getClass())) {
                 return c.cast(cand);
@@ -68,7 +68,7 @@ public final class Entity implements ComponentRegistry {
          *
          * @return the entity associated with this map
          */
-        public Entity getEntity() {
+        public Entity entity() {
             return entity;
         }
 
@@ -132,7 +132,7 @@ public final class Entity implements ComponentRegistry {
      */
     private void backDeregister(final Component c) {
         if (c != null && c instanceof AbstractEntityComponent
-                && this.equals(c.getEntity())) {
+                && this.equals(c.entity())) {
             ((AbstractEntityComponent) c).setEntity(null);
         }
     }
@@ -142,7 +142,7 @@ public final class Entity implements ComponentRegistry {
      *
      * @return entity ID
      */
-    public long getId() {
+    public long id() {
         return id;
     }
 
@@ -151,7 +151,7 @@ public final class Entity implements ComponentRegistry {
      *
      * @return component map for this entity
      */
-    public ComponentMap getComponentMap() {
+    public ComponentMap componentMap() {
         return components;
     }
 
@@ -161,13 +161,13 @@ public final class Entity implements ComponentRegistry {
     }
 
     @Override
-    public Set<Component> getComponents() {
+    public Set<Component> components() {
         return new HashSet<>(components.values());
     }
 
     @Override
-    public <C extends Component> C getComponent(final Class<C> c) {
-        return components.getByComponent(c);
+    public <C extends Component> C component(final Class<C> c) {
+        return components.byComponent(c);
     }
 
     @Override

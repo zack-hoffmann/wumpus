@@ -25,7 +25,7 @@ public final class Examining extends AbstractEntityComponent {
      *
      * @return the examined entity
      */
-    public long getTarget() {
+    public long target() {
         return target;
     }
 }

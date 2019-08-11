@@ -55,34 +55,34 @@ public final class TransitService implements Service {
     public void tick() {
         store.stream().components(Set.of(Transit.class, Physical.class))
                 .forEach(m -> {
-                    final Entity e = m.getEntity();
-                    final Transit t = m.getByComponent(Transit.class);
+                    final Entity e = m.entity();
+                    final Transit t = m.byComponent(Transit.class);
                     final Entity from = store
-                            .get(m.getByComponent(Physical.class).getLocation())
+                            .get(m.byComponent(Physical.class).location())
                             .get();
-                    final Entity to = store.get(t.getTo()).get();
+                    final Entity to = store.get(t.to()).get();
 
-                    final Container fromC = from.getComponent(Container.class);
-                    final Container toC = to.getComponent(Container.class);
-                    final Room toR = to.getComponent(Room.class);
+                    final Container fromC = from.component(Container.class);
+                    final Container toC = to.component(Container.class);
+                    final Room toR = to.component(Room.class);
 
-                    final Predicate<Long> rem = (l -> l != e.getId());
+                    final Predicate<Long> rem = (l -> l != e.id());
                     from.registerComponent(new Container(fromC, rem));
-                    to.registerComponent(new Container(toC, e.getId()));
+                    to.registerComponent(new Container(toC, e.id()));
 
                     e.registerComponent(
-                            new Physical(to.getId(), toR.getZone()));
+                            new Physical(to.id(), toR.zone()));
                     if (e.hasComponent(Player.class)) {
-                        e.registerComponent(new Examining(to.getId()));
+                        e.registerComponent(new Examining(to.id()));
                     }
 
                     final Container fromZ = store
-                            .get(from.getComponent(Room.class).getZone()).get()
-                            .getComponent(Container.class);
-                    final Container toZ = store.get(toR.getZone()).get()
-                            .getComponent(Container.class);
+                            .get(from.component(Room.class).zone()).get()
+                            .component(Container.class);
+                    final Container toZ = store.get(toR.zone()).get()
+                            .component(Container.class);
                     fromZ.registerComponent(new Container(fromZ, rem));
-                    toZ.registerComponent(new Container(toZ, e.getId()));
+                    toZ.registerComponent(new Container(toZ, e.id()));
 
                     e.deregisterComponent(Transit.class);
 
@@ -105,17 +105,17 @@ public final class TransitService implements Service {
      */
     private void wumpusMove(final Transit t) {
         store.stream().components(Set.of(Player.class, Listener.class))
-                .map(cm -> cm.getByComponent(Listener.class))
+                .map(cm -> cm.byComponent(Listener.class))
                 .forEach(l -> l.tell(WUMPUS_MOVE));
 
-        store.get(t.getTo()).get().getComponent(Room.class).getLinkedRooms()
+        store.get(t.to()).get().component(Room.class).linkedRooms()
                 .values().stream().map(id -> store.get(id).get())
-                .flatMap(e -> e.getComponent(Container.class).getContents()
+                .flatMap(e -> e.component(Container.class).contents()
                         .stream())
                 .map(id -> store.get(id).get())
                 .collect(EntityStream.collector())
                 .components(Set.of(Player.class, Listener.class))
-                .map(cm -> cm.getByComponent(Listener.class))
+                .map(cm -> cm.byComponent(Listener.class))
                 .forEach(l -> l.tell(WUMPUS_SMELL));
 
     }

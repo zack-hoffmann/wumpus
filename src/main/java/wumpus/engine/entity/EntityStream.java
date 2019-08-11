@@ -110,7 +110,7 @@ public final class EntityStream implements Stream<Entity> {
      */
     public <C extends Component> Stream<C> component(final Class<C> clazz) {
         return delegate.filter(e -> e.hasComponent(clazz))
-                .map(e -> e.getComponent(clazz));
+                .map(e -> e.component(clazz));
     }
 
     /**
@@ -126,7 +126,7 @@ public final class EntityStream implements Stream<Entity> {
         return delegate
                 .filter(e -> clazzes.stream().map(z -> e.hasComponent(z))
                         .reduce(true, (i, d) -> i && d))
-                .map(e -> e.getComponentMap());
+                .map(e -> e.componentMap());
     }
 
     @Override

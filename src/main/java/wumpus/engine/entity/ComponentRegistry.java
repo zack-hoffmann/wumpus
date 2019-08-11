@@ -23,7 +23,7 @@ public interface ComponentRegistry {
      *
      * @return actual components for this container.
      */
-    Set<Component> getComponents();
+    Set<Component> components();
 
     /**
      * Query the entity for component data.
@@ -34,7 +34,7 @@ public interface ComponentRegistry {
      *              The type of component to retrieve.
      * @return The selected component if present.
      */
-    <C extends Component> C getComponent(final Class<C> c);
+    <C extends Component> C component(final Class<C> c);
 
     /**
      * Register a new component with this entity.

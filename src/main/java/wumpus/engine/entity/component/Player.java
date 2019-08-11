@@ -27,7 +27,7 @@ public final class Player extends AbstractEntityComponent {
      *
      * @return the entity ID of the inventory
      */
-    public long getInventory() {
+    public long inventory() {
         return inventory;
     }
 

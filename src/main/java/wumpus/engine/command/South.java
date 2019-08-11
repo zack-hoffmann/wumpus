@@ -21,12 +21,12 @@ public final class South implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "south";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("s");
     }
 

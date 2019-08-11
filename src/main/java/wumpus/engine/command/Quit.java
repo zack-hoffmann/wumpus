@@ -18,12 +18,12 @@ public final class Quit implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "quit";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("logout");
     }
 

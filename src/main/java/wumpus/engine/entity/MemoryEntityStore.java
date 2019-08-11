@@ -38,13 +38,13 @@ public final class MemoryEntityStore implements EntityStore {
 
     @Override
     public Optional<Entity> get(final long id) {
-        return stream().filter(e -> id == e.getId()).findFirst();
+        return stream().filter(e -> id == e.id()).findFirst();
     }
 
     @Override
     public Optional<Entity> commit(final Entity e) {
         entities.add(e);
-        return get(e.getId());
+        return get(e.id());
     }
 
     @Override

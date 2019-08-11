@@ -20,7 +20,7 @@ public final class Move implements Command {
     public String exec(final long source, final EntityStore store,
             final String... args) {
         final Entity se = store.get(source).get();
-        final long location = se.getComponent(Physical.class).getLocation();
+        final long location = se.component(Physical.class).location();
         final Optional<Direction> direction = Direction.match(args[0]);
         if (se.hasComponent(Dead.class)) {
             return "You cannot move, for you are dead.";
@@ -29,8 +29,8 @@ public final class Move implements Command {
         } else if (direction.isEmpty()) {
             return "Not a valid direction.";
         } else {
-            final Long dest = store.get(location).get().getComponent(Room.class)
-                    .getLinkedRooms().get(direction.get());
+            final Long dest = store.get(location).get().component(Room.class)
+                    .linkedRooms().get(direction.get());
             if (dest == null) {
                 return "You cannot move in that direction.";
             } else {
@@ -42,12 +42,12 @@ public final class Move implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "move";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of();
     }
 

@@ -33,7 +33,7 @@ public final class Session {
      *
      * @return the entity ID
      */
-    public long getEntityId() {
+    public long entityId() {
         return entityId;
     }
 
@@ -42,7 +42,7 @@ public final class Session {
      *
      * @return the IO adapter
      */
-    public IOAdapter getIO() {
+    public IOAdapter io() {
         return io;
     }
 

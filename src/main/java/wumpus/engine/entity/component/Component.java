@@ -16,7 +16,7 @@ public interface Component {
      *
      * @return a reference to the registering entity
      */
-    Entity getEntity();
+    Entity entity();
 
     /**
      * Get a set of components which an entity with this component must also

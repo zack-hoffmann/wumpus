@@ -47,7 +47,7 @@ public final class Container extends AbstractEntityComponent {
      */
     public Container(final Container c, final long... cs) {
         contents = Stream
-                .concat(c.getContents().stream(), Arrays.stream(cs).boxed())
+                .concat(c.contents().stream(), Arrays.stream(cs).boxed())
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -60,7 +60,7 @@ public final class Container extends AbstractEntityComponent {
      *                the condition of entities to keep
      */
     public Container(final Container c, final Predicate<Long> rem) {
-        contents = c.getContents().stream().filter(rem)
+        contents = c.contents().stream().filter(rem)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -69,7 +69,7 @@ public final class Container extends AbstractEntityComponent {
      *
      * @return the contents of the container
      */
-    public Set<Long> getContents() {
+    public Set<Long> contents() {
         return contents;
     }
 

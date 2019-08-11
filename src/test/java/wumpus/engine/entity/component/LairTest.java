@@ -14,7 +14,7 @@ public final class LairTest {
     @Test
     public void hasEntrance() {
         final Lair l = new Lair(1L, 2L);
-        assertEquals(1L, l.getEntrace());
+        assertEquals(1L, l.entrance());
     }
 
     /**
@@ -23,6 +23,6 @@ public final class LairTest {
     @Test
     public void hasWumpus() {
         final Lair l = new Lair(1L, 2L);
-        assertEquals(2L, l.getWumpus());
+        assertEquals(2L, l.wumpus());
     }
 }

@@ -27,7 +27,7 @@ public final class Transit extends AbstractEntityComponent {
      *
      * @return entity going to
      */
-    public long getTo() {
+    public long to() {
         return to;
     }
 

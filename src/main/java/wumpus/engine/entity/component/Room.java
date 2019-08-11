@@ -46,11 +46,11 @@ public final class Room extends AbstractEntityComponent {
      *              the ID of the new link
      */
     public Room(final Room r, final Direction d, final long i) {
-        final Map<Direction, Long> rooms = r.getLinkedRooms();
+        final Map<Direction, Long> rooms = r.linkedRooms();
         rooms.put(d, i);
         this.linkedRooms = rooms.entrySet().stream().collect(
                 Collectors.toConcurrentMap(e -> e.getKey(), e -> e.getValue()));
-        this.zone = r.getZone();
+        this.zone = r.zone();
     }
 
     /**
@@ -68,7 +68,7 @@ public final class Room extends AbstractEntityComponent {
      *
      * @return map of linked rooms
      */
-    public Map<Direction, Long> getLinkedRooms() {
+    public Map<Direction, Long> linkedRooms() {
         return linkedRooms;
     }
 
@@ -77,7 +77,7 @@ public final class Room extends AbstractEntityComponent {
      *
      * @return the entity ID of this room's zone.
      */
-    public long getZone() {
+    public long zone() {
         return zone;
     }
 

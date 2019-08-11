@@ -15,8 +15,8 @@ public final class DescriptiveTest {
     @Test
     public void hasSameDescription() {
         final Descriptive d = new Descriptive("test");
-        assertEquals("test", d.getShortDescription());
-        assertEquals("test", d.getLongDescription());
+        assertEquals("test", d.shortDescription());
+        assertEquals("test", d.longDescription());
     }
 
     /**
@@ -25,7 +25,7 @@ public final class DescriptiveTest {
     @Test
     public void hasDifferentDescription() {
         final Descriptive d = new Descriptive("test", "long test");
-        assertEquals("test", d.getShortDescription());
-        assertEquals("long test", d.getLongDescription());
+        assertEquals("test", d.shortDescription());
+        assertEquals("long test", d.longDescription());
     }
 }

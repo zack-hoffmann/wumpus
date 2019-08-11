@@ -25,12 +25,12 @@ public final class CommandLibrary {
         }
 
         @Override
-        public String getName() {
+        public String name() {
             return "noop";
         }
 
         @Override
-        public Set<String> getAliases() {
+        public Set<String> aliases() {
             return new HashSet<>();
         }
 
@@ -63,9 +63,9 @@ public final class CommandLibrary {
      */
     public CommandLibrary() {
         this.nameMap = COMMANDS.stream().collect(
-                Collectors.toMap(c -> c.getName(), Function.identity()));
+                Collectors.toMap(c -> c.name(), Function.identity()));
         this.aliasMap = COMMANDS.stream()
-                .map(c -> c.getAliases().stream()
+                .map(c -> c.aliases().stream()
                         .collect(Collectors.toMap(Function.identity(), s -> c)))
                 .map(m -> m.entrySet()).flatMap(s -> s.stream())
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));

@@ -35,7 +35,7 @@ public final class Lair extends AbstractEntityComponent {
      *
      * @return the entity ID of the entrace room
      */
-    public long getEntrace() {
+    public long entrance() {
         return entrance;
     }
 
@@ -44,7 +44,7 @@ public final class Lair extends AbstractEntityComponent {
      *
      * @return the entity ID of the wumpus
      */
-    public long getWumpus() {
+    public long wumpus() {
         return wumpus;
     }
 

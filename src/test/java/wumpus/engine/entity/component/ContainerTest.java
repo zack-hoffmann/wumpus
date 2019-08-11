@@ -17,7 +17,7 @@ public final class ContainerTest {
     @Test
     public void hasNoContents() {
         final Container c = new Container();
-        assertTrue(c.getContents().isEmpty());
+        assertTrue(c.contents().isEmpty());
     }
 
     /**
@@ -26,7 +26,7 @@ public final class ContainerTest {
     @Test
     public void hasContents() {
         final Container c = new Container(0L);
-        assertEquals(1, c.getContents().size());
+        assertEquals(1, c.contents().size());
     }
 
     /**
@@ -35,9 +35,9 @@ public final class ContainerTest {
     @Test
     public void hasMultipleContents() {
         final Container c = new Container(0L, 1L);
-        assertTrue(c.getContents().contains(0L));
-        assertTrue(c.getContents().contains(1L));
-        assertEquals(2, c.getContents().size());
+        assertTrue(c.contents().contains(0L));
+        assertTrue(c.contents().contains(1L));
+        assertEquals(2, c.contents().size());
     }
 
     /**
@@ -47,9 +47,9 @@ public final class ContainerTest {
     public void copyContents() {
         final Container c1 = new Container(0L);
         final Container c2 = new Container(c1, 1L);
-        assertTrue(c2.getContents().contains(0L));
-        assertTrue(c2.getContents().contains(1L));
-        assertEquals(2, c2.getContents().size());
+        assertTrue(c2.contents().contains(0L));
+        assertTrue(c2.contents().contains(1L));
+        assertEquals(2, c2.contents().size());
     }
 
     /**
@@ -59,8 +59,8 @@ public final class ContainerTest {
     public void copySubsetContents() {
         final Container c1 = new Container(0L, 1L);
         final Container c2 = new Container(c1, (l -> l != 0L));
-        assertFalse(c2.getContents().contains(0L));
-        assertTrue(c2.getContents().contains(1L));
-        assertEquals(1, c2.getContents().size());
+        assertFalse(c2.contents().contains(0L));
+        assertTrue(c2.contents().contains(1L));
+        assertEquals(1, c2.contents().size());
     }
 }

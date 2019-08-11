@@ -79,40 +79,40 @@ public final class ExaminingService implements Service {
 
         if (target.hasComponent(Container.class)) {
             targetContents
-                    .addAll(target.getComponent(Container.class).getContents());
+                    .addAll(target.component(Container.class).contents());
         }
 
         if (target.hasComponent(Room.class)) {
-            exits.putAll(target.getComponent(Room.class).getLinkedRooms());
+            exits.putAll(target.component(Room.class).linkedRooms());
         }
 
         out.append("\nO--- You ");
-        if (targetContents.contains(p.getEntity().getId())) {
+        if (targetContents.contains(p.entity().id())) {
             out.append("are in");
         } else {
             out.append("see");
         }
 
-        out.append(" " + target.getShortDescription() + ". ---O\n");
+        out.append(" " + target.shortDescription() + ". ---O\n");
 
-        out.append(target.getLongDescription() + "\n");
+        out.append(target.longDescription() + "\n");
 
         targetContents.stream().map(id -> store.get(id).get())
                 .collect(EntityStream.collector()).component(Descriptive.class)
                 .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
                     if (d.hasComponent(Item.class)) {
-                        final int count = d.getComponent(Item.class).getCount();
+                        final int count = d.component(Item.class).count();
                         if (count > 1) {
-                            return count + " " + d.getShortDescription()
+                            return count + " " + d.shortDescription()
                                     + "s are";
                         } else {
-                            return count + " " + d.getShortDescription();
+                            return count + " " + d.shortDescription();
                         }
                     } else if (d.hasComponent(Dead.class)) {
-                        return "The corpse of " + d.getShortDescription()
+                        return "The corpse of " + d.shortDescription()
                                 + " is";
                     } else {
-                        return d.getShortDescription() + " is";
+                        return d.shortDescription() + " is";
                     }
                 }).map(d -> TextTools.capitalize(d))
                 .forEach(d -> out.append("   " + d + " here.\n"));
@@ -124,13 +124,13 @@ public final class ExaminingService implements Service {
                     .map(e -> "   " + TextTools.capitalize(e.getKey().name())
                             + " - "
                             + store.get(e.getValue()).get()
-                                    .getComponent(Descriptive.class)
-                                    .getShortDescription())
+                                    .component(Descriptive.class)
+                                    .shortDescription())
                     .collect(Collectors.joining("\n")));
             out.append("\n");
             final Set<Entity> contents = exits.entrySet().stream()
                     .flatMap(e -> store.get(e.getValue()).get()
-                            .getComponent(Container.class).getContents()
+                            .component(Container.class).contents()
                             .stream())
                     .map(l -> store.get(l).get()).collect(Collectors.toSet());
             if (contents.stream().filter(e -> e.hasComponent(Wumpus.class))
@@ -149,7 +149,7 @@ public final class ExaminingService implements Service {
             }
         }
 
-        p.getComponent(Listener.class).tell(out.toString());
+        p.component(Listener.class).tell(out.toString());
     }
 
     @Override
@@ -158,15 +158,15 @@ public final class ExaminingService implements Service {
                 .components(
                         Set.of(Player.class, Listener.class, Examining.class))
                 .forEach(cm -> {
-                    final Player p = cm.getByComponent(Player.class);
+                    final Player p = cm.byComponent(Player.class);
                     final Entity t = store
-                            .get(cm.getByComponent(Examining.class).getTarget())
+                            .get(cm.byComponent(Examining.class).target())
                             .get();
                     if (t.hasComponent(Descriptive.class)) {
-                        examine(p, t.getComponent(Descriptive.class));
+                        examine(p, t.component(Descriptive.class));
                     }
                     p.deregisterComponent(Examining.class);
-                    store.commit(p.getEntity());
+                    store.commit(p.entity());
                 });
     }
 

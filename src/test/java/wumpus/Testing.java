@@ -49,7 +49,7 @@ public final class Testing {
         }
 
         @Override
-        public Entity getEntity() {
+        public Entity entity() {
             return null;
         }
     }

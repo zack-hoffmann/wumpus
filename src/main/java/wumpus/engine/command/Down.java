@@ -21,12 +21,12 @@ public final class Down implements Command {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "down";
     }
 
     @Override
-    public Set<String> getAliases() {
+    public Set<String> aliases() {
         return Set.of("d");
     }
 

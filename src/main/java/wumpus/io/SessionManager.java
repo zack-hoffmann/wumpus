@@ -71,23 +71,23 @@ public final class SessionManager {
     private void run() {
         while (running) {
             sessions.stream().forEach(s -> {
-                final Optional<Entity> p = store.get(s.getEntityId());
+                final Optional<Entity> p = store.get(s.entityId());
                 if (s.isOpen() && p.isPresent()
                         && p.get().hasComponent(Listener.class)) {
-                    Optional<String> i = s.getIO().poll();
+                    Optional<String> i = s.io().poll();
                     if (i.isPresent()) {
                         final String[] tokens = i.get().split("\\s+");
                         if (tokens.length > 0
                                 && tokens[0].trim().length() > 0) {
                             final String response = library.execute(tokens[0],
-                                    s.getEntityId(), store, Arrays.copyOfRange(
+                                    s.entityId(), store, Arrays.copyOfRange(
                                             tokens, 1, tokens.length));
-                            s.getIO().post(response);
+                            s.io().post(response);
                         }
                     }
                 } else {
                     try {
-                        s.getIO().shutdown();
+                        s.io().shutdown();
                     } catch (IOException ex) {
                         LOG.log(Level.WARNING,
                                 "Could not shut down I/O adapter completely.",
@@ -132,6 +132,6 @@ public final class SessionManager {
             io.post("\n" + m.toString());
         }));
         store.commit(player);
-        sessions.add(new Session(player.getId(), io));
+        sessions.add(new Session(player.id(), io));
     }
 }

@@ -28,13 +28,13 @@ public interface Command {
      *
      * @return the name of the command
      */
-    String getName();
+    String name();
 
     /**
      * The aliases of the command.
      *
      * @return aliases of the command
      */
-    Set<String> getAliases();
+    Set<String> aliases();
 
 }
