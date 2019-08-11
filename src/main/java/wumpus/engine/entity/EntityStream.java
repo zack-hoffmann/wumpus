@@ -18,6 +18,7 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -37,6 +38,21 @@ public final class EntityStream implements Stream<Entity> {
      */
     private static class EntityStreamCollector
             implements Collector<Entity, Set<Entity>, EntityStream> {
+
+        /**
+         * The store this stream is wrapping.
+         */
+        private final EntityStore store;
+
+        /**
+         * Initialize the collector.
+         *
+         * @param s
+         *              the store wrapped by the stream
+         */
+        EntityStreamCollector(final EntityStore s) {
+            this.store = s;
+        }
 
         @Override
         public Supplier<Set<Entity>> supplier() {
@@ -58,7 +74,7 @@ public final class EntityStream implements Stream<Entity> {
 
         @Override
         public Function<Set<Entity>, EntityStream> finisher() {
-            return s -> new EntityStream(s.stream());
+            return s -> new EntityStream(s.stream(), store);
         }
 
         @Override
@@ -75,10 +91,13 @@ public final class EntityStream implements Stream<Entity> {
      * Note that since collecting is a terminal operation, using this will load
      * the entirety of the stream, so do not use on excessively large streams.
      *
+     * @param s
+     *              the store to wrap
      * @return a collector of an "stream of entities" to an "entity stream"
      */
-    public static Collector<Entity, Set<Entity>, EntityStream> collector() {
-        return new EntityStreamCollector();
+    public static Collector<Entity, Set<Entity>, EntityStream> collector(
+            final EntityStore s) {
+        return new EntityStreamCollector(s);
     }
 
     /**
@@ -87,15 +106,23 @@ public final class EntityStream implements Stream<Entity> {
     private final Stream<Entity> delegate;
 
     /**
+     * The store this stream is wrapping.
+     */
+    private final EntityStore store;
+
+    /**
      * Create this stream wrapping another stream of entities.
      *
      * Will exclude expired entities.
      *
      * @param d
      *              the stream to be wrapped
+     * @param s
+     *              the store to stream from
      */
-    public EntityStream(final Stream<Entity> d) {
+    public EntityStream(final Stream<Entity> d, final EntityStore s) {
         this.delegate = d.filter(e -> !e.hasComponent(Expired.class));
+        this.store = s;
     }
 
     /**
@@ -127,6 +154,16 @@ public final class EntityStream implements Stream<Entity> {
                 .filter(e -> clazzes.stream().map(z -> e.hasComponent(z))
                         .reduce(true, (i, d) -> i && d))
                 .map(e -> e.componentMap());
+    }
+
+    /**
+     * Stream the contents of selected entities.
+     *
+     * @return entity stream of the contents of the stream
+     */
+    public EntityStream contents() {
+        return store.stream(this.map(e -> e.contents())
+                .flatMap(sl -> sl.stream()).collect(Collectors.toSet()));
     }
 
     @Override

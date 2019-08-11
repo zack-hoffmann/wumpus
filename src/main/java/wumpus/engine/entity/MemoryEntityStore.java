@@ -33,7 +33,13 @@ public final class MemoryEntityStore implements EntityStore {
 
     @Override
     public EntityStream stream() {
-        return new EntityStream(entities.stream());
+        return new EntityStream(entities.stream(), this);
+    }
+
+    @Override
+    public EntityStream stream(final Set<Long> ids) {
+        return ids.stream().map(i -> this.get(i)).filter(o -> o.isPresent())
+                .map(o -> o.get()).collect(EntityStream.collector(this));
     }
 
     @Override

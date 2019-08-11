@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import wumpus.engine.entity.component.AbstractEntityComponent;
 import wumpus.engine.entity.component.Component;
+import wumpus.engine.entity.component.Container;
 
 /**
  * A shallow representation of any game object. This implements a loose ECS
@@ -153,6 +154,31 @@ public final class Entity implements ComponentRegistry {
      */
     public ComponentMap componentMap() {
         return components;
+    }
+
+    /**
+     * Get the contents of this entity.
+     *
+     * @return the contents if this entity is a container or an empty set
+     *         otherwise.
+     */
+    public Set<Long> contents() {
+        if (this.hasComponent(Container.class)) {
+            return this.component(Container.class).contents();
+        } else {
+            return Set.of();
+        }
+    }
+
+    /**
+     * Stream the contents of this entity.
+     *
+     * @param store
+     *                  the store to stream from
+     * @return a stream of this entity's contents
+     */
+    public EntityStream contentsStream(final EntityStore store) {
+        return store.stream(contents());
     }
 
     @Override

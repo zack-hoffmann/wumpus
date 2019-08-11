@@ -113,7 +113,7 @@ public final class TransitService implements Service {
                 .flatMap(e -> e.component(Container.class).contents()
                         .stream())
                 .map(id -> store.get(id).get())
-                .collect(EntityStream.collector())
+                .collect(EntityStream.collector(store))
                 .components(Set.of(Player.class, Listener.class))
                 .map(cm -> cm.byComponent(Listener.class))
                 .forEach(l -> l.tell(WUMPUS_SMELL));

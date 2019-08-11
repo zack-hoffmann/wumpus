@@ -156,7 +156,7 @@ public final class HazardService implements Service {
                     final Optional<Player> player = store.get(loc).get()
                             .component(Container.class).contents()
                             .stream().map(i -> store.get(i).get())
-                            .collect(EntityStream.collector())
+                            .collect(EntityStream.collector(store))
                             .component(Player.class)
                             .filter(p -> !p.hasComponent(Dead.class))
                             .findFirst();

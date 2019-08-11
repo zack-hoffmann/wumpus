@@ -21,7 +21,8 @@ public final class EntityStreamTest {
     @Test
     public void hasNoComponent() {
         final Entity e = new Entity(1L);
-        final EntityStream es = new EntityStream(Set.of(e).stream());
+        final EntityStore s = new MemoryEntityStore();
+        final EntityStream es = new EntityStream(Set.of(e).stream(), s);
         assertEquals(0L, es.component(Testing.MockComponent.class).count());
         es.close();
     }
@@ -32,7 +33,8 @@ public final class EntityStreamTest {
     @Test
     public void hasComponent() {
         final Entity e = new Entity(1L, Testing.getMockComponent());
-        final EntityStream es = new EntityStream(Set.of(e).stream());
+        final EntityStore s = new MemoryEntityStore();
+        final EntityStream es = new EntityStream(Set.of(e).stream(), s);
         assertEquals(1L, es.component(Testing.MockComponent.class).count());
         es.close();
     }
@@ -43,7 +45,8 @@ public final class EntityStreamTest {
     @Test
     public void hasComponentMap() {
         final Entity e = new Entity(1L, Testing.getMockComponent());
-        final EntityStream es = new EntityStream(Set.of(e).stream());
+        final EntityStore s = new MemoryEntityStore();
+        final EntityStream es = new EntityStream(Set.of(e).stream(), s);
         final Set<Class<? extends Component>> compSet = Set
                 .of(Testing.MockComponent.class);
         assertEquals(1L, es.components(compSet).filter(

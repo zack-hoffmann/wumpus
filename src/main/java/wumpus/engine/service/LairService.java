@@ -377,11 +377,11 @@ public final class LairService implements Service {
                             .byComponent(Container.class).contents();
                     final boolean hasPlayer = contents.stream()
                             .map(i -> store.get(i).get())
-                            .collect(EntityStream.collector())
+                            .collect(EntityStream.collector(store))
                             .component(Player.class).findAny().isPresent();
                     final boolean hasLivingWumpus = contents.stream()
                             .map(i -> store.get(i).get())
-                            .collect(EntityStream.collector())
+                            .collect(EntityStream.collector(store))
                             .component(Wumpus.class)
                             .filter(w -> !w.hasComponent(Dead.class)).findAny()
                             .isPresent();

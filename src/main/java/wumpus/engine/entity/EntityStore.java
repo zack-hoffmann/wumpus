@@ -1,6 +1,7 @@
 package wumpus.engine.entity;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Interface to concrete entity storage.
@@ -17,7 +18,14 @@ public interface EntityStore {
      */
     EntityStream stream();
 
-    // TODO contents stream
+    /**
+     * Retrieves a stream reference to a set of entities.
+     *
+     * @param ids
+     *                the entity IDs to stream.
+     * @return stream reference to the given entities.
+     */
+    EntityStream stream(Set<Long> ids);
 
     /**
      * Retrieves an individual entity by ID.

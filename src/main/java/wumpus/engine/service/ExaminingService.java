@@ -78,8 +78,7 @@ public final class ExaminingService implements Service {
         final Map<Direction, Long> exits = new HashMap<>();
 
         if (target.hasComponent(Container.class)) {
-            targetContents
-                    .addAll(target.component(Container.class).contents());
+            targetContents.addAll(target.component(Container.class).contents());
         }
 
         if (target.hasComponent(Room.class)) {
@@ -98,19 +97,18 @@ public final class ExaminingService implements Service {
         out.append(target.longDescription() + "\n");
 
         targetContents.stream().map(id -> store.get(id).get())
-                .collect(EntityStream.collector()).component(Descriptive.class)
+                .collect(EntityStream.collector(store))
+                .component(Descriptive.class)
                 .filter(d -> !d.hasComponent(Hidden.class)).map(d -> {
                     if (d.hasComponent(Item.class)) {
                         final int count = d.component(Item.class).count();
                         if (count > 1) {
-                            return count + " " + d.shortDescription()
-                                    + "s are";
+                            return count + " " + d.shortDescription() + "s are";
                         } else {
                             return count + " " + d.shortDescription();
                         }
                     } else if (d.hasComponent(Dead.class)) {
-                        return "The corpse of " + d.shortDescription()
-                                + " is";
+                        return "The corpse of " + d.shortDescription() + " is";
                     } else {
                         return d.shortDescription() + " is";
                     }
@@ -130,8 +128,7 @@ public final class ExaminingService implements Service {
             out.append("\n");
             final Set<Entity> contents = exits.entrySet().stream()
                     .flatMap(e -> store.get(e.getValue()).get()
-                            .component(Container.class).contents()
-                            .stream())
+                            .component(Container.class).contents().stream())
                     .map(l -> store.get(l).get()).collect(Collectors.toSet());
             if (contents.stream().filter(e -> e.hasComponent(Wumpus.class))
                     .findAny().isPresent()) {
