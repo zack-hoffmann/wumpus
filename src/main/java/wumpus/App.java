@@ -1,27 +1,28 @@
 package wumpus;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Application instance for the wumpus game.
  */
-public class App {
+public final class App {
 
     /**
      * Logger.
      */
     private static final Logger LOG = Logger.getLogger(App.class.getName());
+
+    /**
+     * Application properties file name.
+     */
+    private static final String PROP_FILE_NAME = "wumpus.properties";
 
     /**
      * Runs a new wumpus App instance using standard output.
@@ -34,38 +35,77 @@ public class App {
         LOG.fine("Fine logging is enabled.");
 
         final Context ctx = Context.create(App::loadProperties);
+        ctx.property("hello");
     }
 
-    private static File rundirPropertiesFile() {
-        return Paths.get(System.getProperty("user.dir"))
-                .resolve("wumpus.properties").toFile();
+    /**
+     * Obtain reference to default application properties. The file must exist
+     * at the base of the classpath.
+     *
+     * @return reference to default properties file
+     */
+    private static File defaultPropertiesFile() {
+        return Mediator.require(() -> {
+            return Paths.get(App.class.getResource(PROP_FILE_NAME).toURI())
+                    .toFile();
+        });
     }
 
-    private static void loadFileToProperties(final Properties p, final Supplier<File> fs) {
-        Optional.of(fs.get()).filter(File::exists).ifPresent(f -> {
-            LOG.fine(() -> String.format(
-                    "Run directory properties found at '%s'.",
-                    f.getAbsolutePath()));
+    /**
+     * Obtain reference to run directory properties. Will check for the optional
+     * file in the current user directory.
+     *
+     * @return reference to the run directory properties file
+     */
+    private static Optional<File> rundirPropertiesFile() {
+        return Optional
+                .ofNullable(Paths.get(System.getProperty("user.dir"))
+                        .resolve(PROP_FILE_NAME).toFile())
+                .filter(f -> f.exists());
+    }
 
-            try {
-                p.load(Files.newInputStream(f.toPath()));
-            } catch (IOException e) {
-                LOG.log(Level.WARNING, e,
-                        () -> String.format(
-                                "Could not load properties from '%s'.",
-                                f.getAbsolutePath()));
+    /**
+     * Attempts to load a properties file in to the properties object.
+     *
+     * @param p
+     *              the properties object
+     * @param f
+     *              the file reference
+     */
+    private static void loadFileToProperties(final Properties p, final File f) {
+        LOG.fine(() -> String.format("Properties found at '%s'.",
+                f.getAbsolutePath()));
+
+        Mediator.attempt(fp -> {
+            try (final InputStream is = Files.newInputStream(fp)) {
+                p.load(is);
             }
-        });  
+        }, f.toPath());
+
     }
 
-    private static Map<String, String> loadProperties() {
+    /**
+     * Load the application properties.
+     *
+     * @return the loaded application properties
+     */
+    private static Properties loadProperties() {
         LOG.info("Loading properties...");
 
-        final Properties rundirProperties = new Properties();
-        loadFileToProperties(rundirProperties, App::rundirPropertiesFile);
+        final Properties p = new Properties();
+        rundirPropertiesFile().ifPresent(f -> loadFileToProperties(p, f));
+        loadFileToProperties(p, defaultPropertiesFile());
 
-        return rundirProperties.entrySet().stream().collect(Collectors.toMap(
-                e -> e.getKey().toString(), e -> e.getValue().toString()));
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Loaded properties: " + p);
+        }
+        return p;
     }
 
+    /**
+     * Private constructor.
+     */
+    private App() {
+        LOG.warning("This class should not be initialized.");
+    }
 }
