@@ -60,7 +60,11 @@ public interface Mediator {
      */
     static <O> O require(final RiskySupplier<O> sup) {
         try {
-            return sup.get();
+            final O o = sup.get();
+            if (o == null) {
+                throw new RuntimeException("Required value is null.");
+            }
+            return o;
         } catch (final Exception e) {
             Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
                     "Failed require.", e);
