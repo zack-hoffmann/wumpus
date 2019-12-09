@@ -88,6 +88,7 @@ public interface Mediator {
         } catch (final Exception e) {
             Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
                     "Failed require.", e);
+            throw new RuntimeException("Unrecoverable error.", e);
         }
     }
 
