@@ -88,7 +88,7 @@ public interface Context {
             final InputStream f) {
 
         Mediator.attempt((fp) -> {
-            try (final InputStream is = fp) {
+            try (InputStream is = fp) {
                 p.load(is);
             }
         }, f);
@@ -103,5 +103,5 @@ public interface Context {
      * @return an optional reference to the property value or an empty optional
      *         if not found
      */
-    Optional<String> property(final String propertyName);
+    Optional<String> property(String propertyName);
 }
