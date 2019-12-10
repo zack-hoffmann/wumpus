@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 /**
  * Represents the immutable state in which the application was loaded.
  */
+@FunctionalInterface
 public interface Context {
 
     /**
@@ -109,4 +110,15 @@ public interface Context {
      *         if not found
      */
     Optional<String> property(String propertyName);
+
+    /**
+     * Obtain a property value or crash.
+     * 
+     * @param propertyName
+     *                         the name of the property to obtain
+     * @return the property value
+     */
+    default String requiredProperty(String propertyName) {
+        return Mediator.require(() -> this.property(propertyName).get());
+    }
 }

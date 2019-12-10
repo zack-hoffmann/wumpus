@@ -144,4 +144,22 @@ public final class ContextTest {
         Assert.assertEquals(SHARED_RUNDIR_VAL,
                 Context.create(TEST_PROP_FILE_NAME).property(SHARED_KEY).get());
     }
+
+    /**
+     * Selecting a required property which does not exist should crash.
+     */
+    @Test(expected = RuntimeException.class)
+    public void noRequiredProperty() {
+        Context.create(TEST_PROP_FILE_NAME).requiredProperty(BAD_KEY);
+    }
+
+    /**
+     * Selecting a required property should return its value.
+     */
+    @Test
+    public void requiredPropertyFound() {
+        Assert.assertEquals(DEFAULT_ONLY_VAL,
+                Context.create(TEST_PROP_FILE_NAME)
+                        .requiredProperty(DEFAULT_ONLY_KEY));
+    }
 }
