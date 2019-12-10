@@ -19,30 +19,31 @@ public interface Context {
     Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
-     * Application properties file name.
-     */
-    String PROP_FILE_NAME = "wumpus.properties";
-
-    /**
      * Create a context on a map of strings.
      *
+     * @param fileName
+     *                     name for the context properties file
      * @return the context view of that map
      */
-    static Context create() {
-        return s -> Optional.ofNullable(loadProperties().getProperty(s));
+    static Context create(final String fileName) {
+        return s -> Optional
+                .ofNullable(loadProperties(fileName).getProperty(s));
     }
 
     /**
      * Load the application properties.
      *
+     * @param fileName
+     *                     name for the context properties file
      * @return the loaded application properties
      */
-    private static Properties loadProperties() {
+    private static Properties loadProperties(final String fileName) {
         LOG.info("Loading properties...");
 
         final Properties p = new Properties();
-        rundirPropertiesFile().ifPresent(f -> loadFileToProperties(p, f));
-        loadFileToProperties(p, defaultPropertiesFile());
+        loadFileToProperties(p, defaultPropertiesFile(fileName));
+        rundirPropertiesFile(fileName)
+                .ifPresent(f -> loadFileToProperties(p, f));
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Loaded properties: " + p);
@@ -54,11 +55,13 @@ public interface Context {
      * Obtain reference to default application properties. The file must exist
      * at the base of the classpath.
      *
+     * @param fileName
+     *                     name for the context properties file
      * @return reference to default properties file
      */
-    private static InputStream defaultPropertiesFile() {
+    private static InputStream defaultPropertiesFile(final String fileName) {
         return Mediator.require(() -> {
-            return Context.class.getResourceAsStream("/" + PROP_FILE_NAME);
+            return Context.class.getResourceAsStream("/" + fileName);
         });
     }
 
@@ -66,13 +69,15 @@ public interface Context {
      * Obtain reference to run directory properties. Will check for the optional
      * file in the current user directory.
      *
+     * @param fileName
+     *                     name for the context properties file
      * @return reference to the run directory properties file
      */
-    private static Optional<InputStream> rundirPropertiesFile() {
+    private static Optional<InputStream> rundirPropertiesFile(
+            final String fileName) {
         return Mediator.attempt(() -> {
-            return Files
-                    .newInputStream(Paths.get(System.getProperty("user.dir"))
-                            .resolve(PROP_FILE_NAME));
+            return Files.newInputStream(Paths
+                    .get(System.getProperty("user.dir")).resolve(fileName));
         });
     }
 

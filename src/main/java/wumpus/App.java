@@ -13,6 +13,11 @@ public final class App {
     private static final Logger LOG = Logger.getLogger(App.class.getName());
 
     /**
+     * Application properties file name.
+     */
+    private static final String PROP_FILE_NAME = "wumpus.properties";
+
+    /**
      * Runs a new wumpus App instance using standard output.
      *
      * @param args
@@ -22,7 +27,7 @@ public final class App {
         LOG.info("Starting application server for Hunt the Wumpus");
         LOG.fine("Fine logging is enabled.");
 
-        final Context ctx = Context.create();
+        final Context ctx = Context.create(PROP_FILE_NAME);
         ctx.property("hello");
     }
 
