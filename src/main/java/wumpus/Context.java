@@ -113,7 +113,7 @@ public interface Context {
 
     /**
      * Obtain a property value or crash.
-     * 
+     *
      * @param propertyName
      *                         the name of the property to obtain
      * @return the property value
