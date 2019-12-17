@@ -102,6 +102,31 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
+        <artifactId>keytool-maven-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generateKeyPair</goal>
+            </goals>
+            <phase>generate-test-resources</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <keystore>target/test-classes/teststore.jks</keystore>
+          <storepass>abcd1234</storepass>
+          <keypass>abcd1234</keypass>
+          <alias>test</alias>
+          <dname>cn=localhost, ou=None, L=Lansing, ST=Michigan, o=Hoffmann, c=US</dname>
+          <!--<sigalg>SHA1withDSA</sigalg>-->
+          <ext></ext>
+          <validity>100</validity>
+          <keyalg>RSA</keyalg>
+          <keysize>2048</keysize>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.6.0</version>
         <executions>

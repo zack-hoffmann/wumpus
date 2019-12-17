@@ -1,12 +1,31 @@
 package wumpus;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import javax.websocket.ClientEndpoint;
+import javax.websocket.ClientEndpointConfig;
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.WebSocketContainer;
+
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,6 +54,8 @@ public final class WebServerTest {
         ctx.put("web.server.port", Integer.toString(TEST_PORT));
         ctx.put("web.server.context.path", "/");
         ctx.put("web.server.servlet.path.spec", "/*");
+        ctx.put("web.server.keystore.path", "teststore.jks");
+        ctx.put("web.server.keystore.password", "abcd1234");
         return s -> {
             return Optional.ofNullable(ctx.get(s));
         };
@@ -92,5 +113,50 @@ public final class WebServerTest {
         ws.stop();
     }
 
-    // TODO full handler test with client
+    @Test(expected = ConnectException.class)
+    public void clientCannotConnect()
+            throws DeploymentException, IOException, URISyntaxException {
+
+    }
+
+    @Test
+    public void clientConnect() throws Exception {
+        System.setProperty("javax.net.debug", "all");
+        System.setProperty("javax.net.ssl.trustStore", "target/test-classes/teststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword","abcd1234");
+        
+        final WebServer ws = WebServer.serve(getContext(), NOOP_HANDLER);
+        //TimeUnit.SECONDS.sleep(2);
+        final WebSocketAdapter ep = new WebSocketAdapter(){
+            @Override
+            public void onWebSocketConnect(Session s) {
+                System.out.println("TODO Client " + s);
+            }
+            @Override
+            public void onWebSocketError(Throwable s) {
+                System.out.println("TODO Client error " + s);
+            }
+            @Override
+            public void onWebSocketClose(int code, String s) {
+                System.out.println("TODO Client close " + code + " " + s);
+            }
+        };
+        SslContextFactory sslContextFactory = new SslContextFactory.Client();
+        sslContextFactory.setTrustAll(true); // The magic
+        sslContextFactory.setValidateCerts(false);
+
+        WebSocketClient client = new WebSocketClient();
+
+        client.start();
+        ClientUpgradeRequest request = new ClientUpgradeRequest();
+        Future<Session> fut = 
+        client.connect(ep,
+                new URI("wss://localhost:8080/test"),request);
+               //wss://echo.websocket.org/
+               //wss://localhost:8080/test
+               //wss://qa.sockets.stackexchange.com/
+        fut.get();
+        
+        ws.stop();
+    }
 }

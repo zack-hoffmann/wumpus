@@ -4,11 +4,20 @@ import javax.servlet.Servlet;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.MessageHandler;
-import javax.websocket.Session;
 
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
@@ -32,7 +41,7 @@ public interface WebServer {
         /**
          * Web socket endpoint.
          */
-        private final transient Endpoint ep;
+        private final transient WebSocketAdapter ep;
 
         /**
          * Create new web socket servlet for the web socket endpoint.
@@ -40,15 +49,16 @@ public interface WebServer {
          * @param nep
          *                the new endpoint to serve
          */
-        private WumpusWebSocketServlet(final Endpoint nep) {
+        private WumpusWebSocketServlet(final WebSocketAdapter nep) {
             this.ep = nep;
         }
 
         @Override
         public void configure(final WebSocketServletFactory factory) {
             factory.setCreator((req, resp) -> {
-
+              
                 return ep;
+                
             });
         }
 
@@ -67,39 +77,17 @@ public interface WebServer {
     static WebServer serve(final Context ctx,
             final RiskyConsumer<String> messageHandler) {
 
-        final Endpoint ep = buildEndpoint(messageHandler);
+        final WebSocketAdapter ep = new WebSocketAdapter(){
+            @Override
+            public void onWebSocketConnect(Session s) {
+                System.out.println("TODO Server " + s);
+            }
+        };
         final Server s = configureServer(ctx, new WumpusWebSocketServlet(ep));
 
         Mediator.require(Server::start, s);
         return () -> s;
 
-    }
-
-    /**
-     * Build an anonymous web socket endpoint.
-     *
-     * @param messageHandler
-     *                           the handler for the endpoint
-     * @return the endpoint instance
-     */
-    private static Endpoint buildEndpoint(
-            final RiskyConsumer<String> messageHandler) {
-
-        final MessageHandler.Whole<String> handler = (message) -> Mediator
-                .attempt(messageHandler::accept, message);
-
-        return new Endpoint() {
-
-            @Override
-            public void onOpen(final Session session,
-                    final EndpointConfig config) {
-                // TODO Register session
-                session.addMessageHandler(handler);
-
-            }
-            // TODO error and close handlers
-
-        };
     }
 
     /**
@@ -114,7 +102,7 @@ public interface WebServer {
     private static Server configureServer(final Context ctx,
             final Servlet eps) {
         final Server s = new Server(
-                Integer.parseInt(ctx.requiredProperty("web.server.port")));
+                );
 
         final ServletContextHandler sch = new ServletContextHandler(
                 ServletContextHandler.SESSIONS);
@@ -122,8 +110,28 @@ public interface WebServer {
         sch.addServlet(new ServletHolder(eps),
                 ctx.requiredProperty("web.server.servlet.path.spec"));
         s.setHandler(sch);
+        s.addConnector(getWssConnector(ctx, s));
 
         return s;
+    }
+
+    private static ServerConnector getWssConnector(final Context ctx,
+            final Server s) {
+        final HttpConfiguration config = new HttpConfiguration();
+        config.addCustomizer(new SecureRequestCustomizer());
+
+        SslContextFactory sslctx = new SslContextFactory.Server();
+        sslctx.setKeyStoreResource(Resource.newClassPathResource(
+                ctx.requiredProperty("web.server.keystore.path")));
+        sslctx.setKeyStorePassword(
+                ctx.requiredProperty("web.server.keystore.password"));
+
+        final ServerConnector wsscon = new ServerConnector(s,
+                new SslConnectionFactory(sslctx,
+                        HttpVersion.HTTP_1_1.asString()),
+                new HttpConnectionFactory(config));
+                wsscon.setPort(Integer.parseInt(ctx.requiredProperty("web.server.port")));
+        return wsscon;
     }
 
     /**
