@@ -120,6 +120,7 @@
           <dname>cn=localhost, ou=None, L=Lansing, ST=Michigan, o=Hoffmann, c=US</dname>
           <!--<sigalg>SHA1withDSA</sigalg>-->
           <ext></ext>
+          <skipIfExist>true</skipIfExist>
           <validity>100</validity>
           <keyalg>RSA</keyalg>
           <keysize>2048</keysize>

@@ -112,13 +112,13 @@ public final class WebServerTest {
         }
         ws.stop();
     }
-
+/*
     @Test(expected = ConnectException.class)
     public void clientCannotConnect()
             throws DeploymentException, IOException, URISyntaxException {
 
     }
-
+*/
     @Test
     public void clientConnect() throws Exception {
         System.setProperty("javax.net.debug", "all");
