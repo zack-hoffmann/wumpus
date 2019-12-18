@@ -1,9 +1,10 @@
 package wumpus;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import javax.servlet.Servlet;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.MessageHandler;
 
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -28,6 +29,47 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public interface WebServer {
 
     /**
+     * Value to use as message field delimeter.
+     */
+    String DELIM = Character.toString((char) 31);
+
+    /**
+     * Web server message types.
+     */
+    enum MessageType {
+        /**
+         * Indicates a new connection. Will be followed by the address of the
+         * connection.
+         */
+        CONNECT,
+        /**
+         * Indicates a disconnection. Will be followed by a status code and
+         * reason.
+         */
+        CLOSE,
+        /**
+         * Indicates a text message. Will be followed by the message.
+         */
+        TEXT,
+        /**
+         * Indicates an error. Will be followed by the error message.
+         */
+        ERROR;
+
+        /**
+         * Wrap a message of the given type.
+         *
+         * @param msg
+         *                the message paramaters
+         * @return a fully wrapped message
+         */
+        public String newMessage(final Object... msg) {
+            return this.toString() + DELIM + Arrays.stream(msg)
+                    .map(Object::toString).collect(Collectors.joining(DELIM));
+        }
+    }
+
+    /**
      * Inner class for the required web socket servlet, which must be static and
      * serializable.
      */
@@ -44,22 +86,43 @@ public interface WebServer {
         private final transient WebSocketAdapter ep;
 
         /**
-         * Create new web socket servlet for the web socket endpoint.
+         * Create new web socket servlet.
          *
-         * @param nep
-         *                the new endpoint to serve
+         * @param messageHandler
+         *                           the handler for the socket
          */
-        private WumpusWebSocketServlet(final WebSocketAdapter nep) {
-            this.ep = nep;
+        private WumpusWebSocketServlet(final Consumer<String> messageHandler) {
+            this.ep = new WebSocketAdapter() {
+                @Override
+                public void onWebSocketConnect(final Session sess) {
+                    messageHandler.accept(MessageType.CONNECT
+                            .newMessage(sess.getRemoteAddress()));
+                }
+
+                @Override
+                public void onWebSocketClose(final int statusCode,
+                        final String reason) {
+                    messageHandler.accept(
+                            MessageType.CLOSE.newMessage(statusCode, reason));
+                }
+
+                @Override
+                public void onWebSocketError(final Throwable t) {
+                    messageHandler.accept(
+                            MessageType.ERROR.newMessage(t.getMessage()));
+                }
+
+                @Override
+                public void onWebSocketText(final String message) {
+                    messageHandler
+                            .accept(MessageType.ERROR.newMessage(message));
+                }
+            };
         }
 
         @Override
         public void configure(final WebSocketServletFactory factory) {
-            factory.setCreator((req, resp) -> {
-              
-                return ep;
-                
-            });
+            factory.setCreator((req, resp) -> ep);
         }
 
     }
@@ -75,15 +138,10 @@ public interface WebServer {
      * @return the running web server
      */
     static WebServer serve(final Context ctx,
-            final RiskyConsumer<String> messageHandler) {
+            final Consumer<String> messageHandler) {
 
-        final WebSocketAdapter ep = new WebSocketAdapter(){
-            @Override
-            public void onWebSocketConnect(Session s) {
-                System.out.println("TODO Server " + s);
-            }
-        };
-        final Server s = configureServer(ctx, new WumpusWebSocketServlet(ep));
+        final Server s = configureServer(ctx,
+                new WumpusWebSocketServlet(messageHandler));
 
         Mediator.require(Server::start, s);
         return () -> s;
@@ -101,8 +159,7 @@ public interface WebServer {
      */
     private static Server configureServer(final Context ctx,
             final Servlet eps) {
-        final Server s = new Server(
-                );
+        final Server s = new Server();
 
         final ServletContextHandler sch = new ServletContextHandler(
                 ServletContextHandler.SESSIONS);
@@ -110,17 +167,11 @@ public interface WebServer {
         sch.addServlet(new ServletHolder(eps),
                 ctx.requiredProperty("web.server.servlet.path.spec"));
         s.setHandler(sch);
-        s.addConnector(getWssConnector(ctx, s));
 
-        return s;
-    }
-
-    private static ServerConnector getWssConnector(final Context ctx,
-            final Server s) {
         final HttpConfiguration config = new HttpConfiguration();
         config.addCustomizer(new SecureRequestCustomizer());
 
-        SslContextFactory sslctx = new SslContextFactory.Server();
+        final SslContextFactory sslctx = new SslContextFactory.Server();
         sslctx.setKeyStoreResource(Resource.newClassPathResource(
                 ctx.requiredProperty("web.server.keystore.path")));
         sslctx.setKeyStorePassword(
@@ -130,8 +181,11 @@ public interface WebServer {
                 new SslConnectionFactory(sslctx,
                         HttpVersion.HTTP_1_1.asString()),
                 new HttpConnectionFactory(config));
-                wsscon.setPort(Integer.parseInt(ctx.requiredProperty("web.server.port")));
-        return wsscon;
+        wsscon.setPort(
+                Integer.parseInt(ctx.requiredProperty("web.server.port")));
+        s.addConnector(wsscon);
+
+        return s;
     }
 
     /**
