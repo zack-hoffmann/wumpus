@@ -20,4 +20,14 @@ public interface RiskyConsumer<E> {
      */
     void accept(E e) throws Exception;
 
+    /**
+     * Convenience method to attempt via mediator.
+     *
+     * @param e
+     *              the value to be processed
+     */
+    default void attempt(E e) {
+        Mediator.attempt(this, e);
+    }
+
 }

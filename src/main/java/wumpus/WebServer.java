@@ -1,8 +1,6 @@
 package wumpus;
 
-import java.util.Arrays;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 
@@ -29,47 +27,6 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public interface WebServer {
 
     /**
-     * Value to use as message field delimeter.
-     */
-    String DELIM = Character.toString((char) 31);
-
-    /**
-     * Web server message types.
-     */
-    enum MessageType {
-        /**
-         * Indicates a new connection. Will be followed by the address of the
-         * connection.
-         */
-        CONNECT,
-        /**
-         * Indicates a disconnection. Will be followed by a status code and
-         * reason.
-         */
-        CLOSE,
-        /**
-         * Indicates a text message. Will be followed by the message.
-         */
-        TEXT,
-        /**
-         * Indicates an error. Will be followed by the error message.
-         */
-        ERROR;
-
-        /**
-         * Wrap a message of the given type.
-         *
-         * @param msg
-         *                the message paramaters
-         * @return a fully wrapped message
-         */
-        public String newMessage(final Object... msg) {
-            return this.toString() + DELIM + Arrays.stream(msg)
-                    .map(Object::toString).collect(Collectors.joining(DELIM));
-        }
-    }
-
-    /**
      * Inner class for the required web socket servlet, which must be static and
      * serializable.
      */
@@ -88,34 +45,22 @@ public interface WebServer {
         /**
          * Create new web socket servlet.
          *
+         * @param connectHandler
+         *                           the handler for new connections
          * @param messageHandler
          *                           the handler for the socket
          */
-        private WumpusWebSocketServlet(final Consumer<String> messageHandler) {
+        private WumpusWebSocketServlet(final Consumer<Session> connectHandler,
+                final Consumer<String> messageHandler) {
             this.ep = new WebSocketAdapter() {
                 @Override
                 public void onWebSocketConnect(final Session sess) {
-                    messageHandler.accept(MessageType.CONNECT
-                            .newMessage(sess.getRemoteAddress()));
-                }
-
-                @Override
-                public void onWebSocketClose(final int statusCode,
-                        final String reason) {
-                    messageHandler.accept(
-                            MessageType.CLOSE.newMessage(statusCode, reason));
-                }
-
-                @Override
-                public void onWebSocketError(final Throwable t) {
-                    messageHandler.accept(
-                            MessageType.ERROR.newMessage(t.getMessage()));
+                    connectHandler.accept(sess);
                 }
 
                 @Override
                 public void onWebSocketText(final String message) {
-                    messageHandler
-                            .accept(MessageType.ERROR.newMessage(message));
+                    messageHandler.accept(message);
                 }
             };
         }
@@ -133,15 +78,18 @@ public interface WebServer {
      *
      * @param ctx
      *                           the application context to use
+     * @param connectHandler
+     *                           the handler for new connections
      * @param messageHandler
      *                           the message handler for the server
      * @return the running web server
      */
     static WebServer serve(final Context ctx,
+            final Consumer<Session> connectHandler,
             final Consumer<String> messageHandler) {
 
         final Server s = configureServer(ctx,
-                new WumpusWebSocketServlet(messageHandler));
+                new WumpusWebSocketServlet(connectHandler, messageHandler));
 
         Mediator.require(Server::start, s);
         return () -> s;
