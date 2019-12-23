@@ -3,6 +3,7 @@ package wumpus;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -113,4 +114,13 @@ public interface StringPool {
      * @return the equal string interned or the newly interned string itself
      */
     String intern(String e);
+
+    /**
+     * Generate and intern a stringified UUID.
+     *
+     * @return new UUID token
+     */
+    default String newToken() {
+        return intern(UUID.randomUUID().toString());
+    }
 }

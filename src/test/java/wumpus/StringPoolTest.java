@@ -109,4 +109,15 @@ public final class StringPoolTest {
         final String t = StringPool.recall("", SIZE).intern(TEST_STR_2);
         Assert.assertFalse(t == TEST_STR_1);
     }
+
+    /**
+     * Generate a token that is not equal to another token.
+     */
+    @Test
+    public void token() {
+        final StringPool pool = StringPool.recall("", SIZE);
+        final String token = pool.newToken();
+        Assert.assertNotNull(token);
+        Assert.assertNotEquals(token, pool.newToken());
+    }
 }
