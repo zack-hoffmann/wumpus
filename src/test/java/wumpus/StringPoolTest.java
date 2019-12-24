@@ -1,5 +1,9 @@
 package wumpus;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +50,20 @@ public final class StringPoolTest {
      * Test string over character space 3.
      */
     private static final String TEST_STR_3 = new String(TEST_CHAR_MEM_3);
+
+    /**
+     * Generate a mock context instance.
+     *
+     * @return a mock context instance
+     */
+    private static Context getContext() {
+        final Map<String, String> ctx = new HashMap<String, String>();
+        ctx.put("string.pool.token.name", "token");
+        ctx.put("string.pool.token.size", "100");
+        return s -> {
+            return Optional.ofNullable(ctx.get(s));
+        };
+    }
 
     /**
      * Empty the static pools before each test.
@@ -119,5 +137,17 @@ public final class StringPoolTest {
         final String token = pool.newToken();
         Assert.assertNotNull(token);
         Assert.assertNotEquals(token, pool.newToken());
+    }
+
+    /**
+     * Recall from dedicated token pool.
+     */
+    @Test
+    public void tokenPool() {
+        final StringPool pool = StringPool.tokenPool(getContext());
+        final String token = pool.newToken();
+        final String tokenDup = new String(token.toCharArray());
+        Assert.assertFalse(token == tokenDup);
+        Assert.assertTrue(token == pool.intern(tokenDup));
     }
 }

@@ -40,6 +40,11 @@ public final class WebServerTest {
     private static final String TEST_MESSAGE = "foo";
 
     /**
+     * Time to wait for some tests to complete, due to async delays.
+     */
+    private static final int TIMEOUT = 5000;
+
+    /**
      * Generate a mock context instance.
      *
      * @return a mock context instance
@@ -183,7 +188,7 @@ public final class WebServerTest {
      * @throws Exception
      *                       when there is a connection issue
      */
-    @Test(timeout = 5000)
+    @Test(timeout = TIMEOUT)
     public void serverSend() throws Exception {
         final AtomicReference<String> ref = new AtomicReference<>("");
         final CountDownLatch latch = new CountDownLatch(1);
