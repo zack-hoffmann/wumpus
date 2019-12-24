@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -182,9 +183,10 @@ public final class WebServerTest {
      * @throws Exception
      *                       when there is a connection issue
      */
-    @Test
+    @Test(timeout = 5000)
     public void serverSend() throws Exception {
         final AtomicReference<String> ref = new AtomicReference<>("");
+        final CountDownLatch latch = new CountDownLatch(1);
 
         final RiskyConsumer<Session> cons = x -> x.getRemote()
                 .sendString(TEST_MESSAGE);
@@ -193,6 +195,7 @@ public final class WebServerTest {
             @Override
             public void onWebSocketText(final String message) {
                 ref.set(message);
+                latch.countDown();
             }
         };
         final WebServer ws = WebServer.serve(getContext(), cons::attempt,
@@ -203,6 +206,7 @@ public final class WebServerTest {
         final Future<Session> fut = client.connect(receiver,
                 new URI("wss://" + TEST_HOST + ":" + TEST_PORT + "/test"));
         fut.get();
+        latch.await();
         client.stop();
         ws.stop();
 
