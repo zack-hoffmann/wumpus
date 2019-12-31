@@ -89,7 +89,7 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final Context ctx, final String token,
+        public Message newMessage(final String token, final Context ctx,
                 final String... params) {
             return Message.fromParts(ctx, token, this, params);
         }
@@ -272,5 +272,15 @@ public interface Message {
             params[i] = parts[i + 2];
         }
         return params;
+    }
+
+    /**
+     * Converts parts to whole raw string, usually for transmission. Interface
+     * types cannot override toString, or else that would be used instead.
+     *
+     * @return the raw string representation of the message
+     */
+    default String rawString() {
+        return Arrays.stream(parts()).collect(Collectors.joining(DELIM));
     }
 }

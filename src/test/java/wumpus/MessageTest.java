@@ -80,11 +80,21 @@ public final class MessageTest {
      */
     @Test
     public void newMessage() {
-        final Message m = Message.Type.COMMAND.newMessage(getContext(),
-                TEST_TOKEN, TEST_PARAMS);
+        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN,
+                getContext(), TEST_PARAMS);
         Assert.assertEquals(TEST_TOKEN, m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
+    }
+
+    /**
+     * New message is output in correct raw format.
+     */
+    @Test
+    public void newMessageRaw() {
+        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN,
+                getContext(), TEST_PARAMS);
+        Assert.assertEquals(PARSE_MESSAGE, m.rawString());
     }
 
     /**
