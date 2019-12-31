@@ -2,6 +2,7 @@ package wumpus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -14,6 +15,7 @@ public interface Gateway {
         INBOUND, OUTBOUND;
     }
 
+    // TODO don't like static state...
     Map<String, Session> INITIAL_SESSIONS = new HashMap<String, Session>();
     Map<String, Session> PLAYER_SESSIONS = new HashMap<String, Session>();
     Map<String, Session> CHARACTER_SESSIONS = new HashMap<String, Session>();
@@ -22,6 +24,13 @@ public interface Gateway {
         final Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
         final Gateway gw = (m, s, d) -> {
+            switch (d) {
+            case INBOUND:
+                acceptInbound(m, s);
+                break;
+            case OUTBOUND:
+                sendToRemote(m);
+            }
             if (Direction.INBOUND.equals(d)) {
                 if (Message.Type.TOKEN.equals(m.type())) {
                     if (s != null) {
@@ -43,14 +52,33 @@ public interface Gateway {
         return gw;
     }
 
-    static Session resolveTokenToSession(final String token) {
-        return CHARACTER_SESSIONS.getOrDefault(token, PLAYER_SESSIONS
-                .getOrDefault(token, INITIAL_SESSIONS.get(token)));
+    static void acceptInbound(final Message m, final Session s) {
+        switch (m.type()) {
+        case TOKEN:
+            processTokenMessage(m.token(), s);
+            break;
+        }
+    }
+
+    static void processTokenMessage(final String token, final Session s) {
+        if ("".equals(token) && s != null) {
+            // TODO initial session
+        } else {
+            // TODO figure out which session pool, generate new token, replace
+            // value, send it back...
+        }
+
+    }
+
+    static Optional<Session> resolveTokenToSession(final String token) {
+        return Optional.ofNullable(
+                CHARACTER_SESSIONS.getOrDefault(token, PLAYER_SESSIONS
+                        .getOrDefault(token, INITIAL_SESSIONS.get(token))));
     }
 
     static void sendToRemote(final Message msg) {
-        Mediator.attempt(t -> resolveTokenToSession(msg.token()).getRemote()
-                .sendString(t), msg.rawString());
+        Mediator.attempt(t -> resolveTokenToSession(msg.token()).get()
+                .getRemote().sendString(t), msg.rawString());
     }
 
     static String registerInitialSession(final Context ctx, final Session s) {
