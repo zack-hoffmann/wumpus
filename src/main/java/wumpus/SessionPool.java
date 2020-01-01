@@ -3,6 +3,7 @@ package wumpus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -31,6 +32,13 @@ public interface SessionPool {
         return recall(ctx, ctx.requiredProperty("session.pool.character.name"));
     }
 
+    static Optional<Session> resolveTokenToSession(final Context ctx,
+            final String token) {
+        return characterPool(ctx).session(token, ctx)
+                .or(() -> playerPool(ctx).session(token, ctx))
+                .or(() -> initialPool(ctx).session(token, ctx));
+    }
+
     static void cleanAll() {
         SessionPoolHeap.INST.values().stream().forEach(SessionPool::clean);
     }
@@ -47,6 +55,10 @@ public interface SessionPool {
         final Session s = map().get(token);
         map().remove(token);
         return register(s, ctx);
+    }
+
+    default Optional<Session> session(final String token, final Context ctx) {
+        return Optional.ofNullable(map().get(token));
     }
 
     default void clean() {
