@@ -39,7 +39,7 @@ public interface Gateway {
     static void processTokenMessage(final App app, final String token,
             final Session s) {
         if ("".equals(token) && s != null) {
-            final String newToken = app.initialSessionPool().register(app, s);
+            final String newToken = app.initialSessionPool().register(s);
             final Message newMessage = Message.Type.TOKEN.newMessage(app,
                     newToken);
             sendToRemote(app, newMessage);

@@ -34,7 +34,12 @@ public interface SessionPool {
      */
     static SessionPool recall(final App app, final String name) {
         return SessionPoolHeap.INST.computeIfAbsent(
-                app.tokenPool().intern(name), n -> HashMap::new);
+                app.tokenPool().intern(name), n -> create(app));
+    }
+
+    static SessionPool create(final App app) {
+        final Map<String, Session> m = new HashMap<>();
+        return s -> bind(m, app, s);
     }
 
     /**
@@ -49,18 +54,32 @@ public interface SessionPool {
      *
      * @return the session map for the pool
      */
-    Map<String, Session> map();
+    Map<String, Session> bind(final Optional<Session> s);
 
-    default String register(final App app, final Session s) {
-        final String token = app.tokenPool().newToken();
-        map().put(token, s);
-        return token;
+    static Map<String, Session> bind(final Map<String, Session> map,
+            final App app, final Optional<Session> s) {
+        if (s.isPresent()) {
+            final Map<String, Session> newEntry = new HashMap<>();
+            newEntry.put(app.tokenPool().newToken(), s.get());
+            map.putAll(newEntry);
+            return newEntry;
+        } else {
+            return map;
+        }
     }
 
-    default String renew(final App app, final String token) {
+    default Map<String, Session> map() {
+        return bind(Optional.empty());
+    }
+
+    default String register(final Session s) {
+        return bind(Optional.of(s)).entrySet().iterator().next().getKey();
+    }
+
+    default String renew(final String token) {
         final Session s = map().get(token);
         map().remove(token);
-        return register(app, s);
+        return register(s);
     }
 
     default Optional<Session> session(final String token) {
