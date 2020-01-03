@@ -81,17 +81,17 @@ public interface Message {
         /**
          * Create a new message of this type.
          *
-         * @param ctx
-         *                   the application context, used for string interning
+         * @param app
+         *                   the application instance, used for string interning
          * @param token
          *                   the message sender identity token
          * @param params
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final String token, final Context ctx,
+        public Message newMessage(final String token, final App app,
                 final String... params) {
-            return Message.fromParts(ctx, token, this, params);
+            return Message.fromParts(app, token, this, params);
         }
 
         /**
@@ -103,8 +103,8 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final Context ctx, final String... params) {
-            return Message.fromParts(ctx, this, params);
+        public Message newMessage(final App app, final String... params) {
+            return Message.fromParts(app, this, params);
         }
     }
 
@@ -166,24 +166,24 @@ public interface Message {
     /**
      * Create a new message with no token. Token will be empty string.
      *
-     * @param ctx
-     *                   the application context, used for string interning
+     * @param app
+     *                   the application instance, used for string interning
      * @param type
      *                   the type of the message
      * @param params
      *                   any parameters needed for the message
      * @return the new message
      */
-    static Message fromParts(final Context ctx, final Type type,
+    static Message fromParts(final App app, final Type type,
             final String... params) {
-        return fromParts(ctx, "", type, params);
+        return fromParts(app, "", type, params);
     }
 
     /**
      * Create a new message.
      *
-     * @param ctx
-     *                   the application context, used for string interning
+     * @param app
+     *                   the application instance, used for string interning
      * @param token
      *                   the message sender identity token
      * @param type
@@ -192,14 +192,14 @@ public interface Message {
      *                   any parameters needed for the message
      * @return the new message
      */
-    static Message fromParts(final Context ctx, final String token,
-            final Type type, final String... params) {
+    static Message fromParts(final App app, final String token, final Type type,
+            final String... params) {
         final StringPool paramPool = StringPool.recall(
-                ctx.requiredProperty("string.pool.param.name"),
-                Integer.parseInt(
-                        ctx.requiredProperty("string.pool.param.size")));
+                app.context().requiredProperty("string.pool.param.name"),
+                Integer.parseInt(app.context()
+                        .requiredProperty("string.pool.param.size")));
         final String[] parts = new String[params.length + 2];
-        parts[0] = StringPool.tokenPool(ctx).intern(token);
+        parts[0] = app.tokenPool().intern(token);
         parts[1] = type.toString();
         for (int i = 0; i < params.length; i++) {
             parts[i + 2] = paramPool.intern(params[i]);
@@ -210,13 +210,13 @@ public interface Message {
     /**
      * Parse a raw message in to message format.
      *
-     * @param ctx
-     *                the application context, used for string interning
+     * @param app
+     *                the application instance, used for string interning
      * @param raw
      *                the raw string message
      * @return the newly parsed message
      */
-    static Message parse(final Context ctx, final String raw) {
+    static Message parse(final App app, final String raw) {
         final String[] parts = raw.split(DELIM);
         if (parts.length < 1) {
             throw ParseException.delimiterNotFound();
@@ -232,7 +232,7 @@ public interface Message {
         for (int i = 0; i < params.length; i++) {
             params[i] = parts[i + 2];
         }
-        return fromParts(ctx, parts[0], t, params);
+        return fromParts(app, parts[0], t, params);
     }
 
     /**

@@ -56,15 +56,15 @@ public final class MessageTest {
      *
      * @return a mock context instance
      */
-    private static Context getContext() {
+    private static App getApp() {
         final Map<String, String> ctx = new HashMap<String, String>();
         ctx.put("string.pool.token.name", "token");
         ctx.put("string.pool.token.size", "100");
         ctx.put("string.pool.param.name", "token");
         ctx.put("string.pool.param.size", "100");
-        return s -> {
+        return App.create(s -> {
             return Optional.ofNullable(ctx.get(s));
-        };
+        });
     }
 
     /**
@@ -80,8 +80,8 @@ public final class MessageTest {
      */
     @Test
     public void newMessage() {
-        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN,
-                getContext(), TEST_PARAMS);
+        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN, getApp(),
+                TEST_PARAMS);
         Assert.assertEquals(TEST_TOKEN, m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
@@ -92,8 +92,8 @@ public final class MessageTest {
      */
     @Test
     public void newMessageRaw() {
-        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN,
-                getContext(), TEST_PARAMS);
+        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN, getApp(),
+                TEST_PARAMS);
         Assert.assertEquals(PARSE_MESSAGE, m.rawString());
     }
 
@@ -102,7 +102,7 @@ public final class MessageTest {
      */
     @Test
     public void newMessageNoToken() {
-        final Message m = Message.Type.COMMAND.newMessage(getContext(),
+        final Message m = Message.Type.COMMAND.newMessage(getApp(),
                 TEST_PARAMS);
         Assert.assertEquals("", m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
@@ -114,7 +114,7 @@ public final class MessageTest {
      */
     @Test
     public void parseMessage() {
-        final Message m = Message.parse(getContext(), PARSE_MESSAGE);
+        final Message m = Message.parse(getApp(), PARSE_MESSAGE);
         Assert.assertEquals(TEST_TOKEN, m.token());
         Assert.assertEquals(Message.Type.PROMPT, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
@@ -125,7 +125,7 @@ public final class MessageTest {
      */
     @Test
     public void parseTokenlessMessage() {
-        final Message m = Message.parse(getContext(), TOKENLESS_MESSAGE);
+        final Message m = Message.parse(getApp(), TOKENLESS_MESSAGE);
         Assert.assertEquals("", m.token());
         Assert.assertEquals(Message.Type.PROMPT, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
@@ -136,7 +136,7 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseNoDelimMessage() {
-        Message.parse(getContext(), BAD_MESSAGE_1);
+        Message.parse(getApp(), BAD_MESSAGE_1);
     }
 
     /**
@@ -144,7 +144,7 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseBadTypeMessage() {
-        Message.parse(getContext(), BAD_MESSAGE_2);
+        Message.parse(getApp(), BAD_MESSAGE_2);
     }
 
     /**
@@ -152,6 +152,6 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseInsufficientMessage() {
-        Message.parse(getContext(), BAD_MESSAGE_3);
+        Message.parse(getApp(), BAD_MESSAGE_3);
     }
 }

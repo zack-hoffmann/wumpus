@@ -44,18 +44,6 @@ public interface StringPool {
     }
 
     /**
-     * Create (or recall) the string pool for tokens.
-     *
-     * @param ctx
-     *                the context for initializing the pool
-     * @return the token string pool
-     */
-    static StringPool tokenPool(final Context ctx) {
-        return recall(ctx.requiredProperty("string.pool.token.name"), Integer
-                .parseInt(ctx.requiredProperty("string.pool.token.size")));
-    }
-
-    /**
      * Abandon all pools. If pools are large this may cause significant garbage
      * collection.
      */

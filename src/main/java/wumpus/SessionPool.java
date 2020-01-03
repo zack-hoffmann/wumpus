@@ -27,64 +27,14 @@ public interface SessionPool {
     /**
      * Obtain a pool by name, or create it if no such pool exists.
      *
-     * @param ctx
-     *                 application context for the pool
+     * @param app
+     *                 application instance for the pool
      * @param name
      *                 the name of the pool to obtain
      */
-    static SessionPool recall(final Context ctx, final String name) {
+    static SessionPool recall(final App app, final String name) {
         return SessionPoolHeap.INST.computeIfAbsent(
-                StringPool.tokenPool(ctx).intern(name), n -> HashMap::new);
-    }
-
-    /**
-     * Helper to recall pool for initial sessions.
-     *
-     * @param ctx
-     *                application context for the pool
-     * @return the initial session pool
-     */
-    static SessionPool initialPool(final Context ctx) {
-        return recall(ctx, ctx.requiredProperty("session.pool.initial.name"));
-    }
-
-    /**
-     * Helper to recall pool for player sessions.
-     *
-     * @param ctx
-     *                application context for the pool
-     * @return the player session pool
-     */
-    static SessionPool playerPool(final Context ctx) {
-        return recall(ctx, ctx.requiredProperty("session.pool.player.name"));
-    }
-
-    /**
-     * Helper to recall pool for character sessions.
-     *
-     * @param ctx
-     *                application context for the pool
-     * @return the character session pool
-     */
-    static SessionPool characterPool(final Context ctx) {
-        return recall(ctx, ctx.requiredProperty("session.pool.character.name"));
-    }
-
-    /**
-     * Find a session for the token, resolving character session first, then
-     * player sessions, then initial sessions.
-     *
-     * @param ctx
-     *                  application context for the pools
-     * @param token
-     *                  the token for the session to obtain
-     * @return reference to the session if present
-     */
-    static Optional<Session> resolveTokenToSession(final Context ctx,
-            final String token) {
-        return characterPool(ctx).session(token, ctx)
-                .or(() -> playerPool(ctx).session(token, ctx))
-                .or(() -> initialPool(ctx).session(token, ctx));
+                app.tokenPool().intern(name), n -> HashMap::new);
     }
 
     /**
@@ -101,19 +51,19 @@ public interface SessionPool {
      */
     Map<String, Session> map();
 
-    default String register(final Session s, final Context ctx) {
-        final String token = StringPool.tokenPool(ctx).newToken();
+    default String register(final App app, final Session s) {
+        final String token = app.tokenPool().newToken();
         map().put(token, s);
         return token;
     }
 
-    default String renew(final String token, final Context ctx) {
+    default String renew(final App app, final String token) {
         final Session s = map().get(token);
         map().remove(token);
-        return register(s, ctx);
+        return register(app, s);
     }
 
-    default Optional<Session> session(final String token, final Context ctx) {
+    default Optional<Session> session(final String token) {
         return Optional.ofNullable(map().get(token));
     }
 

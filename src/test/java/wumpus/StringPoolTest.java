@@ -56,13 +56,13 @@ public final class StringPoolTest {
      *
      * @return a mock context instance
      */
-    private static Context getContext() {
+    private static App getApp() {
         final Map<String, String> ctx = new HashMap<String, String>();
         ctx.put("string.pool.token.name", "token");
         ctx.put("string.pool.token.size", "100");
-        return s -> {
+        return App.create(s -> {
             return Optional.ofNullable(ctx.get(s));
-        };
+        });
     }
 
     /**
@@ -144,7 +144,7 @@ public final class StringPoolTest {
      */
     @Test
     public void tokenPool() {
-        final StringPool pool = StringPool.tokenPool(getContext());
+        final StringPool pool = getApp().tokenPool();
         final String token = pool.newToken();
         final String tokenDup = new String(token.toCharArray());
         Assert.assertFalse(token == tokenDup);

@@ -12,39 +12,37 @@ public interface Gateway {
         INBOUND, OUTBOUND;
     }
 
-    static Gateway create(final Context ctx) {
+    static Gateway create(final App app) {
         final Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
         final Gateway gw = (m, s, d) -> {
             switch (d) {
             case INBOUND:
-                acceptInbound(ctx, m, s);
+                acceptInbound(app, m, s);
                 break;
             case OUTBOUND:
-                sendToRemote(ctx, m);
+                sendToRemote(app, m);
             }
         };
 
         return gw;
     }
 
-    static void acceptInbound(final Context ctx, final Message m,
-            final Session s) {
+    static void acceptInbound(final App app, final Message m, final Session s) {
         switch (m.type()) {
         case TOKEN:
-            processTokenMessage(ctx, m.token(), s);
+            processTokenMessage(app, m.token(), s);
             break;
         }
     }
 
-    static void processTokenMessage(final Context ctx, final String token,
+    static void processTokenMessage(final App app, final String token,
             final Session s) {
         if ("".equals(token) && s != null) {
-            final String newToken = SessionPool.initialPool(ctx).register(s,
-                    ctx);
-            final Message newMessage = Message.Type.TOKEN.newMessage(ctx,
+            final String newToken = app.initialSessionPool().register(app, s);
+            final Message newMessage = Message.Type.TOKEN.newMessage(app,
                     newToken);
-            sendToRemote(ctx, newMessage);
+            sendToRemote(app, newMessage);
         } else {
             // TODO figure out which session pool, generate new token, replace
             // value, send it back...
@@ -52,11 +50,12 @@ public interface Gateway {
 
     }
 
-    static void sendToRemote(final Context ctx, final Message msg) {
-        Mediator.attempt(
-                t -> SessionPool.resolveTokenToSession(ctx, msg.token()).get()
-                        .getRemote().sendString(t),
-                msg.rawString());
+    static void sendToRemote(final App app, final Message msg) {
+
+        Mediator.attempt(t -> app.characterSessionPool().session(msg.token())
+                .or(() -> app.playerSessionPool().session(msg.token()))
+                .or(() -> app.initialSessionPool().session(msg.token())).get()
+                .getRemote().sendString(t), msg.rawString());
     }
 
     /**
