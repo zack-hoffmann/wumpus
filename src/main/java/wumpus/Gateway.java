@@ -1,7 +1,6 @@
 package wumpus;
 
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.jetty.websocket.api.Session;
 
@@ -12,13 +11,11 @@ public interface Gateway {
         INBOUND, OUTBOUND;
     }
 
-    static Gateway create(final App app) {
-        final Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
-
+    static Gateway create(final App app, final Queue<Message> queue) {
         final Gateway gw = (m, s, d) -> {
             switch (d) {
             case INBOUND:
-                acceptInbound(app, m, s);
+                acceptInbound(app, m, s, queue);
                 break;
             case OUTBOUND:
                 sendToRemote(app, m);
@@ -28,24 +25,39 @@ public interface Gateway {
         return gw;
     }
 
-    static void acceptInbound(final App app, final Message m, final Session s) {
+    static void acceptInbound(final App app, final Message m, final Session s,
+            final Queue<Message> queue) {
         switch (m.type()) {
         case TOKEN:
             processTokenMessage(app, m.token(), s);
             break;
+        case RESPONSE:
+            // TODO login process
+            break;
+        default:
+            queue.add(m);
         }
     }
 
     static void processTokenMessage(final App app, final String token,
             final Session s) {
-        if ("".equals(token) && s != null) {
-            final String newToken = app.initialSessionPool().register(s);
+
+        if (app.initialSessionPool().session(token).isPresent()) {
+            // TODO login process
+        } else {
+            String newToken = null;
+            if ("".equals(token) && s != null) {
+                newToken = app.initialSessionPool().register(s);
+            } else if (app.characterSessionPool().session(token).isPresent()) {
+                newToken = app.characterSessionPool().renew(token);
+            } else if (app.playerSessionPool().session(token).isPresent()) {
+                newToken = app.playerSessionPool().renew(token);
+            } else {
+                // TODO exception?
+            }
             final Message newMessage = Message.Type.TOKEN.newMessage(app,
                     newToken);
             sendToRemote(app, newMessage);
-        } else {
-            // TODO figure out which session pool, generate new token, replace
-            // value, send it back...
         }
 
     }
