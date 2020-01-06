@@ -1,5 +1,7 @@
 package wumpus;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -28,15 +30,26 @@ public interface App extends Runnable {
      * @return the new app, not yet running
      */
     static App create(final Context ctx) {
-        return () -> ctx;
+        final Map<String, Object> mr = new HashMap<>();
+        mr.put("CONTEXT", ctx);
+        return () -> mr;
     }
+
+    /**
+     * Get the memory root for the app. Not to be accessed directly!
+     *
+     * @return a map which holds all references to all application objects
+     */
+    Map<String, Object> memoryRoot();
 
     /**
      * Get the original context for the app.
      *
      * @return the original immutable context
      */
-    Context context();
+    default Context context() {
+        return (Context) memoryRoot().get("CONTEXT");
+    }
 
     /**
      * Start the app as configured.
@@ -53,10 +66,17 @@ public interface App extends Runnable {
      * @return the token string pool
      */
     default StringPool tokenPool() {
-        return StringPool.recall(
+        return (StringPool) memoryRoot().computeIfAbsent(
                 context().requiredProperty("string.pool.token.name"),
-                Integer.parseInt(
-                        context().requiredProperty("string.pool.token.size")));
+                n -> StringPool.construct(Integer.parseInt(
+                        context().requiredProperty("string.pool.token.size"))));
+    }
+
+    default StringPool parameterPool() {
+        return (StringPool) memoryRoot().computeIfAbsent(
+                context().requiredProperty("string.pool.param.name"),
+                n -> StringPool.construct(Integer.parseInt(
+                        context().requiredProperty("string.pool.param.size"))));
     }
 
     /**
@@ -65,8 +85,8 @@ public interface App extends Runnable {
      * @return the initial session pool
      */
     default SessionPool initialSessionPool() {
-        return SessionPool.recall(this,
-                context().requiredProperty("session.pool.initial.name"));
+        return (SessionPool) memoryRoot().computeIfAbsent(
+                "INITIAL_SESSION_POOL", n -> SessionPool.create(this));
     }
 
     /**
@@ -75,8 +95,8 @@ public interface App extends Runnable {
      * @return the player session pool
      */
     default SessionPool playerSessionPool() {
-        return SessionPool.recall(this,
-                context().requiredProperty("session.pool.player.name"));
+        return (SessionPool) memoryRoot().computeIfAbsent("PLAYER_SESSION_POOL",
+                n -> SessionPool.create(this));
     }
 
     /**
@@ -85,8 +105,8 @@ public interface App extends Runnable {
      * @return the character session pool
      */
     default SessionPool characterSessionPool() {
-        return SessionPool.recall(this,
-                context().requiredProperty("session.pool.character.name"));
+        return (SessionPool) memoryRoot().computeIfAbsent(
+                "CHARACTER_SESSION_POOL", n -> SessionPool.create(this));
     }
 
     default Authenticator authenticator() {

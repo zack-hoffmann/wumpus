@@ -1,6 +1,5 @@
 package wumpus;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
@@ -15,41 +14,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 @FunctionalInterface
 public interface StringPool {
-
-    /**
-     * Wrapper for allocating and concealing the string pool memory space.
-     */
-    final class StringPoolHeap {
-        /**
-         * Map of pool instances by name.
-         */
-        private static final Map<String, StringPool> INST = new HashMap<>();
-    }
-
-    /**
-     * Obtain a pool by name. If no such pool exists, one will be created with
-     * the given size.
-     *
-     * @param name
-     *                 the name of the pool to obtain
-     * @param size
-     *                 the size of the pool to create if one needs to be
-     *                 created. If the pool already exists then this will not be
-     *                 used
-     * @return a string pool stored under the given name, and if it needed to be
-     *         created then created with the given size
-     */
-    static StringPool recall(final String name, final int size) {
-        return StringPoolHeap.INST.computeIfAbsent(name, s -> construct(size));
-    }
-
-    /**
-     * Abandon all pools. If pools are large this may cause significant garbage
-     * collection.
-     */
-    static void abandon() {
-        StringPoolHeap.INST.clear();
-    }
 
     /**
      * Create a new pool. This will not store the pool by name.

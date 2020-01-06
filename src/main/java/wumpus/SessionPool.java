@@ -14,39 +14,9 @@ import org.eclipse.jetty.websocket.api.Session;
 @FunctionalInterface
 public interface SessionPool {
 
-    /**
-     * Wrapper for allocating and concealing the session pool space.
-     */
-    final class SessionPoolHeap {
-        /**
-         * Map of session pool names to instances.
-         */
-        private static final Map<String, SessionPool> INST = new HashMap<>();
-    }
-
-    /**
-     * Obtain a pool by name, or create it if no such pool exists.
-     *
-     * @param app
-     *                 application instance for the pool
-     * @param name
-     *                 the name of the pool to obtain
-     */
-    static SessionPool recall(final App app, final String name) {
-        return SessionPoolHeap.INST.computeIfAbsent(
-                app.tokenPool().intern(name), n -> create(app));
-    }
-
     static SessionPool create(final App app) {
         final Map<String, Session> m = new HashMap<>();
         return s -> bind(m, app, s);
-    }
-
-    /**
-     * Clean all session pools.
-     */
-    static void cleanAll() {
-        SessionPoolHeap.INST.values().stream().forEach(SessionPool::clean);
     }
 
     /**

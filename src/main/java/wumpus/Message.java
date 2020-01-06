@@ -196,15 +196,11 @@ public interface Message {
      */
     static Message fromParts(final App app, final String token, final Type type,
             final String... params) {
-        final StringPool paramPool = StringPool.recall(
-                app.context().requiredProperty("string.pool.param.name"),
-                Integer.parseInt(app.context()
-                        .requiredProperty("string.pool.param.size")));
         final String[] parts = new String[params.length + 2];
         parts[0] = app.tokenPool().intern(token);
         parts[1] = type.toString();
         for (int i = 0; i < params.length; i++) {
-            parts[i + 2] = paramPool.intern(params[i]);
+            parts[i + 2] = app.parameterPool().intern(params[i]);
         }
         return () -> parts;
     }

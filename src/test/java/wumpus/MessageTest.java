@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -65,14 +64,6 @@ public final class MessageTest {
         return App.create(s -> {
             return Optional.ofNullable(ctx.get(s));
         });
-    }
-
-    /**
-     * Empty the static pools before each test.
-     */
-    @Before
-    public void clearPools() {
-        StringPool.abandon();
     }
 
     /**
