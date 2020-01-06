@@ -29,11 +29,12 @@ public interface Message {
         TOKEN,
         /**
          * The sender is indicating that it is waiting for the recipient to send
-         * it some information. The first parameter will be a description of the
-         * required information. For example, a server may send a client the
-         * prompt "Username:" which should be displayed to the user. The client
-         * will then need to take the user's response and send it in a RESPONSE
-         * message.
+         * it some information. The first parameter will be an uppercase key for
+         * the prompt value and the second parameter will be an end-user
+         * description of the required information. For example, a server may
+         * send a client the prompt "Username:" which should be displayed to the
+         * user. The client will then need to take the user's response and send
+         * it in a RESPONSE message.
          */
         PROMPT,
         /**
@@ -44,7 +45,8 @@ public interface Message {
         SECURE_PROMPT,
         /**
          * Sent in response to a prompt. The first parameter should be the
-         * expected value.
+         * uppercase key sent with the prompt and the second parameter should be
+         * the response value.
          */
         RESPONSE,
         /**

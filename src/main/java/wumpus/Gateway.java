@@ -1,5 +1,6 @@
 package wumpus;
 
+import java.util.Optional;
 import java.util.Queue;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -32,10 +33,13 @@ public interface Gateway {
             processTokenMessage(app, m.token(), s);
             break;
         case RESPONSE:
-            // TODO login process
+            handleLogin(app, m.token(), m.params()[0], m.params()[1]);
             break;
         default:
-            queue.add(m);
+            if (app.authenticator()
+                    .status(m.token()) == Authenticator.Status.AUTHENTICATED) {
+                queue.add(m);
+            }
         }
     }
 
@@ -43,7 +47,7 @@ public interface Gateway {
             final Session s) {
 
         if (app.initialSessionPool().session(token).isPresent()) {
-            // TODO login process
+            handleLogin(app, token, null, null);
         } else {
             String newToken = null;
             if ("".equals(token) && s != null) {
@@ -53,7 +57,7 @@ public interface Gateway {
             } else if (app.playerSessionPool().session(token).isPresent()) {
                 newToken = app.playerSessionPool().renew(token);
             } else {
-                // TODO exception?
+                newToken = "";
             }
             final Message newMessage = Message.Type.TOKEN.newMessage(app,
                     newToken);
@@ -62,8 +66,32 @@ public interface Gateway {
 
     }
 
-    static void sendToRemote(final App app, final Message msg) {
+    static void handleLogin(final App app, final String token,
+            final String prompt, final String value) {
+        Message msg;
+        switch (app.authenticator().handleResponse(token, prompt, value)) {
+        case AUTHENTICATED:
+            final Optional<String> newToken = app.initialSessionPool()
+                    .session(token)
+                    .map(s -> app.playerSessionPool().register(s));
+            if (newToken.isPresent()) {
+                msg = Message.Type.TOKEN.newMessage(app, newToken.get());
+            } else {
+                msg = Message.Type.TOKEN.newMessage(app, token);
+            }
+            break;
+        case USERNAME_NEEDED:
+            msg = Message.Type.PROMPT.newMessage(app, "USERNAME", "Username:");
+            break;
+        case PASSWORD_NEEDED:
+            msg = Message.Type.PROMPT.newMessage(app, "PASSWORD", "Password:");
+        default:
+            msg = Message.Type.ERROR.newMessage(app, "Not Authenticated.");
+        }
+        sendToRemote(app, msg);
+    }
 
+    static void sendToRemote(final App app, final Message msg) {
         Mediator.attempt(t -> app.characterSessionPool().session(msg.token())
                 .or(() -> app.playerSessionPool().session(msg.token()))
                 .or(() -> app.initialSessionPool().session(msg.token())).get()

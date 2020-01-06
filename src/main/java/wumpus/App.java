@@ -88,4 +88,8 @@ public interface App extends Runnable {
         return SessionPool.recall(this,
                 context().requiredProperty("session.pool.character.name"));
     }
+
+    default Authenticator authenticator() {
+        return (t, u, p) -> Authenticator.Status.UNKNOWN;
+    }
 }
