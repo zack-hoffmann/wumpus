@@ -49,13 +49,13 @@ public interface Gateway {
         if (app.initialSessionPool().session(token).isPresent()) {
             handleLogin(app, token, null, null);
         } else {
-            String newToken = null;
+            String newToken = "";
             if ("".equals(token) && s != null) {
                 newToken = app.initialSessionPool().register(s);
             } else if (app.characterSessionPool().session(token).isPresent()) {
-                newToken = app.characterSessionPool().renew(token);
+                newToken = app.characterSessionPool().renew(token).orElse("");
             } else if (app.playerSessionPool().session(token).isPresent()) {
-                newToken = app.playerSessionPool().renew(token);
+                newToken = app.playerSessionPool().renew(token).orElse("");
             } else {
                 newToken = "";
             }

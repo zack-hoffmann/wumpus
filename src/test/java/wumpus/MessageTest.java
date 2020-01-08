@@ -1,9 +1,5 @@
 package wumpus;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,28 +46,20 @@ public final class MessageTest {
      */
     private static final String BAD_MESSAGE_3 = TEST_TOKEN;
 
-    /**
-     * Generate a mock context instance.
-     *
-     * @return a mock context instance
-     */
-    private static App getApp() {
-        final Map<String, String> ctx = new HashMap<String, String>();
-        ctx.put("string.pool.token.name", "token");
-        ctx.put("string.pool.token.size", "100");
-        ctx.put("string.pool.param.name", "token");
-        ctx.put("string.pool.param.size", "100");
-        return App.create(s -> {
-            return Optional.ofNullable(ctx.get(s));
-        });
-    }
+    private static final Context MOCK_CTX = Mock.Context.create()
+            .withProperty("string.pool.token.name", "token")
+            .withProperty("string.pool.token.size", "100")
+            .withProperty("string.pool.param.name", "token")
+            .withProperty("string.pool.param.size", "100");
+
+    private static final App MOCK_APP = Mock.App.create().withContext(MOCK_CTX);
 
     /**
      * New message has correct parts.
      */
     @Test
     public void newMessage() {
-        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN, getApp(),
+        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN, MOCK_APP,
                 TEST_PARAMS);
         Assert.assertEquals(TEST_TOKEN, m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
@@ -83,7 +71,7 @@ public final class MessageTest {
      */
     @Test
     public void newMessageRaw() {
-        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN, getApp(),
+        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN, MOCK_APP,
                 TEST_PARAMS);
         Assert.assertEquals(PARSE_MESSAGE, m.rawString());
     }
@@ -93,7 +81,7 @@ public final class MessageTest {
      */
     @Test
     public void newMessageNoToken() {
-        final Message m = Message.Type.COMMAND.newMessage(getApp(),
+        final Message m = Message.Type.COMMAND.newMessage(MOCK_APP,
                 TEST_PARAMS);
         Assert.assertEquals("", m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
@@ -105,7 +93,7 @@ public final class MessageTest {
      */
     @Test
     public void parseMessage() {
-        final Message m = Message.parse(getApp(), PARSE_MESSAGE);
+        final Message m = Message.parse(MOCK_APP, PARSE_MESSAGE);
         Assert.assertEquals(TEST_TOKEN, m.token());
         Assert.assertEquals(Message.Type.PROMPT, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
@@ -116,7 +104,7 @@ public final class MessageTest {
      */
     @Test
     public void parseTokenlessMessage() {
-        final Message m = Message.parse(getApp(), TOKENLESS_MESSAGE);
+        final Message m = Message.parse(MOCK_APP, TOKENLESS_MESSAGE);
         Assert.assertEquals("", m.token());
         Assert.assertEquals(Message.Type.PROMPT, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
@@ -127,7 +115,7 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseNoDelimMessage() {
-        Message.parse(getApp(), BAD_MESSAGE_1);
+        Message.parse(MOCK_APP, BAD_MESSAGE_1);
     }
 
     /**
@@ -135,7 +123,7 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseBadTypeMessage() {
-        Message.parse(getApp(), BAD_MESSAGE_2);
+        Message.parse(MOCK_APP, BAD_MESSAGE_2);
     }
 
     /**
@@ -143,6 +131,6 @@ public final class MessageTest {
      */
     @Test(expected = Message.ParseException.class)
     public void parseInsufficientMessage() {
-        Message.parse(getApp(), BAD_MESSAGE_3);
+        Message.parse(MOCK_APP, BAD_MESSAGE_3);
     }
 }

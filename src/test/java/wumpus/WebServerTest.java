@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,22 +41,12 @@ public final class WebServerTest {
      */
     private static final int TIMEOUT = 5000;
 
-    /**
-     * Generate a mock context instance.
-     *
-     * @return a mock context instance
-     */
-    private static Context getContext() {
-        final Map<String, String> ctx = new HashMap<String, String>();
-        ctx.put("web.server.port", Integer.toString(TEST_PORT));
-        ctx.put("web.server.context.path", "/");
-        ctx.put("web.server.servlet.path.spec", "/*");
-        ctx.put("web.server.keystore.path", "teststore.jks");
-        ctx.put("web.server.keystore.password", "abcd1234");
-        return s -> {
-            return Optional.ofNullable(ctx.get(s));
-        };
-    }
+    private static final Context MOCK_CTX = Mock.Context.create()
+            .withProperty("web.server.port", Integer.toString(TEST_PORT))
+            .withProperty("web.server.context.path", "/")
+            .withProperty("web.server.servlet.path.spec", "/*")
+            .withProperty("web.server.keystore.path", "teststore.jks")
+            .withProperty("web.server.keystore.password", "abcd1234");
 
     /**
      * A mock consumer for not handling any web socket messages.
@@ -78,11 +65,10 @@ public final class WebServerTest {
      */
     @BeforeClass
     public static void setUpTrust() {
-        final Context ctx = getContext();
         System.setProperty("javax.net.ssl.trustStore", "target/test-classes/"
-                + ctx.requiredProperty("web.server.keystore.path"));
+                + MOCK_CTX.requiredProperty("web.server.keystore.path"));
         System.setProperty("javax.net.ssl.trustStorePassword",
-                ctx.requiredProperty("web.server.keystore.password"));
+                MOCK_CTX.requiredProperty("web.server.keystore.password"));
     }
 
     /**
@@ -90,7 +76,7 @@ public final class WebServerTest {
      */
     @Test
     public void starts() {
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         ws.stop();
     }
@@ -100,7 +86,7 @@ public final class WebServerTest {
      */
     @Test
     public void runs() {
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         Assert.assertTrue(ws.isRunning());
         ws.stop();
@@ -111,7 +97,7 @@ public final class WebServerTest {
      */
     @Test
     public void stops() {
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         ws.stop();
         Assert.assertFalse(ws.isRunning());
@@ -127,7 +113,7 @@ public final class WebServerTest {
      */
     @Test
     public void listens() throws UnknownHostException, IOException {
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         try (Socket s = new Socket(TEST_HOST, TEST_PORT)) {
             Assert.assertNotNull(s);
@@ -143,7 +129,7 @@ public final class WebServerTest {
      */
     @Test
     public void clientConnect() throws Exception {
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
 
         final WebSocketClient client = new WebSocketClient();
@@ -168,8 +154,7 @@ public final class WebServerTest {
             ref.set(s);
         };
 
-        final WebServer ws = WebServer.serve(getContext(), NOOP_CONN_HANDLER,
-                cons);
+        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER, cons);
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
@@ -203,7 +188,7 @@ public final class WebServerTest {
                 latch.countDown();
             }
         };
-        final WebServer ws = WebServer.serve(getContext(), cons::attempt,
+        final WebServer ws = WebServer.serve(MOCK_CTX, cons::attempt,
                 NOOP_MSG_HANDLER);
 
         final WebSocketClient client = new WebSocketClient();

@@ -19,13 +19,6 @@ public interface SessionPool {
         return s -> bind(m, app, s);
     }
 
-    /**
-     * Return the underlying map for the pool.
-     *
-     * @return the session map for the pool
-     */
-    Map<String, Session> bind(final Optional<Session> s);
-
     static Map<String, Session> bind(final Map<String, Session> map,
             final App app, final Optional<Session> s) {
         if (s.isPresent()) {
@@ -38,6 +31,13 @@ public interface SessionPool {
         }
     }
 
+    /**
+     * Return the underlying map for the pool.
+     *
+     * @return the session map for the pool
+     */
+    Map<String, Session> bind(final Optional<Session> s);
+
     default Map<String, Session> map() {
         return bind(Optional.empty());
     }
@@ -46,10 +46,11 @@ public interface SessionPool {
         return bind(Optional.of(s)).entrySet().iterator().next().getKey();
     }
 
-    default String renew(final String token) {
-        final Session s = map().get(token);
-        map().remove(token);
-        return register(s);
+    default Optional<String> renew(final String token) {
+        return session(token).map(ses -> {
+            map().remove(token);
+            return register(ses);
+        });
     }
 
     default Optional<Session> session(final String token) {
