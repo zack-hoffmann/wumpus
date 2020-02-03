@@ -49,6 +49,12 @@ public interface Mock {
             newRoot.putAll(root);
             return () -> newRoot;
         }
+
+        default App withAuthenticator(final Authenticator auth) {
+            final Map<String, Object> newRoot = new HashMap<>();
+            newRoot.put("AUTHENTICATOR", auth);
+            return withRoot(newRoot);
+        }
     }
 
     class Session implements org.eclipse.jetty.websocket.api.Session {

@@ -32,7 +32,7 @@ public interface Gateway {
         case TOKEN:
             processTokenMessage(app, m.token(), s);
             break;
-        case RESPONSE:
+        case LOGIN:
             handleLogin(app, m.token(), m.params()[0], m.params()[1]);
             break;
         default:
@@ -67,9 +67,9 @@ public interface Gateway {
     }
 
     static void handleLogin(final App app, final String token,
-            final String prompt, final String value) {
+            final String username, final String password) {
         Message msg;
-        switch (app.authenticator().handleResponse(token, prompt, value)) {
+        switch (app.authenticator().authenticate(token, username, password)) {
         case AUTHENTICATED:
             final Optional<String> newToken = app.initialSessionPool()
                     .session(token)
@@ -80,11 +80,7 @@ public interface Gateway {
                 msg = Message.Type.TOKEN.newMessage(app, token);
             }
             break;
-        case USERNAME_NEEDED:
-            msg = Message.Type.PROMPT.newMessage(app, "USERNAME", "Username:");
-            break;
-        case PASSWORD_NEEDED:
-            msg = Message.Type.PROMPT.newMessage(app, "PASSWORD", "Password:");
+        // TODO other statuses
         default:
             msg = Message.Type.ERROR.newMessage(app, "Not Authenticated.");
         }

@@ -22,18 +22,18 @@ public final class MessageTest {
      * Test raw message for parsing.
      */
     private static final String PARSE_MESSAGE = TEST_TOKEN + Message.DELIM
-            + "PROMPT" + Message.DELIM + "BAR";
+            + "COMMAND" + Message.DELIM + "BAR";
 
     /**
      * Test tokenless raw message for parsing.
      */
-    private static final String TOKENLESS_MESSAGE = Message.DELIM + "PROMPT"
+    private static final String TOKENLESS_MESSAGE = Message.DELIM + "COMMAND"
             + Message.DELIM + "BAR";
 
     /**
      * Raw message without delimiters.
      */
-    private static final String BAD_MESSAGE_1 = TEST_TOKEN + "PROMPT" + "BAR";
+    private static final String BAD_MESSAGE_1 = TEST_TOKEN + "COMMAND" + "BAR";
 
     /**
      * Raw message with unknown type.
@@ -71,7 +71,7 @@ public final class MessageTest {
      */
     @Test
     public void newMessageRaw() {
-        final Message m = Message.Type.PROMPT.newMessage(TEST_TOKEN, MOCK_APP,
+        final Message m = Message.Type.COMMAND.newMessage(TEST_TOKEN, MOCK_APP,
                 TEST_PARAMS);
         Assert.assertEquals(PARSE_MESSAGE, m.rawString());
     }
@@ -95,7 +95,7 @@ public final class MessageTest {
     public void parseMessage() {
         final Message m = Message.parse(MOCK_APP, PARSE_MESSAGE);
         Assert.assertEquals(TEST_TOKEN, m.token());
-        Assert.assertEquals(Message.Type.PROMPT, m.type());
+        Assert.assertEquals(Message.Type.COMMAND, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
     }
 
@@ -106,7 +106,7 @@ public final class MessageTest {
     public void parseTokenlessMessage() {
         final Message m = Message.parse(MOCK_APP, TOKENLESS_MESSAGE);
         Assert.assertEquals("", m.token());
-        Assert.assertEquals(Message.Type.PROMPT, m.type());
+        Assert.assertEquals(Message.Type.COMMAND, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);
     }
 

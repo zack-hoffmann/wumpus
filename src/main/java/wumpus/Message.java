@@ -22,33 +22,19 @@ public interface Message {
     enum Type {
         /**
          * If no parameters are given, the sender is requesting a new
-         * identifying token for itself from the recipient. If a parameter is
-         * given, the sender is indicating that is the token which should be
-         * used for the recipient to communicate with it.
+         * identifying token for itself from the recipient (a "renew"). If a
+         * parameter is given, the sender is indicating that is the token which
+         * should be used for the recipient to communicate with it.
          */
         TOKEN,
         /**
-         * The sender is indicating that it is waiting for the recipient to send
-         * it some information. The first parameter will be an uppercase key for
-         * the prompt value and the second parameter will be an end-user
-         * description of the required information. For example, a server may
-         * send a client the prompt "Username:" which should be displayed to the
-         * user. The client will then need to take the user's response and send
-         * it in a RESPONSE message.
+         * If no parameters are given, the sender is indicating that it is
+         * waiting for the recipient to send it a login request. If one
+         * parameter is given it must contain a single-use login token issued to
+         * the sender. If two parameters are given they must be the sender's
+         * username and password, in that order.
          */
-        PROMPT,
-        /**
-         * Same as prompt, but the recipient should treat the collection of the
-         * response in a secure fashion. This is most likely to be used for the
-         * server to indicate that it needs a user password from the client.
-         */
-        SECURE_PROMPT,
-        /**
-         * Sent in response to a prompt. The first parameter should be the
-         * uppercase key sent with the prompt and the second parameter should be
-         * the response value.
-         */
-        RESPONSE,
+        LOGIN,
         /**
          * The sender is requesting that the recipient execute a command. Mostly
          * used for the client to send game commands to the server or for the

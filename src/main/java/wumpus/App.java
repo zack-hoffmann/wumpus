@@ -110,6 +110,8 @@ public interface App extends Runnable {
     }
 
     default Authenticator authenticator() {
-        return (t, u, p) -> Authenticator.Status.UNKNOWN;
+        final Authenticator a = (t, u, p) -> Authenticator.Status.UNKNOWN;
+        return (Authenticator) memoryRoot().computeIfAbsent("AUTHENTICATOR",
+                n -> a);
     }
 }
