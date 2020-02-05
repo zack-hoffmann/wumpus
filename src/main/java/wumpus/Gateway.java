@@ -13,7 +13,7 @@ public interface Gateway {
     }
 
     static Gateway create(final App app, final Queue<Message> queue) {
-        final Gateway gw = (m, s, d) -> {
+        return (m, s, d) -> {
             switch (d) {
             case INBOUND:
                 acceptInbound(app, m, s, queue);
@@ -22,8 +22,6 @@ public interface Gateway {
                 sendToRemote(app, m);
             }
         };
-
-        return gw;
     }
 
     static void acceptInbound(final App app, final Message m, final Session s,
@@ -46,23 +44,20 @@ public interface Gateway {
     static void processTokenMessage(final App app, final String token,
             final Session s) {
 
-        if (app.initialSessionPool().session(token).isPresent()) {
-            handleLogin(app, token, null, null);
+        String newToken = "";
+        if ("".equals(token) && s != null) {
+            newToken = app.initialSessionPool().register(s);
+        } else if (app.initialSessionPool().session(token).isPresent()) {
+            newToken = app.initialSessionPool().renew(token).orElse("");
+        } else if (app.characterSessionPool().session(token).isPresent()) {
+            newToken = app.characterSessionPool().renew(token).orElse("");
+        } else if (app.playerSessionPool().session(token).isPresent()) {
+            newToken = app.playerSessionPool().renew(token).orElse("");
         } else {
-            String newToken = "";
-            if ("".equals(token) && s != null) {
-                newToken = app.initialSessionPool().register(s);
-            } else if (app.characterSessionPool().session(token).isPresent()) {
-                newToken = app.characterSessionPool().renew(token).orElse("");
-            } else if (app.playerSessionPool().session(token).isPresent()) {
-                newToken = app.playerSessionPool().renew(token).orElse("");
-            } else {
-                newToken = "";
-            }
-            final Message newMessage = Message.Type.TOKEN.newMessage(app,
-                    newToken);
-            sendToRemote(app, newMessage);
+            newToken = "";
         }
+        final Message newMessage = Message.Type.TOKEN.newMessage(app, newToken);
+        sendToRemote(app, newMessage);
 
     }
 
