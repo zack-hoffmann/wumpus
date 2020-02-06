@@ -50,17 +50,18 @@ public interface Mock {
             return () -> newRoot;
         }
 
-        default App withAuthenticator(final Authenticator auth) {
-            final Map<String, Object> newRoot = new HashMap<>();
-            newRoot.put("AUTHENTICATOR", auth);
-            return withRoot(newRoot);
+    }
+
+    interface Session extends wumpus.Session {
+        public static Session create() {
+            return () -> JettySession.create();
         }
     }
 
-    class Session implements org.eclipse.jetty.websocket.api.Session {
+    class JettySession implements org.eclipse.jetty.websocket.api.Session {
 
-        public static Session create() {
-            return new Session();
+        public static JettySession create() {
+            return new JettySession();
         }
 
         @Override

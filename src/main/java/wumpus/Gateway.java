@@ -3,8 +3,6 @@ package wumpus;
 import java.util.Optional;
 import java.util.Queue;
 
-import org.eclipse.jetty.websocket.api.Session;
-
 @FunctionalInterface
 public interface Gateway {
 
@@ -86,7 +84,7 @@ public interface Gateway {
         Mediator.attempt(t -> app.characterSessionPool().session(msg.token())
                 .or(() -> app.playerSessionPool().session(msg.token()))
                 .or(() -> app.initialSessionPool().session(msg.token())).get()
-                .getRemote().sendString(t), msg.rawString());
+                .send(t), msg.rawString());
     }
 
     /**

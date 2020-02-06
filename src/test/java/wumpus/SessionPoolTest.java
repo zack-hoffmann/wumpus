@@ -3,7 +3,6 @@ package wumpus;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jetty.websocket.api.Session;
 import org.junit.Assert;
 import org.junit.Test;
 
