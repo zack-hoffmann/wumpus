@@ -18,7 +18,7 @@ public interface Authenticator {
 
         return (t, u, p) -> {
             if (u != null && p != null) {
-                if (loginDummy.get(u).equals(p)) {
+                if (loginDummy.get(u) != null && loginDummy.get(u).equals(p)) {
                     tokenDummy.put(t, Status.AUTHENTICATED);
                 }
             }

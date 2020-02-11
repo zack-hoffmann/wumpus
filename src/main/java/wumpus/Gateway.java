@@ -17,24 +17,30 @@ public interface Gateway {
                 acceptInbound(app, m, s, queue);
                 break;
             case OUTBOUND:
-                sendToRemote(app, m);
+                sendToRemote(app, m, m.token());
             }
         };
     }
 
     static void acceptInbound(final App app, final Message m, final Session s,
             final Queue<Message> queue) {
-        switch (m.type()) {
-        case TOKEN:
-            processTokenMessage(app, m.token(), s);
-            break;
-        case LOGIN:
-            handleLogin(app, m.token(), m.params()[0], m.params()[1]);
-            break;
-        default:
-            if (app.authenticator()
-                    .status(m.token()) == Authenticator.Status.AUTHENTICATED) {
-                queue.add(m);
+        if (m.token().isBlank() && !m.type().equals(Message.Type.TOKEN)) {
+            s.send(Message.Type.ERROR.newMessage(app,
+                    "Illegal message: No token present. Please send an initial token reqest first.")
+                    .rawString());
+        } else {
+            switch (m.type()) {
+            case TOKEN:
+                processTokenMessage(app, m.token(), s);
+                break;
+            case LOGIN:
+                handleLogin(app, m.token(), m.params()[0], m.params()[1]);
+                break;
+            default:
+                if (app.authenticator().status(
+                        m.token()) == Authenticator.Status.AUTHENTICATED) {
+                    queue.add(m);
+                }
             }
         }
     }
@@ -55,35 +61,37 @@ public interface Gateway {
             newToken = "";
         }
         final Message newMessage = Message.Type.TOKEN.newMessage(app, newToken);
-        sendToRemote(app, newMessage);
+        sendToRemote(app, newMessage, newToken);
 
     }
 
     static void handleLogin(final App app, final String token,
             final String username, final String password) {
         Message msg;
+        String outToken = token;
         switch (app.authenticator().authenticate(token, username, password)) {
         case AUTHENTICATED:
             final Optional<String> newToken = app.initialSessionPool()
                     .session(token)
                     .map(s -> app.playerSessionPool().register(s));
             if (newToken.isPresent()) {
-                msg = Message.Type.TOKEN.newMessage(app, newToken.get());
-            } else {
-                msg = Message.Type.TOKEN.newMessage(app, token);
+                outToken = newToken.get();
             }
+            msg = Message.Type.TOKEN.newMessage(app, outToken);
+
             break;
         // TODO other statuses
         default:
             msg = Message.Type.ERROR.newMessage(app, "Not Authenticated.");
         }
-        sendToRemote(app, msg);
+        sendToRemote(app, msg, outToken);
     }
 
-    static void sendToRemote(final App app, final Message msg) {
-        Mediator.attempt(t -> app.characterSessionPool().session(msg.token())
-                .or(() -> app.playerSessionPool().session(msg.token()))
-                .or(() -> app.initialSessionPool().session(msg.token())).get()
+    static void sendToRemote(final App app, final Message msg,
+            final String outToken) {
+        Mediator.attempt(t -> app.characterSessionPool().session(outToken)
+                .or(() -> app.playerSessionPool().session(outToken))
+                .or(() -> app.initialSessionPool().session(outToken)).get()
                 .send(t), msg.rawString());
     }
 
@@ -99,4 +107,12 @@ public interface Gateway {
      */
     void accept(final Message message, final Session session,
             final Direction direction);
+
+    default void acceptInbound(final Message message, final Session session) {
+        accept(message, session, Direction.INBOUND);
+    }
+
+    default void sendOutbound(final Message message) {
+        accept(message, null, Direction.OUTBOUND);
+    }
 }
