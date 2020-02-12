@@ -81,6 +81,11 @@ public interface Mock {
             return () -> js;
         }
 
+        public static Session createClosed() {
+            final JettySession js = JettySession.createClosed();
+            return () -> js;
+        }
+
         default Message sentMessage(final wumpus.App app) {
             return Message.parse(app,
                     ((Mock.JettySession) unwrap()).sentString());
