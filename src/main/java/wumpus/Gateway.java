@@ -40,6 +40,9 @@ public interface Gateway {
                 if (app.authenticator().status(
                         m.token()) == Authenticator.Status.AUTHENTICATED) {
                     queue.add(m);
+                } else {
+                    sendToRemote(app, Message.Type.ERROR.newMessage(app,
+                            "Not Authenticated."), m.token());
                 }
             }
         }
@@ -89,10 +92,12 @@ public interface Gateway {
 
     static void sendToRemote(final App app, final Message msg,
             final String outToken) {
-        Mediator.attempt(t -> app.characterSessionPool().session(outToken)
-                .or(() -> app.playerSessionPool().session(outToken))
-                .or(() -> app.initialSessionPool().session(outToken)).get()
-                .send(t), msg.rawString());
+        Mediator.attempt(
+                t -> app.characterSessionPool().session(outToken)
+                        .or(() -> app.playerSessionPool().session(outToken))
+                        .or(() -> app.initialSessionPool().session(outToken))
+                        .get().send(t),
+                msg.type().newMessage(app, msg.params()).rawString());
     }
 
     /**
@@ -110,6 +115,10 @@ public interface Gateway {
 
     default void acceptInbound(final Message message, final Session session) {
         accept(message, session, Direction.INBOUND);
+    }
+
+    default void acceptInbound(final Message message) {
+        accept(message, null, Direction.INBOUND);
     }
 
     default void sendOutbound(final Message message) {

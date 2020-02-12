@@ -52,6 +52,16 @@ public interface Mock {
             return withRoot(newRoot);
         }
 
+        default App withPlayerSession(final String token,
+                final wumpus.Session session) {
+            final SessionPool pool = SessionPool.create(this);
+            pool.map().put(token, session);
+            final Map<String, Object> newRoot = new HashMap<>();
+            newRoot.put("PLAYER_SESSION_POOL", pool);
+            this.authenticator().authenticate(token, "ADMIN", "ADMIN");
+            return withRoot(newRoot);
+        }
+
         default App withContext(final wumpus.Context ctx) {
             return withRoot(wumpus.App.create(ctx).memoryRoot());
         }
