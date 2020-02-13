@@ -85,8 +85,8 @@ public interface Message {
         /**
          * Create a new message of this type with no token.
          *
-         * @param ctx
-         *                   the application context, used for string interning
+         * @param app
+         *                   the application instance, used for string interning
          * @param params
          *                   any parameters needed for the message
          * @return the new message
