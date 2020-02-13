@@ -46,12 +46,18 @@ public final class MessageTest {
      */
     private static final String BAD_MESSAGE_3 = TEST_TOKEN;
 
+    /**
+     * Configuration context.
+     */
     private static final Context MOCK_CTX = Mock.Context.create()
             .withProperty("string.pool.token.name", "token")
             .withProperty("string.pool.token.size", "100")
             .withProperty("string.pool.param.name", "token")
             .withProperty("string.pool.param.size", "100");
 
+    /**
+     * Mock app.
+     */
     private static final App MOCK_APP = Mock.App.create().withContext(MOCK_CTX);
 
     /**

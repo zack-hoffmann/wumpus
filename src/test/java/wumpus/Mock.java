@@ -20,12 +20,29 @@ import org.eclipse.jetty.websocket.api.WriteCallback;
 
 public interface Mock {
 
+    /**
+     * Mock of the context.
+     */
     interface Context extends wumpus.Context {
 
-        public static Context create() {
+        /**
+         * Create an empty mock context.
+         *
+         * @return empty context
+         */
+        static Context create() {
             return s -> Optional.empty();
         }
 
+        /**
+         * Extend the context with an additional property.
+         *
+         * @param p
+         *              the new property name
+         * @param v
+         *              the new property value
+         * @return the extended context
+         */
         default Context withProperty(final String p, final String v) {
             return s -> {
                 if (s.equals(p)) {
@@ -37,12 +54,29 @@ public interface Mock {
         }
     }
 
+    /**
+     * Mock of the app.
+     */
     interface App extends wumpus.App {
 
-        public static App create() {
+        /**
+         * Create an empty mock app.
+         *
+         * @return new app instance
+         */
+        static App create() {
             return () -> Collections.emptyMap();
         }
 
+        /**
+         * Seed the app with an established initial session.
+         *
+         * @param token
+         *                    the token of the initial session
+         * @param session
+         *                    the session of the initial session
+         * @return the extended app instance
+         */
         default App withInitialSession(final String token,
                 final wumpus.Session session) {
             final SessionPool pool = SessionPool.create(this);
@@ -52,6 +86,15 @@ public interface Mock {
             return withRoot(newRoot);
         }
 
+        /**
+         * Seed the app with an established, authenticated player session.
+         *
+         * @param token
+         *                    the token of the player session
+         * @param session
+         *                    the session of the player session
+         * @return the extended app instance
+         */
         default App withPlayerSession(final String token,
                 final wumpus.Session session) {
             final SessionPool pool = SessionPool.create(this);
@@ -62,10 +105,25 @@ public interface Mock {
             return withRoot(newRoot);
         }
 
+        /**
+         * Extend the app with additional context.
+         *
+         * @param ctx
+         *                the additional context
+         * @return the extended app instance
+         */
         default App withContext(final wumpus.Context ctx) {
             return withRoot(wumpus.App.create(ctx).memoryRoot());
         }
 
+        /**
+         * Extend the app with additional root memory, overriding conflicting
+         * values.
+         *
+         * @param root
+         *                 the root memory map to lay over the existing one
+         * @return the extended app instance
+         */
         default App withRoot(final Map<String, Object> root) {
             final Map<String, Object> newRoot = new HashMap<>();
             newRoot.putAll(this.memoryRoot());
@@ -75,40 +133,93 @@ public interface Mock {
 
     }
 
+    /**
+     * Mock wrapper session.
+     */
     interface Session extends wumpus.Session {
-        public static Session create() {
+        /**
+         * Create open mock session.
+         *
+         * @return open mock session
+         */
+        static Session create() {
             final JettySession js = JettySession.createOpen();
             return () -> js;
         }
 
-        public static Session createClosed() {
+        /**
+         * Create closed mock session.
+         *
+         * @return closed mock session
+         */
+        static Session createClosed() {
             final JettySession js = JettySession.createClosed();
             return () -> js;
         }
 
+        /**
+         * Access the last message sent via this session.
+         *
+         * @param app
+         *                the application
+         * @return the last message sent
+         */
         default Message sentMessage(final wumpus.App app) {
             return Message.parse(app,
                     ((Mock.JettySession) unwrap()).sentString());
         }
     }
 
+    /**
+     * Mock native Jetty session for testing the wrapper session and things that
+     * use it.
+     */
     class JettySession implements org.eclipse.jetty.websocket.api.Session {
 
+        /**
+         * Create an open mock native session.
+         *
+         * @return an open mock native session.
+         */
         public static JettySession createOpen() {
             return new JettySession(true);
         }
 
+        /**
+         * Create a closed mock native session.
+         *
+         * @return a closed mock native session.
+         */
         public static JettySession createClosed() {
             return new JettySession(false);
         }
 
+        /**
+         * If the session is open.
+         */
         private final boolean open;
+
+        /**
+         * The last string sent via this session.
+         */
         private String sentString;
 
+        /**
+         * Instantiate mock session with openness status.
+         *
+         * @param o
+         *              true if session should be presented as open, false if
+         *              otherwise
+         */
         private JettySession(final boolean o) {
             open = o;
         }
 
+        /**
+         * Access the last string which was sent via this session.
+         *
+         * @return the last string sent
+         */
         public String sentString() {
             return sentString;
         }
@@ -118,11 +229,11 @@ public interface Mock {
         }
 
         @Override
-        public void close(CloseStatus closeStatus) {
+        public void close(final CloseStatus closeStatus) {
         }
 
         @Override
-        public void close(int statusCode, String reason) {
+        public void close(final int statusCode, final String reason) {
         }
 
         @Override
@@ -154,46 +265,48 @@ public interface Mock {
             return new RemoteEndpoint() {
 
                 @Override
-                public void sendBytes(ByteBuffer data) throws IOException {
+                public void sendBytes(final ByteBuffer data)
+                        throws IOException {
 
                 }
 
                 @Override
-                public Future<Void> sendBytesByFuture(ByteBuffer data) {
+                public Future<Void> sendBytesByFuture(final ByteBuffer data) {
                     return null;
                 }
 
                 @Override
-                public void sendBytes(ByteBuffer data, WriteCallback callback) {
+                public void sendBytes(final ByteBuffer data,
+                        final WriteCallback callback) {
 
                 }
 
                 @Override
-                public void sendPartialBytes(ByteBuffer fragment,
-                        boolean isLast) throws IOException {
+                public void sendPartialBytes(final ByteBuffer fragment,
+                        final boolean isLast) throws IOException {
 
                 }
 
                 @Override
-                public void sendPartialString(String fragment, boolean isLast)
+                public void sendPartialString(final String fragment,
+                        final boolean isLast) throws IOException {
+
+                }
+
+                @Override
+                public void sendPing(final ByteBuffer applicationData)
                         throws IOException {
 
                 }
 
                 @Override
-                public void sendPing(ByteBuffer applicationData)
+                public void sendPong(final ByteBuffer applicationData)
                         throws IOException {
 
                 }
 
                 @Override
-                public void sendPong(ByteBuffer applicationData)
-                        throws IOException {
-
-                }
-
-                @Override
-                public void sendString(String text) throws IOException {
+                public void sendString(final String text) throws IOException {
                     if (open) {
                         sentString = text;
                     } else {
@@ -202,12 +315,13 @@ public interface Mock {
                 }
 
                 @Override
-                public Future<Void> sendStringByFuture(String text) {
+                public Future<Void> sendStringByFuture(final String text) {
                     return null;
                 }
 
                 @Override
-                public void sendString(String text, WriteCallback callback) {
+                public void sendString(final String text,
+                        final WriteCallback callback) {
 
                 }
 
@@ -217,7 +331,7 @@ public interface Mock {
                 }
 
                 @Override
-                public void setBatchMode(BatchMode mode) {
+                public void setBatchMode(final BatchMode mode) {
 
                 }
 
@@ -260,7 +374,7 @@ public interface Mock {
         }
 
         @Override
-        public void setIdleTimeout(long ms) {
+        public void setIdleTimeout(final long ms) {
         }
 
         @Override

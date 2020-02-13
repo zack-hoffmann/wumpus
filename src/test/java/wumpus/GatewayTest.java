@@ -6,8 +6,14 @@ import java.util.Queue;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test suite for the network gateway.
+ */
 public final class GatewayTest {
 
+    /**
+     * Configuration context.
+     */
     private static final Context MOCK_CTX = Mock.Context.create()
             .withProperty("string.pool.token.name", "token")
             .withProperty("string.pool.token.size", "100")
@@ -29,8 +35,11 @@ public final class GatewayTest {
         Assert.assertEquals(Message.Type.TOKEN, ses.sentMessage(app).type());
     }
 
+    /**
+     * Logins without an initial session are rejected.
+     */
     @Test
-    public void doesNotAcceptNonInitialLogin() {
+    public void rejectsNonInitialLogin() {
         final App app = Mock.App.create().withContext(MOCK_CTX);
         final Message loginRequest = Message.Type.LOGIN.newMessage(app, "ADMIN",
                 "ADMIN");
@@ -42,6 +51,9 @@ public final class GatewayTest {
         Assert.assertEquals(Message.Type.ERROR, ses.sentMessage(app).type());
     }
 
+    /**
+     * Valid logins of initial sessions are accepted.
+     */
     @Test
     public void acceptsInitialLogin() {
         final Mock.Session ses = Mock.Session.create();
@@ -55,6 +67,9 @@ public final class GatewayTest {
         Assert.assertEquals(Message.Type.TOKEN, ses.sentMessage(app).type());
     }
 
+    /**
+     * Invalid logins of initial sessions are rejected.
+     */
     @Test
     public void rejectsBadInitialLogin() {
         final Mock.Session ses = Mock.Session.create();
@@ -69,6 +84,9 @@ public final class GatewayTest {
         Assert.assertEquals(Message.Type.ERROR, ses.sentMessage(app).type());
     }
 
+    /**
+     * Messages can be sent outbound.
+     */
     @Test
     public void sendMessage() {
         final Mock.Session ses = Mock.Session.create();
@@ -81,6 +99,9 @@ public final class GatewayTest {
         Assert.assertEquals(msg.params()[0], ses.sentMessage(app).params()[0]);
     }
 
+    /**
+     * Command messages with a player session are accepted.
+     */
     @Test
     public void acceptAuthenticatedCommand() {
         final Mock.Session ses = Mock.Session.create();
@@ -93,8 +114,11 @@ public final class GatewayTest {
         Assert.assertTrue(msgQueue.contains(msg));
     }
 
+    /**
+     * Command messages without a player session token are rejected.
+     */
     @Test
-    public void rejectUnauthenticatedCommand(){
+    public void rejectUnauthenticatedCommand() {
         final Mock.Session ses = Mock.Session.create();
         final App app = Mock.App.create().withContext(MOCK_CTX)
                 .withInitialSession("FOO_TOKEN", ses);

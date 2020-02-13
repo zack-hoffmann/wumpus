@@ -1,7 +1,7 @@
 package wumpus;
 
 /**
- * TODO
+ * TODO Authenticator is not ready yet.
  */
 public final class AuthenticatorTest {
 

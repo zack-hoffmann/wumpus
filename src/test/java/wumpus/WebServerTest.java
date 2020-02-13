@@ -41,6 +41,9 @@ public final class WebServerTest {
      */
     private static final int TIMEOUT = 5000;
 
+    /**
+     * Context configuration.
+     */
     private static final Context MOCK_CTX = Mock.Context.create()
             .withProperty("web.server.port", Integer.toString(TEST_PORT))
             .withProperty("web.server.context.path", "/")

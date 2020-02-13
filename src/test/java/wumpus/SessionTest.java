@@ -3,8 +3,14 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test suite for the session wrapper.
+ */
 public final class SessionTest {
 
+    /**
+     * Exposes the native session.
+     */
     @Test
     public void unwraps() {
         final Mock.JettySession jettySession = Mock.JettySession.createOpen();
@@ -12,6 +18,9 @@ public final class SessionTest {
         Assert.assertEquals(jettySession, ses.unwrap());
     }
 
+    /**
+     * Determines when session is open.
+     */
     @Test
     public void checkOpen() {
         final Mock.JettySession jettySession = Mock.JettySession.createOpen();
@@ -19,6 +28,9 @@ public final class SessionTest {
         Assert.assertTrue(ses.isOpen());
     }
 
+    /**
+     * Determines when session is closed.
+     */
     @Test
     public void checkClosed() {
         final Mock.JettySession jettySession = Mock.JettySession.createClosed();
@@ -26,6 +38,9 @@ public final class SessionTest {
         Assert.assertFalse(ses.isOpen());
     }
 
+    /**
+     * Writes string to remote.
+     */
     @Test
     public void writesWhenOpen() {
         final Mock.JettySession jettySession = Mock.JettySession.createOpen();
@@ -33,6 +48,9 @@ public final class SessionTest {
         Assert.assertEquals("FOO", jettySession.sentString());
     }
 
+    /**
+     * Throws exception when writing to closed session.
+     */
     @Test(expected = Session.SessionException.class)
     public void doesNotWriteWhenClosed() {
         final Mock.JettySession jettySession = Mock.JettySession.createClosed();

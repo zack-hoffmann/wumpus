@@ -3,8 +3,16 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test suite for the app instance.
+ *
+ * TODO Many app methods are not yet tested.
+ */
 public final class AppTest {
 
+    /**
+     * Configuration context.
+     */
     private static final Context MOCK_CTX = Mock.Context.create()
             .withProperty("foo", "bar");
 
