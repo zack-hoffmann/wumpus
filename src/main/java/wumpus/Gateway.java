@@ -3,13 +3,43 @@ package wumpus;
 import java.util.Optional;
 import java.util.Queue;
 
+/**
+ * Processing point for all messages into or out of the server.
+ */
 @FunctionalInterface
 public interface Gateway {
 
+    /**
+     * Indicates directionality of a message in the gateway.
+     */
     enum Direction {
-        INBOUND, OUTBOUND;
+        /**
+         * Message is moving through the gateway from a remote endpoint to the
+         * server.
+         */
+        INBOUND,
+        /**
+         * Message is moving through the gateway from the server to a remote
+         * endpoint.
+         */
+        OUTBOUND;
     }
 
+    /**
+     * Error message. {@value}
+     */
+    String ERROR_NEED_INITIAL_TOKEN = "Illegal message: No token present. "
+            + "Please send an initial token reqest first.";
+
+    /**
+     * Create a new gateway instance.
+     *
+     * @param app
+     *                  the application instance
+     * @param queue
+     *                  the queue for processed inbound messages
+     * @return a new gateway
+     */
     static Gateway create(final App app, final Queue<Message> queue) {
         return (m, s, d) -> {
             switch (d) {
@@ -18,15 +48,29 @@ public interface Gateway {
                 break;
             case OUTBOUND:
                 sendToRemote(app, m, m.token());
+                break;
+            default:
             }
         };
     }
 
+    /**
+     * Process an inbound message.
+     *
+     * @param app
+     *                  the application instance
+     * @param m
+     *                  the message to process
+     * @param s
+     *                  the session which originated the message
+     * @param queue
+     *                  the queue on which to place processed non-gateway
+     *                  messages
+     */
     static void acceptInbound(final App app, final Message m, final Session s,
             final Queue<Message> queue) {
         if (m.token().isBlank() && !m.type().equals(Message.Type.TOKEN)) {
-            s.send(Message.Type.ERROR.newMessage(app,
-                    "Illegal message: No token present. Please send an initial token reqest first.")
+            s.send(Message.Type.ERROR.newMessage(app, ERROR_NEED_INITIAL_TOKEN)
                     .rawString());
         } else {
             switch (m.type()) {
@@ -48,6 +92,16 @@ public interface Gateway {
         }
     }
 
+    /**
+     * Handle processing of a TOKEN type message.
+     *
+     * @param app
+     *                  the application instance
+     * @param token
+     *                  the original token identifying the session
+     * @param s
+     *                  the session to issue the token for
+     */
     static void processTokenMessage(final App app, final String token,
             final Session s) {
 
@@ -68,6 +122,18 @@ public interface Gateway {
 
     }
 
+    /**
+     * Handle processing of a LOGIN type message.
+     *
+     * @param app
+     *                     the application instance
+     * @param token
+     *                     the initial token identifying the session to log in
+     * @param username
+     *                     the username for the login attempt
+     * @param password
+     *                     the password for the login attempt
+     */
     static void handleLogin(final App app, final String token,
             final String username, final String password) {
         Message msg;
@@ -90,6 +156,16 @@ public interface Gateway {
         sendToRemote(app, msg, outToken);
     }
 
+    /**
+     * Send a message to a remote endpoint.
+     *
+     * @param app
+     *                     the application instance
+     * @param msg
+     *                     the message to send
+     * @param outToken
+     *                     the token identifying the session to send outbound to
+     */
     static void sendToRemote(final App app, final Message msg,
             final String outToken) {
         Mediator.attempt(
@@ -110,17 +186,37 @@ public interface Gateway {
      * @param direction
      *                      the direction of the message
      */
-    void accept(final Message message, final Session session,
-            final Direction direction);
+    void accept(Message message, Session session, Direction direction);
 
+    /**
+     * Accept and process a message from a new remote endpoint.
+     *
+     * @param message
+     *                    the message to accept
+     * @param session
+     *                    the session of the new endpoint
+     */
     default void acceptInbound(final Message message, final Session session) {
         accept(message, session, Direction.INBOUND);
     }
 
+    /**
+     * Accept and process a message from a known remote endpoint.
+     *
+     * @param message
+     *                    the message to accept
+     */
     default void acceptInbound(final Message message) {
         accept(message, null, Direction.INBOUND);
     }
 
+    /**
+     * Send a message outbound to the remote endpoint indicated by the message
+     * token.
+     *
+     * @param message
+     *                    the message to send
+     */
     default void sendOutbound(final Message message) {
         accept(message, null, Direction.OUTBOUND);
     }

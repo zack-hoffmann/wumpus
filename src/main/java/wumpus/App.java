@@ -54,10 +54,11 @@ public interface App extends Runnable {
     /**
      * Start the app as configured.
      */
+    @Override
     default void run() {
-        final Logger LOG = Logger.getLogger(App.class.getName());
-        LOG.info("Starting application server for Hunt the Wumpus");
-        LOG.fine("Fine logging is enabled.");
+        final Logger log = Logger.getLogger(App.class.getName());
+        log.info("Starting application server for Hunt the Wumpus");
+        log.fine("Fine logging is enabled.");
     }
 
     /**
@@ -72,6 +73,11 @@ public interface App extends Runnable {
                         context().requiredProperty("string.pool.token.size"))));
     }
 
+    /**
+     * Retrieve the string pool for message parameters.
+     *
+     * @return the message parameter string pool
+     */
     default StringPool parameterPool() {
         return (StringPool) memoryRoot().computeIfAbsent(
                 context().requiredProperty("string.pool.param.name"),
@@ -109,6 +115,11 @@ public interface App extends Runnable {
                 "CHARACTER_SESSION_POOL", n -> SessionPool.create(this));
     }
 
+    /**
+     * Retrieve authenticator.
+     *
+     * @return the application authenticator.
+     */
     default Authenticator authenticator() {
         return (Authenticator) memoryRoot().computeIfAbsent("AUTHENTICATOR",
                 n -> Authenticator.create(this));
