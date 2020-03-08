@@ -26,11 +26,4 @@ public final class AppTest {
         Assert.assertEquals(ctx.property("foo"), a.context().property("foo"));
     }
 
-    /**
-     * App runs.
-     */
-    @Test
-    public void runs() {
-        App.create(MOCK_CTX).run();
-    }
 }

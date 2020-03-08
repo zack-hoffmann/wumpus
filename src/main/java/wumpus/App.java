@@ -2,6 +2,10 @@ package wumpus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 /**
@@ -59,6 +63,26 @@ public interface App extends Runnable {
         final Logger log = Logger.getLogger(App.class.getName());
         log.info("Starting application server for Hunt the Wumpus");
         log.fine("Fine logging is enabled.");
+        final Queue<Message> q = new ConcurrentLinkedQueue<>();
+        final Gateway g = Gateway.create(this, q);
+        final Message tokenRequest = Message.Type.TOKEN.newMessage(this);
+        final WebServer s = WebServer.serve(context(),
+                e -> g.acceptInbound(tokenRequest, Session.create(e)),
+                m -> g.acceptInbound(Message.parse(this, m)));
+        final ExecutorService serv = Executors.newSingleThreadExecutor();
+        serv.execute(() -> {
+            while (s.isRunning()) {
+                final Message m = q.poll();
+                if (m != null) {
+                    log.info(m.rawString());
+                    g.sendOutbound(Message.Type.COMMAND.newMessage(m.token(),
+                            this, "PRINT", m.params()[0]));
+                    if ("STOP".equals(m.params()[0])) {
+                        s.stop();
+                    }
+                }
+            }
+        });
     }
 
     /**
