@@ -17,7 +17,7 @@ public interface Context {
     /**
      * Logger.
      */
-    Logger LOG = Logger.getLogger(App.class.getName());
+    Logger LOG = Logger.getLogger(Context.class.getName());
 
     /**
      * Create a context on a map of strings.
