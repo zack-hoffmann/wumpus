@@ -1,27 +1,20 @@
 package wumpus;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
+import wumpus.system.Utilities;
+
 @FunctionalInterface
 public interface Application extends Runnable {
-
-    public static final String PROP_FILE = "wumpus.properties";
 
     static void main(final String... args) {
         Application.get().run();
     }
 
     static Application get() {
-        final Properties p = new Properties();
-        Mediator.require(n -> {
-            p.load(Application.class.getResourceAsStream("/" + n));
-            p.load(Files.newInputStream(
-                    Paths.get(System.getProperty("user.dir")).resolve(n)));
-        }, PROP_FILE);
-        return s -> Optional.ofNullable(p.getProperty(s));
+        return s -> Utilities.loadProperties.andThen(p -> p.getProperty(s))
+                .andThen(Optional::ofNullable).apply(new Properties());
     }
 
     /**
