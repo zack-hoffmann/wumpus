@@ -5,8 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import wumpus.Mediator;
 
@@ -21,18 +21,18 @@ public interface Utilities {
             .require(() -> Files.newInputStream(Paths
                     .get(System.getProperty("user.dir")).resolve(PROP_FILE)));
 
-    BiFunction<Properties, Supplier<InputStream>, Properties> loadPropertiesByStream = (
+    BiFunction<Properties, InputStream, Properties> loadPropertiesFromStream = (
             p, i) -> {
-        Mediator.require(p::load, i.get());
+        Mediator.require(p::load, i);
         return p;
     };
 
-    Function<Properties, Properties> loadDefaultProperties = p -> loadPropertiesByStream
-            .apply(p, openClasspathStream);
+    UnaryOperator<Properties> loadDefaultProperties = p -> loadPropertiesFromStream
+            .apply(p, openClasspathStream.get());
 
-    Function<Properties, Properties> loadLocalProperties = p -> loadPropertiesByStream
-            .apply(p, openLocalStream);
+    UnaryOperator<Properties> loadLocalProperties = p -> loadPropertiesFromStream
+            .apply(p, openLocalStream.get());
 
-    Function<Properties, Properties> loadProperties = loadDefaultProperties
-            .andThen(loadLocalProperties);
+    UnaryOperator<Properties> loadProperties = p -> loadDefaultProperties
+            .andThen(loadLocalProperties).apply(p);
 }

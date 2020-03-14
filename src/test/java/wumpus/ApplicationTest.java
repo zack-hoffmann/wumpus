@@ -16,17 +16,12 @@ import org.junit.Test;
 /**
  * Test suite for the application context.
  */
-public final class ContextTest {
-
-    /**
-     * File name of a non-existent properties file.
-     */
-    private static final String BAD_PROP_FILE_NAME = "bad.properties";
+public final class ApplicationTest {
 
     /**
      * File name to use for testing.
      */
-    private static final String TEST_PROP_FILE_NAME = "test.properties";
+    private static final String TEST_PROP_FILE_NAME = "wumpus.properties";
 
     /**
      * Key not defined in any properties.
@@ -99,20 +94,11 @@ public final class ContextTest {
     }
 
     /**
-     * Not having a default properties file should cause a crash.
-     */
-    @Test(expected = RuntimeException.class)
-    public void noDefaultProperties() {
-        Context.create(BAD_PROP_FILE_NAME).property(DEFAULT_ONLY_KEY);
-    }
-
-    /**
      * Selecting an undefined property should return an empty reference.
      */
     @Test
     public void noProperty() {
-        Assert.assertTrue(Context.create(TEST_PROP_FILE_NAME).property(BAD_KEY)
-                .isEmpty());
+        Assert.assertTrue(Application.get().property(BAD_KEY).isEmpty());
     }
 
     /**
@@ -121,8 +107,8 @@ public final class ContextTest {
      */
     @Test
     public void foundDefaultProperty() {
-        Assert.assertEquals(DEFAULT_ONLY_VAL, Context
-                .create(TEST_PROP_FILE_NAME).property(DEFAULT_ONLY_KEY).get());
+        Assert.assertEquals(DEFAULT_ONLY_VAL,
+                Application.get().property(DEFAULT_ONLY_KEY).get());
     }
 
     /**
@@ -131,8 +117,8 @@ public final class ContextTest {
      */
     @Test
     public void foundRundirProperty() {
-        Assert.assertEquals(RUNDIR_ONLY_VAL, Context.create(TEST_PROP_FILE_NAME)
-                .property(RUNDIR_ONLY_KEY).get());
+        Assert.assertEquals(RUNDIR_ONLY_VAL,
+                Application.get().property(RUNDIR_ONLY_KEY).get());
     }
 
     /**
@@ -142,7 +128,7 @@ public final class ContextTest {
     @Test
     public void foundOverrideProperty() {
         Assert.assertEquals(SHARED_RUNDIR_VAL,
-                Context.create(TEST_PROP_FILE_NAME).property(SHARED_KEY).get());
+                Application.get().property(SHARED_KEY).get());
     }
 
     /**
@@ -150,7 +136,7 @@ public final class ContextTest {
      */
     @Test(expected = RuntimeException.class)
     public void noRequiredProperty() {
-        Context.create(TEST_PROP_FILE_NAME).requiredProperty(BAD_KEY);
+        Application.get().requiredProperty(BAD_KEY);
     }
 
     /**
@@ -159,7 +145,6 @@ public final class ContextTest {
     @Test
     public void requiredPropertyFound() {
         Assert.assertEquals(DEFAULT_ONLY_VAL,
-                Context.create(TEST_PROP_FILE_NAME)
-                        .requiredProperty(DEFAULT_ONLY_KEY));
+                Application.get().requiredProperty(DEFAULT_ONLY_KEY));
     }
 }
