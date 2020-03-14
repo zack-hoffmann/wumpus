@@ -3,9 +3,6 @@ package wumpus;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
@@ -23,14 +20,14 @@ public interface Mock {
     /**
      * Mock of the context.
      */
-    interface Context extends wumpus.Context {
+    interface Application extends wumpus.Application {
 
         /**
          * Create an empty mock context.
          *
          * @return empty context
          */
-        static Context create() {
+        static Application create() {
             return s -> Optional.empty();
         }
 
@@ -43,7 +40,7 @@ public interface Mock {
          *              the new property value
          * @return the extended context
          */
-        default Context withProperty(final String p, final String v) {
+        default Application withProperty(final String p, final String v) {
             return s -> {
                 if (s.equals(p)) {
                     return Optional.of(v);
@@ -52,85 +49,6 @@ public interface Mock {
                 }
             };
         }
-    }
-
-    /**
-     * Mock of the app.
-     */
-    interface App extends wumpus.App {
-
-        /**
-         * Create an empty mock app.
-         *
-         * @return new app instance
-         */
-        static App create() {
-            return () -> Collections.emptyMap();
-        }
-
-        /**
-         * Seed the app with an established initial session.
-         *
-         * @param token
-         *                    the token of the initial session
-         * @param session
-         *                    the session of the initial session
-         * @return the extended app instance
-         */
-        default App withInitialSession(final String token,
-                final wumpus.Session session) {
-            final SessionPool pool = SessionPool.create(this);
-            pool.map().put(token, session);
-            final Map<String, Object> newRoot = new HashMap<>();
-            newRoot.put("INITIAL_SESSION_POOL", pool);
-            return withRoot(newRoot);
-        }
-
-        /**
-         * Seed the app with an established, authenticated player session.
-         *
-         * @param token
-         *                    the token of the player session
-         * @param session
-         *                    the session of the player session
-         * @return the extended app instance
-         */
-        default App withPlayerSession(final String token,
-                final wumpus.Session session) {
-            final SessionPool pool = SessionPool.create(this);
-            pool.map().put(token, session);
-            final Map<String, Object> newRoot = new HashMap<>();
-            newRoot.put("PLAYER_SESSION_POOL", pool);
-            this.authenticator().authenticate(token, "ADMIN", "ADMIN");
-            return withRoot(newRoot);
-        }
-
-        /**
-         * Extend the app with additional context.
-         *
-         * @param ctx
-         *                the additional context
-         * @return the extended app instance
-         */
-        default App withContext(final wumpus.Context ctx) {
-            return withRoot(wumpus.App.create(ctx).memoryRoot());
-        }
-
-        /**
-         * Extend the app with additional root memory, overriding conflicting
-         * values.
-         *
-         * @param root
-         *                 the root memory map to lay over the existing one
-         * @return the extended app instance
-         */
-        default App withRoot(final Map<String, Object> root) {
-            final Map<String, Object> newRoot = new HashMap<>();
-            newRoot.putAll(this.memoryRoot());
-            newRoot.putAll(root);
-            return () -> newRoot;
-        }
-
     }
 
     /**
@@ -164,9 +82,8 @@ public interface Mock {
          *                the application
          * @return the last message sent
          */
-        default Message sentMessage(final wumpus.App app) {
-            return Message.parse(app,
-                    ((Mock.JettySession) unwrap()).sentString());
+        default Message sentMessage() {
+            return Message.parse(((Mock.JettySession) unwrap()).sentString());
         }
     }
 

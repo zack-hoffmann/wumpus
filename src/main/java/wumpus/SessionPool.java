@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 @FunctionalInterface
 public interface SessionPool {
 
+    // TODO
+    SessionPool initialSessionPool = create();
+    SessionPool playerSessionPool = create();
+    
     /**
      * Create a session pool.
      *
@@ -19,12 +23,12 @@ public interface SessionPool {
      *                the app associated with this pool
      * @return the new session pool
      */
-    static SessionPool create(final App app) {
+    static SessionPool create() {
         final Map<String, Session> m = new HashMap<>();
         return s -> {
             if (s.isPresent()) {
                 final Map<String, Session> newEntry = new HashMap<>();
-                newEntry.put(app.tokenPool().newToken(), s.get());
+                newEntry.put(StringPool.tokenPool.newToken(), s.get());
                 m.putAll(newEntry);
                 return newEntry;
             } else {

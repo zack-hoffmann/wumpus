@@ -10,6 +10,9 @@ import java.util.Map;
 @FunctionalInterface
 public interface Authenticator {
 
+    //TODO
+    Authenticator a = create();
+    
     /**
      * Create authenticator instance.
      *
@@ -17,7 +20,7 @@ public interface Authenticator {
      *                the application instance
      * @return the new authenticator
      */
-    static Authenticator create(final App app) {
+    static Authenticator create() {
         // TODO database config?
         final Map<String, String> loginDummy = new HashMap<>();
         loginDummy.put("ADMIN", "ADMIN");

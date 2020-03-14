@@ -47,18 +47,6 @@ public final class StringPoolTest {
     private static final String TEST_STR_3 = new String(TEST_CHAR_MEM_3);
 
     /**
-     * Context configuration.
-     */
-    private static final Context MOCK_CTX = Mock.Context.create()
-            .withProperty("string.pool.token.name", "token")
-            .withProperty("string.pool.token.size", "100");
-
-    /**
-     * Mock app.
-     */
-    private static final App MOCK_APP = Mock.App.create().withContext(MOCK_CTX);
-
-    /**
      * An interned string will be reused when a future equivalent string is
      * interned.
      */
@@ -98,7 +86,7 @@ public final class StringPoolTest {
      */
     @Test
     public void tokenPool() {
-        final StringPool pool = MOCK_APP.tokenPool();
+        final StringPool pool = StringPool.tokenPool;
         final String token = pool.newToken();
         final String tokenDup = new String(token.toCharArray());
         Assert.assertFalse(token == tokenDup);

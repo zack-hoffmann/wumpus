@@ -15,6 +15,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @FunctionalInterface
 public interface StringPool {
 
+    // TODO
+    StringPool tokenPool = construct(1000);
+    StringPool parameterPool = construct(1000);
+
     /**
      * Create a new pool. This will not store the pool by name.
      *

@@ -84,11 +84,10 @@ public interface WebServer {
      *                           the message handler for the server
      * @return the running web server
      */
-    static WebServer serve(final Context ctx,
-            final Consumer<Session> connectHandler,
+    static WebServer serve(final Consumer<Session> connectHandler,
             final Consumer<String> messageHandler) {
 
-        final Server s = configureServer(ctx,
+        final Server s = configureServer(
                 new WumpusWebSocketServlet(connectHandler, messageHandler));
 
         Mediator.require(Server::start, s);
@@ -105,15 +104,15 @@ public interface WebServer {
      *                the endpoint servlet to serve
      * @return the new server instance, not yet started
      */
-    private static Server configureServer(final Context ctx,
-            final Servlet eps) {
+    private static Server configureServer(final Servlet eps) {
+        final Application app = Application.get();
         final Server s = new Server();
 
         final ServletContextHandler sch = new ServletContextHandler(
                 ServletContextHandler.SESSIONS);
-        sch.setContextPath(ctx.requiredProperty("web.server.context.path"));
+        sch.setContextPath(app.requiredProperty("web.server.context.path"));
         sch.addServlet(new ServletHolder(eps),
-                ctx.requiredProperty("web.server.servlet.path.spec"));
+                app.requiredProperty("web.server.servlet.path.spec"));
         s.setHandler(sch);
 
         final HttpConfiguration config = new HttpConfiguration();
@@ -121,16 +120,16 @@ public interface WebServer {
 
         final SslContextFactory sslctx = new SslContextFactory.Server();
         sslctx.setKeyStoreResource(Resource.newClassPathResource(
-                ctx.requiredProperty("web.server.keystore.path")));
+                app.requiredProperty("web.server.keystore.path")));
         sslctx.setKeyStorePassword(
-                ctx.requiredProperty("web.server.keystore.password"));
+                app.requiredProperty("web.server.keystore.password"));
 
         final ServerConnector wsscon = new ServerConnector(s,
                 new SslConnectionFactory(sslctx,
                         HttpVersion.HTTP_1_1.asString()),
                 new HttpConnectionFactory(config));
         wsscon.setPort(
-                Integer.parseInt(ctx.requiredProperty("web.server.port")));
+                Integer.parseInt(app.requiredProperty("web.server.port")));
         s.addConnector(wsscon);
 
         return s;

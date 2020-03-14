@@ -77,9 +77,8 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final String token, final App app,
-                final String... params) {
-            return Message.fromParts(app, token, this, params);
+        public Message newMessage(final String token, final String... params) {
+            return Message.fromParts(token, this, params);
         }
 
         /**
@@ -91,8 +90,8 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final App app, final String... params) {
-            return Message.fromParts(app, this, params);
+        public Message newTokenlessMessage(final String... params) {
+            return Message.fromParts(this, params);
         }
     }
 
@@ -162,9 +161,8 @@ public interface Message {
      *                   any parameters needed for the message
      * @return the new message
      */
-    static Message fromParts(final App app, final Type type,
-            final String... params) {
-        return fromParts(app, "", type, params);
+    static Message fromParts(final Type type, final String... params) {
+        return fromParts("", type, params);
     }
 
     /**
@@ -180,13 +178,13 @@ public interface Message {
      *                   any parameters needed for the message
      * @return the new message
      */
-    static Message fromParts(final App app, final String token, final Type type,
+    static Message fromParts(final String token, final Type type,
             final String... params) {
         final String[] parts = new String[params.length + 2];
-        parts[0] = app.tokenPool().intern(token);
+        parts[0] = StringPool.tokenPool.intern(token);
         parts[1] = type.toString();
         for (int i = 0; i < params.length; i++) {
-            parts[i + 2] = app.parameterPool().intern(params[i]);
+            parts[i + 2] = StringPool.parameterPool.intern(params[i]);
         }
         return () -> parts;
     }
@@ -200,7 +198,7 @@ public interface Message {
      *                the raw string message
      * @return the newly parsed message
      */
-    static Message parse(final App app, final String raw) {
+    static Message parse(final String raw) {
         final String[] parts = raw.split(DELIM);
         if (parts.length < 1) {
             throw ParseException.delimiterNotFound();
@@ -216,7 +214,7 @@ public interface Message {
         for (int i = 0; i < params.length; i++) {
             params[i] = parts[i + 2];
         }
-        return fromParts(app, parts[0], t, params);
+        return fromParts(parts[0], t, params);
     }
 
     /**

@@ -9,18 +9,6 @@ import org.junit.Test;
 public final class SessionPoolTest {
 
     /**
-     * App context wth token pool configuration.
-     */
-    private static final Context MOCK_CTX = Mock.Context.create()
-            .withProperty("string.pool.token.name", "token")
-            .withProperty("string.pool.token.size", "100");
-
-    /**
-     * Mock app.
-     */
-    private static final App MOCK_APP = Mock.App.create().withContext(MOCK_CTX);
-
-    /**
      * Mock open session.
      */
     private static final Session MOCK_SESSION = Mock.Session.create();
@@ -36,7 +24,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void create() {
-        Assert.assertNotNull(SessionPool.create(MOCK_APP));
+        Assert.assertNotNull(SessionPool.create());
     }
 
     /**
@@ -44,7 +32,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void emptyMap() {
-        final Map<String, Session> map = SessionPool.create(MOCK_APP).map();
+        final Map<String, Session> map = SessionPool.create().map();
         Assert.assertTrue(map.isEmpty());
     }
 
@@ -53,7 +41,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void bindNothing() {
-        final SessionPool pool = SessionPool.create(MOCK_APP);
+        final SessionPool pool = SessionPool.create();
         Assert.assertEquals(pool.map(), pool.bind(Optional.empty()));
     }
 
@@ -62,7 +50,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void bindSomething() {
-        final Map<String, Session> entry = SessionPool.create(MOCK_APP)
+        final Map<String, Session> entry = SessionPool.create()
                 .bind(Optional.of(MOCK_SESSION));
         Assert.assertEquals(1, entry.entrySet().size());
         Assert.assertEquals(MOCK_SESSION, entry.values().iterator().next());
@@ -74,8 +62,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void register() {
-        final String token = SessionPool.create(MOCK_APP)
-                .register(MOCK_SESSION);
+        final String token = SessionPool.create().register(MOCK_SESSION);
         Assert.assertNotNull(token);
     }
 
@@ -84,7 +71,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void renewBadToken() {
-        Assert.assertTrue(SessionPool.create(MOCK_APP).renew("").isEmpty());
+        Assert.assertTrue(SessionPool.create().renew("").isEmpty());
     }
 
     /**
@@ -92,7 +79,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void renew() {
-        final SessionPool pool = SessionPool.create(MOCK_APP);
+        final SessionPool pool = SessionPool.create();
         final String t1 = pool.register(MOCK_SESSION);
         Assert.assertNotEquals(t1, pool.renew(t1).get());
     }
@@ -102,7 +89,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void recall() {
-        final SessionPool pool = SessionPool.create(MOCK_APP);
+        final SessionPool pool = SessionPool.create();
         final String t1 = pool.register(MOCK_SESSION);
         Assert.assertTrue(pool.session(t1).isPresent());
     }
@@ -112,7 +99,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void badRecall() {
-        final SessionPool pool = SessionPool.create(MOCK_APP);
+        final SessionPool pool = SessionPool.create();
         Assert.assertTrue(pool.session("").isEmpty());
     }
 
@@ -121,7 +108,7 @@ public final class SessionPoolTest {
      */
     @Test
     public void noRecallAfterClean() {
-        final SessionPool pool = SessionPool.create(MOCK_APP);
+        final SessionPool pool = SessionPool.create();
         final String t1 = pool.register(MOCK_CLOSED_SESSION);
         pool.clean();
         Assert.assertTrue(pool.session(t1).isEmpty());

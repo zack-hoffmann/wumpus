@@ -44,7 +44,7 @@ public final class WebServerTest {
     /**
      * Context configuration.
      */
-    private static final Context MOCK_CTX = Mock.Context.create()
+    private static final Application MOCK_CTX = Mock.Application.create()
             .withProperty("web.server.port", Integer.toString(TEST_PORT))
             .withProperty("web.server.context.path", "/")
             .withProperty("web.server.servlet.path.spec", "/*")
@@ -79,7 +79,7 @@ public final class WebServerTest {
      */
     @Test
     public void starts() {
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         ws.stop();
     }
@@ -89,7 +89,7 @@ public final class WebServerTest {
      */
     @Test
     public void runs() {
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         Assert.assertTrue(ws.isRunning());
         ws.stop();
@@ -100,7 +100,7 @@ public final class WebServerTest {
      */
     @Test
     public void stops() {
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         ws.stop();
         Assert.assertFalse(ws.isRunning());
@@ -116,7 +116,7 @@ public final class WebServerTest {
      */
     @Test
     public void listens() throws UnknownHostException, IOException {
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
         try (Socket s = new Socket(TEST_HOST, TEST_PORT)) {
             Assert.assertNotNull(s);
@@ -132,7 +132,7 @@ public final class WebServerTest {
      */
     @Test
     public void clientConnect() throws Exception {
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER,
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
                 NOOP_MSG_HANDLER);
 
         final WebSocketClient client = new WebSocketClient();
@@ -157,7 +157,7 @@ public final class WebServerTest {
             ref.set(s);
         };
 
-        final WebServer ws = WebServer.serve(MOCK_CTX, NOOP_CONN_HANDLER, cons);
+        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER, cons);
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
@@ -191,8 +191,7 @@ public final class WebServerTest {
                 latch.countDown();
             }
         };
-        final WebServer ws = WebServer.serve(MOCK_CTX, cons::attempt,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.serve(cons::attempt, NOOP_MSG_HANDLER);
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
