@@ -3,6 +3,8 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
+import wumpus.system.StringPool;
+
 /**
  * String pool test suite.
  *
@@ -86,7 +88,7 @@ public final class StringPoolTest {
      */
     @Test
     public void tokenPool() {
-        final StringPool pool = StringPool.tokenPool;
+        final StringPool pool = Token.pool;
         final String token = pool.newToken();
         final String tokenDup = new String(token.toCharArray());
         Assert.assertFalse(token == tokenDup);

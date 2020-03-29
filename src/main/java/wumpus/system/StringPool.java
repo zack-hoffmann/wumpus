@@ -1,4 +1,4 @@
-package wumpus;
+package wumpus.system;
 
 import java.util.Map;
 import java.util.Queue;
@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public interface StringPool {
 
     // TODO
-    StringPool tokenPool = construct(1000);
     StringPool parameterPool = construct(1000);
 
     /**

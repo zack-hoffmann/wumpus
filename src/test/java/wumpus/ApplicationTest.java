@@ -98,7 +98,7 @@ public final class ApplicationTest {
      */
     @Test
     public void noProperty() {
-        Assert.assertTrue(Application.get().property(BAD_KEY).isEmpty());
+        Assert.assertTrue(Application.instance.property(BAD_KEY).isEmpty());
     }
 
     /**
@@ -108,7 +108,7 @@ public final class ApplicationTest {
     @Test
     public void foundDefaultProperty() {
         Assert.assertEquals(DEFAULT_ONLY_VAL,
-                Application.get().property(DEFAULT_ONLY_KEY).get());
+                Application.instance.property(DEFAULT_ONLY_KEY).get());
     }
 
     /**
@@ -118,7 +118,7 @@ public final class ApplicationTest {
     @Test
     public void foundRundirProperty() {
         Assert.assertEquals(RUNDIR_ONLY_VAL,
-                Application.get().property(RUNDIR_ONLY_KEY).get());
+                Application.instance.property(RUNDIR_ONLY_KEY).get());
     }
 
     /**
@@ -128,7 +128,7 @@ public final class ApplicationTest {
     @Test
     public void foundOverrideProperty() {
         Assert.assertEquals(SHARED_RUNDIR_VAL,
-                Application.get().property(SHARED_KEY).get());
+                Application.instance.property(SHARED_KEY).get());
     }
 
     /**
@@ -136,7 +136,7 @@ public final class ApplicationTest {
      */
     @Test(expected = RuntimeException.class)
     public void noRequiredProperty() {
-        Application.get().requiredProperty(BAD_KEY);
+        Application.instance.requiredProperty(BAD_KEY);
     }
 
     /**
@@ -145,6 +145,6 @@ public final class ApplicationTest {
     @Test
     public void requiredPropertyFound() {
         Assert.assertEquals(DEFAULT_ONLY_VAL,
-                Application.get().requiredProperty(DEFAULT_ONLY_KEY));
+                Application.instance.requiredProperty(DEFAULT_ONLY_KEY));
     }
 }

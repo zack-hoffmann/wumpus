@@ -28,7 +28,7 @@ public interface SessionPool {
         return s -> {
             if (s.isPresent()) {
                 final Map<String, Session> newEntry = new HashMap<>();
-                newEntry.put(StringPool.tokenPool.newToken(), s.get());
+                newEntry.put(Token.create.get().string(), s.get());
                 m.putAll(newEntry);
                 return newEntry;
             } else {

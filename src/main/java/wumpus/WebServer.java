@@ -105,7 +105,7 @@ public interface WebServer {
      * @return the new server instance, not yet started
      */
     private static Server configureServer(final Servlet eps) {
-        final Application app = Application.get();
+        final Application app = Application.instance;
         final Server s = new Server();
 
         final ServletContextHandler sch = new ServletContextHandler(

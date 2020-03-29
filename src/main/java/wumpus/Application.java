@@ -9,13 +9,12 @@ import wumpus.system.Utilities;
 public interface Application extends Runnable {
 
     static void main(final String... args) {
-        Application.get().run();
+        Application.instance.run();
     }
 
-    static Application get() {
-        return s -> Utilities.loadProperties.andThen(p -> p.getProperty(s))
-                .andThen(Optional::ofNullable).apply(new Properties());
-    }
+    static Application instance = s -> Utilities.loadProperties
+            .andThen(p -> p.getProperty(s)).andThen(Optional::ofNullable)
+            .apply(new Properties());
 
     /**
      * Obtain a possible reference to the property.

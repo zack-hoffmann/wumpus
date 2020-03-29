@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import wumpus.system.StringPool;
+
 /**
  * Wrapper for exchange of string parts between sender and receiver, typically
  * client and server endpoints.
@@ -181,7 +183,7 @@ public interface Message {
     static Message fromParts(final String token, final Type type,
             final String... params) {
         final String[] parts = new String[params.length + 2];
-        parts[0] = StringPool.tokenPool.intern(token);
+        parts[0] = Token.of.apply(token).string();
         parts[1] = type.toString();
         for (int i = 0; i < params.length; i++) {
             parts[i + 2] = StringPool.parameterPool.intern(params[i]);
