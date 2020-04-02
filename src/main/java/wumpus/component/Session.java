@@ -1,9 +1,15 @@
 package wumpus.component;
 
-import java.util.function.Consumer;
+import java.util.function.Function;
 
-import wumpus.Message;
+public interface Session
+        extends TransientComponent<Function<Message, Boolean>> {
 
-public interface Session extends TransientComponent<Consumer<Message>> {
+    default Boolean send(final Message m) {
+        return value().apply(m);
+    }
 
+    default boolean isOpen() {
+        return send(Message.Type.PING.newMessage());
+    }
 }

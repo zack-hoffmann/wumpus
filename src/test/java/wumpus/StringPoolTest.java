@@ -88,7 +88,7 @@ public final class StringPoolTest {
      */
     @Test
     public void tokenPool() {
-        final StringPool pool = Token.pool;
+        final StringPool pool = Token.pool.get();
         final String token = pool.newToken();
         final String tokenDup = new String(token.toCharArray());
         Assert.assertFalse(token == tokenDup);

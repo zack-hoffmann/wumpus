@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import wumpus.component.Message;
+
 /**
  * Test suite for the network gateway.
  */
@@ -17,13 +19,13 @@ public final class GatewayTest {
         SessionPool.initialSessionPool.map().clear();
         SessionPool.playerSessionPool.map().clear();
     }
-    
+
     /**
      * Accepts initial request for token.
      */
     @Test
     public void acceptsInboundInitialToken() {
-        final Message tokenRequest = Message.Type.TOKEN.newTokenlessMessage();
+        final Message tokenRequest = Message.Type.TOKEN.newMessage();
         final Gateway gw = Gateway.create(null);
         final Mock.Session ses = Mock.Session.create();
         gw.acceptInbound(tokenRequest, ses);
@@ -37,8 +39,8 @@ public final class GatewayTest {
      */
     @Test
     public void rejectsNonInitialLogin() {
-        final Message loginRequest = Message.Type.LOGIN
-                .newTokenlessMessage("ADMIN", "ADMIN");
+        final Message loginRequest = Message.Type.LOGIN.newMessage("ADMIN",
+                "ADMIN");
         final Gateway gw = Gateway.create(null);
         final Mock.Session ses = Mock.Session.create();
         gw.acceptInbound(loginRequest, ses);
@@ -97,7 +99,6 @@ public final class GatewayTest {
      */
     @Test
     public void acceptAuthenticatedCommand() {
-        final Mock.Session ses = Mock.Session.create();
         final Message msg = Message.Type.COMMAND.newMessage("FOO_TOKEN", "BAR");
         final Queue<Message> msgQueue = new LinkedList<>();
         Gateway.create(msgQueue).acceptInbound(msg);

@@ -3,6 +3,8 @@ package wumpus;
 import java.util.Optional;
 import java.util.Queue;
 
+import wumpus.component.Message;
+
 /**
  * Processing point for all messages into or out of the server.
  */
@@ -70,8 +72,8 @@ public interface Gateway {
     static void acceptInbound(final Message m, final Session s,
             final Queue<Message> queue) {
         if (m.token().isBlank() && !m.type().equals(Message.Type.TOKEN)) {
-            s.send(Message.Type.ERROR
-                    .newTokenlessMessage(ERROR_NEED_INITIAL_TOKEN).rawString());
+            s.send(Message.Type.ERROR.newMessage(ERROR_NEED_INITIAL_TOKEN)
+                    .rawString());
         } else {
             switch (m.type()) {
             case TOKEN:
@@ -85,8 +87,9 @@ public interface Gateway {
                         m.token()) == Authenticator.Status.AUTHENTICATED) {
                     queue.add(m);
                 } else {
-                    sendToRemote(Message.Type.ERROR.newTokenlessMessage(
-                            "Not Authenticated."), m.token());
+                    sendToRemote(
+                            Message.Type.ERROR.newMessage("Not Authenticated."),
+                            m.token());
                 }
             }
         }
@@ -148,7 +151,7 @@ public interface Gateway {
             break;
         // TODO other statuses
         default:
-            msg = Message.Type.ERROR.newTokenlessMessage("Not Authenticated.");
+            msg = Message.Type.ERROR.newMessage("Not Authenticated.");
         }
         sendToRemote(msg, outToken);
     }
@@ -169,7 +172,7 @@ public interface Gateway {
                         .or(() -> SessionPool.initialSessionPool
                                 .session(outToken))
                         .get().send(t),
-                msg.type().newTokenlessMessage(msg.params()).rawString());
+                msg.type().newMessage(msg.params()).rawString());
     }
 
     /**

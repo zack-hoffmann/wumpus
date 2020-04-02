@@ -49,6 +49,18 @@ public interface Mediator {
         }
     }
 
+    static <I> Optional<I> attemptAndReturn(final RiskyConsumer<I> con,
+            final I in) {
+        try {
+            con.accept(in);
+            return Optional.of(in);
+        } catch (final Exception e) {
+            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
+                    "Failed attempt.", e);
+            return Optional.empty();
+        }
+    }
+
     /**
      * Obtain a required value or abort the application.
      *

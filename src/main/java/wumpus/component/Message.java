@@ -1,9 +1,11 @@
-package wumpus;
+package wumpus.component;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import wumpus.Component;
+import wumpus.Token;
 import wumpus.system.StringPool;
 
 /**
@@ -11,7 +13,7 @@ import wumpus.system.StringPool;
  * client and server endpoints.
  */
 @FunctionalInterface
-public interface Message {
+public interface Message extends Component<String[]> {
 
     /**
      * Delimiter for message parts.
@@ -22,6 +24,10 @@ public interface Message {
      * Fixed set of message types available.
      */
     enum Type {
+        /**
+         * Perform no action other than to test validity of the connection.
+         */
+        PING,
         /**
          * If no parameters are given, the sender is requesting a new
          * identifying token for itself from the recipient (a "renew"). If a
@@ -79,7 +85,7 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newMessage(final String token, final String... params) {
+        public Message newMessage(final Token token, final String... params) {
             return Message.fromParts(token, this, params);
         }
 
@@ -92,7 +98,7 @@ public interface Message {
          *                   any parameters needed for the message
          * @return the new message
          */
-        public Message newTokenlessMessage(final String... params) {
+        public Message newMessage(final String... params) {
             return Message.fromParts(this, params);
         }
     }
@@ -164,7 +170,7 @@ public interface Message {
      * @return the new message
      */
     static Message fromParts(final Type type, final String... params) {
-        return fromParts("", type, params);
+        return fromParts(Token.none.get(), type, params);
     }
 
     /**
@@ -180,10 +186,10 @@ public interface Message {
      *                   any parameters needed for the message
      * @return the new message
      */
-    static Message fromParts(final String token, final Type type,
+    static Message fromParts(final Token token, final Type type,
             final String... params) {
         final String[] parts = new String[params.length + 2];
-        parts[0] = Token.of.apply(token).string();
+        parts[0] = token.string();
         parts[1] = type.toString();
         for (int i = 0; i < params.length; i++) {
             parts[i + 2] = StringPool.parameterPool.intern(params[i]);
@@ -216,15 +222,8 @@ public interface Message {
         for (int i = 0; i < params.length; i++) {
             params[i] = parts[i + 2];
         }
-        return fromParts(parts[0], t, params);
+        return fromParts(Token.of.apply(parts[0]), t, params);
     }
-
-    /**
-     * Access all message parts.
-     *
-     * @return all message parts in intended order
-     */
-    String[] parts();
 
     /**
      * The type of the message.
@@ -232,7 +231,7 @@ public interface Message {
      * @return the type of the message
      */
     default Type type() {
-        return Type.valueOf(parts()[1]);
+        return Type.valueOf(value()[1]);
     }
 
     /**
@@ -241,7 +240,7 @@ public interface Message {
      * @return the message token or empty string if not used
      */
     default String token() {
-        return parts()[0];
+        return value()[0];
     }
 
     /**
@@ -250,7 +249,7 @@ public interface Message {
      * @return the message params
      */
     default String[] params() {
-        final String[] parts = parts();
+        final String[] parts = value();
         final String[] params = new String[parts.length - 2];
         for (int i = 0; i < params.length; i++) {
             params[i] = parts[i + 2];
@@ -265,6 +264,6 @@ public interface Message {
      * @return the raw string representation of the message
      */
     default String rawString() {
-        return Arrays.stream(parts()).collect(Collectors.joining(DELIM));
+        return Arrays.stream(value()).collect(Collectors.joining(DELIM));
     }
 }

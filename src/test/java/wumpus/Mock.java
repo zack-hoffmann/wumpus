@@ -15,6 +15,8 @@ import org.eclipse.jetty.websocket.api.UpgradeResponse;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.api.WriteCallback;
 
+import wumpus.component.Message;
+
 public interface Mock {
 
     /**

@@ -8,12 +8,15 @@ import wumpus.system.StringPool;
 @FunctionalInterface
 public interface Token {
 
-    static StringPool pool = StringPool.construct(Integer.parseInt(
-            Application.instance.requiredProperty("token.pool.size")));
+    static Supplier<StringPool> pool = () -> StringPool
+            .construct(Integer.parseInt(
+                    Application.instance.requiredProperty("token.pool.size")));
 
-    static Supplier<Token> create = () -> pool::newToken;
+    static Supplier<Token> create = () -> pool.get()::newToken;
 
-    static Function<String, Token> of = s -> (() -> pool.intern(s));
+    static Function<String, Token> of = s -> (() -> pool.get().intern(s));
+
+    static Supplier<Token> none = () -> of.apply("");
 
     String string();
 

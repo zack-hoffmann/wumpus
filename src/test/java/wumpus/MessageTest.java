@@ -3,6 +3,8 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
+import wumpus.component.Message;
+
 /**
  * Test suite for messages.
  */
@@ -11,7 +13,9 @@ public final class MessageTest {
     /**
      * Test sender identity token.
      */
-    private static final String TEST_TOKEN = "FOO";
+    private static final String TEST_TOKEN_STR = "FOO";
+
+    private static final Token TEST_TOKEN = Token.of.apply(TEST_TOKEN_STR);
 
     /**
      * Test message parameters.
@@ -21,7 +25,7 @@ public final class MessageTest {
     /**
      * Test raw message for parsing.
      */
-    private static final String PARSE_MESSAGE = TEST_TOKEN + Message.DELIM
+    private static final String PARSE_MESSAGE = TEST_TOKEN_STR + Message.DELIM
             + "COMMAND" + Message.DELIM + "BAR";
 
     /**
@@ -33,18 +37,19 @@ public final class MessageTest {
     /**
      * Raw message without delimiters.
      */
-    private static final String BAD_MESSAGE_1 = TEST_TOKEN + "COMMAND" + "BAR";
+    private static final String BAD_MESSAGE_1 = TEST_TOKEN_STR + "COMMAND"
+            + "BAR";
 
     /**
      * Raw message with unknown type.
      */
-    private static final String BAD_MESSAGE_2 = TEST_TOKEN + Message.DELIM
+    private static final String BAD_MESSAGE_2 = TEST_TOKEN_STR + Message.DELIM
             + "CMD" + Message.DELIM + "BAR";
 
     /**
      * Raw message without enough parts.
      */
-    private static final String BAD_MESSAGE_3 = TEST_TOKEN;
+    private static final String BAD_MESSAGE_3 = TEST_TOKEN_STR;
 
     /**
      * New message has correct parts.
@@ -73,7 +78,7 @@ public final class MessageTest {
      */
     @Test
     public void newMessageNoToken() {
-        final Message m = Message.Type.COMMAND.newTokenlessMessage(TEST_PARAMS);
+        final Message m = Message.Type.COMMAND.newMessage(TEST_PARAMS);
         Assert.assertEquals("", m.token());
         Assert.assertEquals(Message.Type.COMMAND, m.type());
         Assert.assertEquals(TEST_PARAMS[0], m.params()[0]);

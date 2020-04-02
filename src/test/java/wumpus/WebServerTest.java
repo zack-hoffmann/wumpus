@@ -7,14 +7,14 @@ import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import wumpus.system.WebServer;
 
 /**
  * Test suite for the web socket server.
@@ -52,18 +52,6 @@ public final class WebServerTest {
             .withProperty("web.server.keystore.password", "abcd1234");
 
     /**
-     * A mock consumer for not handling any web socket messages.
-     */
-    private static final Consumer<String> NOOP_MSG_HANDLER = s -> {
-    };
-
-    /**
-     * A mock consumer for not handling any web socket messages.
-     */
-    private static final Consumer<Session> NOOP_CONN_HANDLER = s -> {
-    };
-
-    /**
      * Set up test trust store.
      */
     @BeforeClass
@@ -79,8 +67,7 @@ public final class WebServerTest {
      */
     @Test
     public void starts() {
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
         ws.stop();
     }
 
@@ -89,8 +76,7 @@ public final class WebServerTest {
      */
     @Test
     public void runs() {
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
         Assert.assertTrue(ws.isRunning());
         ws.stop();
     }
@@ -100,8 +86,7 @@ public final class WebServerTest {
      */
     @Test
     public void stops() {
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
         ws.stop();
         Assert.assertFalse(ws.isRunning());
     }
@@ -116,8 +101,7 @@ public final class WebServerTest {
      */
     @Test
     public void listens() throws UnknownHostException, IOException {
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
         try (Socket s = new Socket(TEST_HOST, TEST_PORT)) {
             Assert.assertNotNull(s);
         }
@@ -132,8 +116,7 @@ public final class WebServerTest {
      */
     @Test
     public void clientConnect() throws Exception {
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER,
-                NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
@@ -153,11 +136,9 @@ public final class WebServerTest {
     @Test
     public void serverReceive() throws Exception {
         final AtomicReference<String> ref = new AtomicReference<>("");
-        final Consumer<String> cons = s -> {
-            ref.set(s);
-        };
+        // TODO need new test for this.
 
-        final WebServer ws = WebServer.serve(NOOP_CONN_HANDLER, cons);
+        final WebServer ws = WebServer.create.get();
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
@@ -181,8 +162,7 @@ public final class WebServerTest {
         final AtomicReference<String> ref = new AtomicReference<>("");
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final RiskyConsumer<Session> cons = x -> x.getRemote()
-                .sendString(TEST_MESSAGE);
+        // TODO need new test for this.
 
         final WebSocketAdapter receiver = new WebSocketAdapter() {
             @Override
@@ -191,7 +171,7 @@ public final class WebServerTest {
                 latch.countDown();
             }
         };
-        final WebServer ws = WebServer.serve(cons::attempt, NOOP_MSG_HANDLER);
+        final WebServer ws = WebServer.create.get();
 
         final WebSocketClient client = new WebSocketClient();
         client.start();
