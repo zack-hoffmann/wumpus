@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import wumpus.external.Properties;
+import wumpus.external.WebServer;
 
 @FunctionalInterface
 public interface Application extends Runnable {
@@ -39,5 +40,9 @@ public interface Application extends Runnable {
 
     @Override
     default void run() {
+        final WebServer ws = WebServer.create.get();
+        ws.start();
+        // TODO run systems
+        ws.stop();
     }
 }

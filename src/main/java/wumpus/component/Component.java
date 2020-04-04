@@ -1,4 +1,4 @@
-package wumpus;
+package wumpus.component;
 
 @FunctionalInterface
 public interface Component<V> {

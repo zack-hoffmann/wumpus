@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import wumpus.Component;
 import wumpus.Token;
 import wumpus.external.StringPool;
 
@@ -99,7 +98,7 @@ public interface Message extends Component<String[]> {
          * @return the new message
          */
         public Message newMessage(final String... params) {
-            return Message.fromParts(this, params);
+            return Message.fromParts(Token.none.get(), this, params);
         }
     }
 
@@ -156,21 +155,6 @@ public interface Message extends Component<String[]> {
             super(message);
         }
 
-    }
-
-    /**
-     * Create a new message with no token. Token will be empty string.
-     *
-     * @param app
-     *                   the application instance, used for string interning
-     * @param type
-     *                   the type of the message
-     * @param params
-     *                   any parameters needed for the message
-     * @return the new message
-     */
-    static Message fromParts(final Type type, final String... params) {
-        return fromParts(Token.none.get(), type, params);
     }
 
     /**

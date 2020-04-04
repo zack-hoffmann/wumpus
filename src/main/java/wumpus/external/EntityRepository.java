@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import wumpus.Component;
+import wumpus.component.Component;
 import wumpus.Entity;
 import wumpus.Token;
 
