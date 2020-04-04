@@ -1,7 +1,7 @@
 package wumpus;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,11 +17,20 @@ public interface Entity {
 
     Token token();
 
-    default Set<Component<?>> components() {
+    default Collection<Component<?>> components() {
         return EntityRepository.lookupComponents.apply(token());
     }
 
-    default void registerComponent(final Component<?> c) {
+    // TODO not a big fan of this...
+    default Collection<String> componentTypes() {
+        return EntityRepository.lookupComponentTypes.apply(token());
+    }
+
+    default void registerComponent(final Component<? extends Object> c) {
         EntityRepository.registerComponent.apply(token(), c);
+    }
+
+    default boolean isA(Class<?> c) {
+        return componentTypes().contains(c.getName());
     }
 }
