@@ -1,49 +1,46 @@
-package wumpus;
-
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package wumpus.external;
 
 /**
  * Convenience methods for exception-causing behaviors.
  */
 public interface Mediator {
 
-    @FunctionalInterface
-    public interface RiskyConsumer<E> {
+    class ServiceError extends RuntimeException {
 
-        /**
-         * Process a value.
-         *
-         * @param e
-         *              the value to be processed
-         * @throws Exception
-         *                       when not successful
-         */
-        void accept(E e) throws Exception;
+        private static final long serialVersionUID = -7782609401052424457L;
 
-        /**
-         * Convenience method to attempt via mediator.
-         *
-         * @param e
-         *              the value to be processed
-         */
-        default void attempt(E e) {
-            Mediator.attempt(this, e);
+        public ServiceError(final String m) {
+            super(m);
         }
+
+        public ServiceError(final String m, final Throwable c) {
+            super (m, c);
+        }
+    }
+
+    class ApplicationError extends RuntimeException {
+
+        private static final long serialVersionUID = -7782609401052424457L;
+
+        public ApplicationError(final String m) {
+            super(m);
+        }
+
+        public ApplicationError(final String m, final Throwable c) {
+            super (m, c);
+        }
+    }
+
+    @FunctionalInterface
+    interface RiskyConsumer<E> {
+
+        void accept(E e) throws Exception;
 
     }
 
     @FunctionalInterface
-    public interface RiskySupplier<E> {
+    interface RiskySupplier<E> {
 
-        /**
-         * Return a value.
-         *
-         * @return the needed value
-         * @throws Exception
-         *                       when the value cannot be returned
-         */
         E get() throws Exception;
 
     }
@@ -58,13 +55,12 @@ public interface Mediator {
      *                supplier output type
      * @return an optional reference to the value
      */
-    static <O> Optional<O> attempt(final RiskySupplier<O> sup) {
+    static <O> O attempt(final RiskySupplier<O> sup) {
         try {
-            return Optional.ofNullable(sup.get());
+            return sup.get();
         } catch (final Exception e) {
-            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
-                    "Failed attempt.", e);
-            return Optional.empty();
+            ServerLog.create.get().detail("Failed attempt.");
+            throw new ServiceError("Failed attempt.", e);
         }
     }
 
@@ -83,20 +79,8 @@ public interface Mediator {
         try {
             con.accept(in);
         } catch (final Exception e) {
-            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
-                    "Failed attempt.", e);
-        }
-    }
-
-    static <I> Optional<I> attemptAndReturn(final RiskyConsumer<I> con,
-            final I in) {
-        try {
-            con.accept(in);
-            return Optional.of(in);
-        } catch (final Exception e) {
-            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
-                    "Failed attempt.", e);
-            return Optional.empty();
+            ServerLog.create.get().detail("Failed attempt.");
+            throw new ServiceError("Failed attempt.", e);
         }
     }
 
@@ -117,9 +101,8 @@ public interface Mediator {
             }
             return o;
         } catch (final Exception e) {
-            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
-                    "Failed require.", e);
-            throw new RuntimeException("Unrecoverable error.", e);
+            ServerLog.create.get().detail("Failed require.");
+            throw new ApplicationError("Failed require.", e);
         }
     }
 
@@ -137,9 +120,8 @@ public interface Mediator {
         try {
             con.accept(in);
         } catch (final Exception e) {
-            Logger.getLogger(Mediator.class.getName()).log(Level.WARNING,
-                    "Failed require.", e);
-            throw new RuntimeException("Unrecoverable error.", e);
+            ServerLog.create.get().detail("Failed require.");
+            throw new ApplicationError("Failed require.", e);
         }
     }
 

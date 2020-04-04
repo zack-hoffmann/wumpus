@@ -3,6 +3,8 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
+import wumpus.external.Mediator;
+
 /**
  * Mediator error handling test suite.
  *
@@ -22,7 +24,7 @@ public final class MediatorTest {
     public void failedSupplyAttempt() {
         Assert.assertTrue(Mediator.attempt(() -> {
             throw new RuntimeException();
-        }).isEmpty());
+        }));
     }
 
     /**
@@ -32,7 +34,7 @@ public final class MediatorTest {
     public void successfulNullSupplyAttempt() {
         Assert.assertTrue(Mediator.attempt(() -> {
             return null;
-        }).isEmpty());
+        }));
     }
 
     /**
@@ -42,7 +44,7 @@ public final class MediatorTest {
     public void successfulSupplyAttempt() {
         Assert.assertEquals(FOO, Mediator.attempt(() -> {
             return FOO;
-        }).get());
+        }));
     }
 
     /**

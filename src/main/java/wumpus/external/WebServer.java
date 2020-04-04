@@ -22,15 +22,13 @@ import java.util.function.Function;
 
 import wumpus.Application;
 import wumpus.Entity;
-import wumpus.Mediator;
 import wumpus.component.Message;
 import wumpus.component.RemoteTerminal;
 
 public interface WebServer {
 
-    Function<Session, Function<Message, Boolean>> createHandler = s -> m -> Mediator
-            .attemptAndReturn(n -> s.getRemote().sendString(n), m.rawString())
-            .isPresent();
+    Function<Session, Consumer<Message>> createHandler = s -> m -> Mediator
+            .attempt(n -> s.getRemote().sendString(n), m.rawString());
 
     Consumer<Session> registerSessionEntity = s -> Entity.create.get()
             .registerComponent((RemoteTerminal) () -> createHandler.apply(s));

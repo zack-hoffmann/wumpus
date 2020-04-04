@@ -7,8 +7,6 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import wumpus.Mediator;
-
 @FunctionalInterface
 public interface Properties {
 

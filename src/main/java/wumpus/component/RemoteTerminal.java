@@ -1,16 +1,13 @@
 package wumpus.component;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface RemoteTerminal
-        extends TransientComponent<Function<Message, Boolean>> {
+        extends TransientComponent<Consumer<Message>> {
 
-    default Boolean send(final Message m) {
-        return value().apply(m);
+    default void send(final Message m) {
+        value().accept(m);
     }
 
-    default boolean isOpen() {
-        return send(Message.Type.PING.newMessage());
-    }
 }
