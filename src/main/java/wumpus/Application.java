@@ -1,9 +1,9 @@
 package wumpus;
 
 import java.util.Optional;
-import java.util.Properties;
+import java.util.function.Function;
 
-import wumpus.external.Utilities;
+import wumpus.external.Properties;
 
 @FunctionalInterface
 public interface Application extends Runnable {
@@ -12,9 +12,9 @@ public interface Application extends Runnable {
         Application.instance.run();
     }
 
-    static Application instance = s -> Utilities.loadProperties
-            .andThen(p -> p.getProperty(s)).andThen(Optional::ofNullable)
-            .apply(new Properties());
+    Function<String,String> propertiesCache = (Properties.create.get()::property);
+
+    Application instance = s -> propertiesCache.andThen(Optional::ofNullable).apply(s);
 
     /**
      * Obtain a possible reference to the property.

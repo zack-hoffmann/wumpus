@@ -9,6 +9,45 @@ import java.util.logging.Logger;
  */
 public interface Mediator {
 
+    @FunctionalInterface
+    public interface RiskyConsumer<E> {
+
+        /**
+         * Process a value.
+         *
+         * @param e
+         *              the value to be processed
+         * @throws Exception
+         *                       when not successful
+         */
+        void accept(E e) throws Exception;
+
+        /**
+         * Convenience method to attempt via mediator.
+         *
+         * @param e
+         *              the value to be processed
+         */
+        default void attempt(E e) {
+            Mediator.attempt(this, e);
+        }
+
+    }
+
+    @FunctionalInterface
+    public interface RiskySupplier<E> {
+
+        /**
+         * Return a value.
+         *
+         * @return the needed value
+         * @throws Exception
+         *                       when the value cannot be returned
+         */
+        E get() throws Exception;
+
+    }
+
     /**
      * Attempt to get a value where the value is not essential. A warning will
      * be logged for failed attempts.

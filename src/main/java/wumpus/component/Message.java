@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import wumpus.Component;
 import wumpus.Token;
-import wumpus.system.StringPool;
+import wumpus.external.StringPool;
 
 /**
  * Wrapper for exchange of string parts between sender and receiver, typically
