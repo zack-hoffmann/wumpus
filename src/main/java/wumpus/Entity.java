@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import wumpus.system.EntityRepository;
+import wumpus.external.EntityRepository;
 
 @FunctionalInterface
 public interface Entity {

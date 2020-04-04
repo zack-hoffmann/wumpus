@@ -1,4 +1,4 @@
-package wumpus.system;
+package wumpus.external;
 
 import java.io.InputStream;
 import java.nio.file.Files;

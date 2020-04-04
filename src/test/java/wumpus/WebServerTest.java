@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import wumpus.system.WebServer;
+import wumpus.external.WebServer;
 
 /**
  * Test suite for the web socket server.

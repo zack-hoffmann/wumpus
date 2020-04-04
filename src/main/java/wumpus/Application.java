@@ -3,7 +3,7 @@ package wumpus;
 import java.util.Optional;
 import java.util.Properties;
 
-import wumpus.system.Utilities;
+import wumpus.external.Utilities;
 
 @FunctionalInterface
 public interface Application extends Runnable {

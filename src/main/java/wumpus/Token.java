@@ -3,7 +3,7 @@ package wumpus;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import wumpus.system.StringPool;
+import wumpus.external.StringPool;
 
 @FunctionalInterface
 public interface Token {

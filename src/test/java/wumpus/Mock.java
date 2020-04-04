@@ -15,8 +15,6 @@ import org.eclipse.jetty.websocket.api.UpgradeResponse;
 import org.eclipse.jetty.websocket.api.WebSocketPolicy;
 import org.eclipse.jetty.websocket.api.WriteCallback;
 
-import wumpus.component.Message;
-
 public interface Mock {
 
     /**
@@ -53,41 +51,6 @@ public interface Mock {
         }
     }
 
-    /**
-     * Mock wrapper session.
-     */
-    interface Session extends wumpus.Session {
-        /**
-         * Create open mock session.
-         *
-         * @return open mock session
-         */
-        static Session create() {
-            final JettySession js = JettySession.createOpen();
-            return () -> js;
-        }
-
-        /**
-         * Create closed mock session.
-         *
-         * @return closed mock session
-         */
-        static Session createClosed() {
-            final JettySession js = JettySession.createClosed();
-            return () -> js;
-        }
-
-        /**
-         * Access the last message sent via this session.
-         *
-         * @param app
-         *                the application
-         * @return the last message sent
-         */
-        default Message sentMessage() {
-            return Message.parse(((Mock.JettySession) unwrap()).sentString());
-        }
-    }
 
     /**
      * Mock native Jetty session for testing the wrapper session and things that

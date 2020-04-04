@@ -1,4 +1,4 @@
-package wumpus.system;
+package wumpus.external;
 
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -24,6 +24,7 @@ import wumpus.Application;
 import wumpus.Entity;
 import wumpus.Mediator;
 import wumpus.component.Message;
+import wumpus.component.RemoteTerminal;
 
 public interface WebServer {
 
@@ -32,7 +33,7 @@ public interface WebServer {
             .isPresent();
 
     Consumer<Session> registerSessionEntity = s -> Entity.create.get()
-            .registerComponent(() -> createHandler.apply(s));
+            .registerComponent((RemoteTerminal) () -> createHandler.apply(s));
 
     Consumer<String> registerMessageEntity = s -> Entity.create.get()
             .registerComponent(Message.parse(s));

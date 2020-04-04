@@ -1,4 +1,4 @@
-package wumpus.system;
+package wumpus.external;
 
 import java.util.Map;
 import java.util.Queue;

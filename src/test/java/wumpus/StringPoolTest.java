@@ -3,7 +3,7 @@ package wumpus;
 import org.junit.Assert;
 import org.junit.Test;
 
-import wumpus.system.StringPool;
+import wumpus.external.StringPool;
 
 /**
  * String pool test suite.
