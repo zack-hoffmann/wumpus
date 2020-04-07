@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import wumpus.Entity;
 import wumpus.Token;
 
-public interface ContainerComponent extends Component<List<Token>> {
+public interface ContainerComponent extends ValueComponent<List<Token>> {
 
     default List<Entity> entities() {
         return stream().collect(Collectors.toList());

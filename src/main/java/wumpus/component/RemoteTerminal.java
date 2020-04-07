@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface RemoteTerminal
-        extends TransientComponent<Consumer<Message>> {
+        extends ValueComponent<Consumer<Message>>, TransientComponent {
 
     default void send(final Message m) {
         value().accept(m);

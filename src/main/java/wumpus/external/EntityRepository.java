@@ -2,7 +2,6 @@ package wumpus.external;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,13 +15,10 @@ import wumpus.component.Component;
 
 public interface EntityRepository {
 
-    class ComponentMap extends HashMap<String, Component<?>> {
+    class ComponentMap
+            extends ConcurrentHashMap<Class<? extends Component>, Component> {
 
         private static final long serialVersionUID = 1L;
-
-        public Component<?> put(final Component<?> c) {
-            return super.put(c.getClass().getName(), c);
-        }
 
     }
 
@@ -42,16 +38,14 @@ public interface EntityRepository {
     static Supplier<Entity> create = () -> storeToken.andThen(lookup)
             .apply(Token.create.get()).get();
 
-    static Function<Token, Collection<Component<?>>> lookupComponents = t -> Collections
+    static Function<Token, Collection<Component>> lookupComponents = t -> Collections
             .unmodifiableCollection(
                     memstore.getOrDefault(t.string(), createComponentMap.get())
                             .values());
 
-    static Function<Token, Collection<String>> lookupComponentTypes = t -> Collections
-            .unmodifiableCollection(
-                    memstore.getOrDefault(t.string(), createComponentMap.get())
-                            .keySet());
+    static BiFunction<Token, Component, Component> registerComponent = (t,
+            c) -> memstore.get(t.string()).put(c.getClass(), c);
 
-    static BiFunction<Token, Component<?>, Component<?>> registerComponent = (t,
-            c) -> memstore.get(t.string()).put(c);
+    static BiFunction<Token, Class<? extends Component>, Boolean> hasComponent = (
+            t, c) -> memstore.get(t.string()).containsKey(c);
 }

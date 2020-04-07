@@ -17,20 +17,15 @@ public interface Entity {
 
     Token token();
 
-    default Collection<Component<?>> components() {
+    default Collection<Component> components() {
         return EntityRepository.lookupComponents.apply(token());
     }
 
-    // TODO not a big fan of this...
-    default Collection<String> componentTypes() {
-        return EntityRepository.lookupComponentTypes.apply(token());
-    }
-
-    default void registerComponent(final Component<? extends Object> c) {
+    default void registerComponent(final Component c) {
         EntityRepository.registerComponent.apply(token(), c);
     }
 
-    default boolean isA(Class<?> c) {
-        return componentTypes().contains(c.getName());
+    default boolean isA(Class<? extends Component> c) {
+        return EntityRepository.hasComponent.apply(token(), c);
     }
 }

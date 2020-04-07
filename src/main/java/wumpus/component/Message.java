@@ -12,7 +12,7 @@ import wumpus.external.StringPool;
  * client and server endpoints.
  */
 @FunctionalInterface
-public interface Message extends Component<String[]> {
+public interface Message extends ValueComponent<String[]> {
 
     /**
      * Delimiter for message parts.
