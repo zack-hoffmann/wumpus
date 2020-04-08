@@ -4,19 +4,18 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import wumpus.Entity;
-import wumpus.external.Mediator;
 
 @FunctionalInterface
 public interface Step {
 
-    Entity execute(final Entity e) throws Mediator.ServiceError;
+    Entity unqualifiedExecute(final Entity e);
 
     default Predicate<Entity> qualifier() {
         return e -> true;
     }
 
-    default Stream<Entity> streamExecute(final Stream<Entity> es) {
-        return es.filter(qualifier()).map(this::execute);
+    default Stream<Entity> execute(final Stream<Entity> es) {
+        return es.filter(qualifier()).map(this::unqualifiedExecute);
     }
 
 }

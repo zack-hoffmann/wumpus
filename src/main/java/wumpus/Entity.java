@@ -2,30 +2,35 @@ package wumpus;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
-
 import wumpus.component.Component;
-import wumpus.external.EntityRepository;
+import wumpus.external.EntityCache;
 
 @FunctionalInterface
 public interface Entity {
 
-    static Supplier<Entity> create = () -> EntityRepository.create.get();
-    static Function<Token, Optional<Entity>> of = t -> EntityRepository.lookup
-            .apply(t);
+    static Function<EntityCache, Entity> create = ec -> () -> EntityCache.forNewEntity
+            .apply(ec);
+    static BiFunction<EntityCache, Token, Optional<Entity>> of = (ec, t) -> ec
+            .lookup(t);
 
-    Token token();
+    EntityCache cache();
+
+    default Token token() {
+        return cache().memory().keySet().stream().findFirst()
+                .map(s -> Token.of.apply(s)).get();
+    }
 
     default Collection<Component> components() {
-        return EntityRepository.lookupComponents.apply(token());
+        return cache().lookupComponents(token());
     }
 
     default void registerComponent(final Component c) {
-        EntityRepository.registerComponent.apply(token(), c);
+        cache().registerComponent(token(), c);
     }
 
     default boolean isA(Class<? extends Component> c) {
-        return EntityRepository.hasComponent.apply(token(), c);
+        return cache().hasComponent(token(), c);
     }
 }

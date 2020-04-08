@@ -30,7 +30,7 @@ public interface WebServer {
     Function<Session, Consumer<Message>> createHandler = s -> m -> Mediator
             .attempt(n -> s.getRemote().sendString(n), m.rawString());
 
-    Consumer<Session> registerSessionEntity = s -> Entity.create.get()
+    Consumer<Session> registerTerminalEntity = s -> Entity.create.get()
             .registerComponent((RemoteTerminal) () -> createHandler.apply(s));
 
     Consumer<String> registerMessageEntity = s -> Entity.create.get()
@@ -39,7 +39,7 @@ public interface WebServer {
     Supplier<WebSocketAdapter> createAdapter = () -> new WebSocketAdapter() {
         @Override
         public void onWebSocketConnect(final Session s) {
-            registerSessionEntity.accept(s);
+            registerTerminalEntity.accept(s);
         }
 
         @Override

@@ -12,7 +12,7 @@ public interface System {
     List<Step> steps();
 
     default UnaryOperator<List<Entity>> stepChain() {
-        return el -> steps().stream().map(s -> s.streamExecute(el.stream()))
+        return el -> steps().stream().map(s -> s.execute(el.stream()))
                 .flatMap(Function.identity()).collect(Collectors.toList());
     }
 
